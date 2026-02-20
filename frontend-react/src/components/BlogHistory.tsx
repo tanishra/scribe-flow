@@ -22,7 +22,8 @@ export function BlogHistory({ onSelect }: { onSelect: (job_id: string) => void }
 
   const fetchHistory = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/v1/history');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await axios.get(`${apiUrl}/api/v1/history`);
       setBlogs(res.data);
     } catch (e) {
       console.error("Failed to fetch history", e);

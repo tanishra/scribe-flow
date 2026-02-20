@@ -34,10 +34,12 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
     }
   }, [user]);
 
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   const handleUpdate = async () => {
     setLoading(true);
     try {
-      await axios.patch('http://localhost:8000/api/v1/auth/profile', data);
+      await axios.patch(`${apiUrl}/api/v1/auth/profile`, data);
       await refreshUser();
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
@@ -57,7 +59,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
     formData.append('file', file);
 
     try {
-      await axios.post('http://localhost:8000/api/v1/auth/profile-image', formData, {
+      await axios.post(`${apiUrl}/api/v1/auth/profile-image`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       await refreshUser();

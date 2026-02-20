@@ -21,6 +21,8 @@ export function LoginPage() {
       );
   };
 
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   const handleRequestOtp = async () => {
     if (!validateEmail(identifier)) {
       setError("Please enter a valid email address.");
@@ -30,7 +32,7 @@ export function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      await axios.post('http://localhost:8000/api/v1/auth/send-otp', { identifier });
+      await axios.post(`${apiUrl}/api/v1/auth/send-otp`, { identifier });
       setStep('verify');
     } catch (e: any) {
       const msg = e.response?.data?.detail;
@@ -45,7 +47,7 @@ export function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.post('http://localhost:8000/api/v1/auth/verify-otp', { identifier, code: otp });
+      const res = await axios.post(`${apiUrl}/api/v1/auth/verify-otp`, { identifier, code: otp });
       login(res.data.access_token);
     } catch (e: any) {
       setError(e.response?.data?.detail || "Invalid OTP");
@@ -57,7 +59,7 @@ export function LoginPage() {
   const handleGoogleSuccess = async (credentialResponse: any) => {
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:8000/api/v1/auth/google-login', { 
+      const res = await axios.post(`${apiUrl}/api/v1/auth/google-login`, { 
         token: credentialResponse.credential 
       });
       login(res.data.access_token);

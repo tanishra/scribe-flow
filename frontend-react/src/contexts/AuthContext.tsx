@@ -44,7 +44,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshUser = async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/v1/auth/me');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await axios.get(`${apiUrl}/api/v1/auth/me`);
       setUser(res.data);
     } catch (e) {
       console.error("Failed to fetch user", e);

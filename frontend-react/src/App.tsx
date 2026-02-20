@@ -22,13 +22,14 @@ function MainLayout() {
 
   const handleUpgrade = async () => {
     try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
         // 1. Create Order on Backend
-        const res = await axios.post('http://localhost:8000/api/v1/payment/create-order');
+        const res = await axios.post(`${apiUrl}/api/v1/payment/create-order`);
         const order = res.data;
 
         if (order.mock) {
             // Instant success for Dev mode
-            await axios.post('http://localhost:8000/api/v1/payment/verify', {
+            await axios.post(`${apiUrl}/api/v1/payment/verify`, {
                 razorpay_order_id: order.order_id,
                 razorpay_payment_id: "pay_mock_123",
                 razorpay_signature: "sig_mock_123"
@@ -49,7 +50,7 @@ function MainLayout() {
             handler: async function (response: any) {
                 // 3. Verify Payment on Backend
                 try {
-                    await axios.post('http://localhost:8000/api/v1/payment/verify', {
+                    await axios.post(`${apiUrl}/api/v1/payment/verify`, {
                         razorpay_order_id: response.razorpay_order_id,
                         razorpay_payment_id: response.razorpay_payment_id,
                         razorpay_signature: response.razorpay_signature
