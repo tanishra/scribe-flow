@@ -13,7 +13,7 @@ import axios from "axios";
 // ============================================================
 // CONFIGURATION: Fetched from environment variables
 // ============================================================
-const GOOGLE_CLIENT_ID = import.meta.env.GOOGLE_CLIENT_ID || "";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 function MainLayout() {
   const { user, logout, refreshUser } = useAuth();

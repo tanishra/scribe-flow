@@ -34,6 +34,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   const [isBundling, setIsBundling] = useState(false);
 
   const { refreshUser } = useAuth();
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
     if (initialJobId) {
@@ -48,7 +49,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     setStatus(null);
     
     try {
-      const res = await axios.post("http://localhost:8000/api/v1/generate", { topic });
+      const res = await axios.post(`${apiUrl}/api/v1/generate`, { topic });
       setJobId(res.data.job_id);
       // Refresh user credits immediately
       refreshUser();
@@ -61,14 +62,14 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   const pollStatus = async (id: string) => {
     // Immediate first fetch
     try {
-        const res = await axios.get(`http://localhost:8000/api/v1/status/${id}`);
+        const res = await axios.get(`${apiUrl}/api/v1/status/${id}`);
         setStatus(res.data);
         if (res.data.status === "completed" || res.data.status === "failed") return;
     } catch (e) {}
 
     const interval = setInterval(async () => {
       try {
-        const res = await axios.get(`http://localhost:8000/api/v1/status/${id}`);
+        const res = await axios.get(`${apiUrl}/api/v1/status/${id}`);
         const data = res.data;
         setStatus(data);
 
@@ -84,7 +85,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   const downloadMarkdown = async () => {
     if (!status?.download_url) return;
     try {
-      const res = await axios.get(`http://localhost:8000${status.download_url}`);
+      const res = await axios.get(`${apiUrl}${status.download_url}`);
       const blob = new Blob([res.data], { type: "text/markdown" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -106,14 +107,14 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     const slug = safe_slug(status.blog_title || "blog");
 
     try {
-      const mdRes = await axios.get(`http://localhost:8000${status.download_url}`);
+      const mdRes = await axios.get(`${apiUrl}${status.download_url}`);
       zip.file(`${slug}.md`, mdRes.data);
 
       const imgFolder = zip.folder("images");
       if (imgFolder) {
         for (const imgUrl of status.images) {
           const filename = imgUrl.split("/").pop() || "image.png";
-          const imgRes = await axios.get(`http://localhost:8000${imgUrl}`, { responseType: 'blob' });
+          const imgRes = await axios.get(`${apiUrl}${imgUrl}`, { responseType: 'blob' });
           imgFolder.file(filename, imgRes.data);
         }
       }
@@ -144,7 +145,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     try {
       for (const imgUrl of status.images) {
         const filename = imgUrl.split("/").pop() || "image.png";
-        const imgRes = await axios.get(`http://localhost:8000${imgUrl}`, { responseType: 'blob' });
+        const imgRes = await axios.get(`${apiUrl}${imgUrl}`, { responseType: 'blob' });
         zip.file(filename, imgRes.data);
       }
 
@@ -348,7 +349,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                       {status.images.map((imgUrl: string, i: number) => (
                         <div key={i} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-black/20">
                           <img 
-                            src={`http://localhost:8000${imgUrl}`} 
+                            src={`${apiUrl}${imgUrl}`} 
                             alt={`Generated visual ${i+1}`}
                             className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                           />
@@ -386,10 +387,11 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
 
 function FetchAndRenderMarkdown({ url }: { url: string }) {
   const [content, setContent] = useState<string | null>(null);
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
-    axios.get(`http://localhost:8000${url}`).then(res => setContent(res.data));
-  }, [url]);
+    axios.get(`${apiUrl}${url}`).then(res => setContent(res.data));
+  }, [url, apiUrl]);
 
   if (!content) return <div className="animate-pulse h-96 bg-white/5 rounded-xl" />;
   
