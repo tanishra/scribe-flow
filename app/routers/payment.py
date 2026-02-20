@@ -23,19 +23,15 @@ class VerifyPaymentRequest(BaseModel):
 
 @router.post("/create-order")
 async def create_order(current_user: User = Depends(get_current_user)):
-    """
-    Creates a Razorpay Order for the frontend to initiate payment.
-    """
-    # 1. Mock Mode Check
+    """Creates a Razorpay Order for ₹499."""
     if "mock" in RAZORPAY_KEY_ID:
         return {
             "mock": True,
-            "order_id": "order_mock_123",
+            "order_id": "order_mock_" + os.urandom(4).hex(),
             "amount": 49900,
             "key": RAZORPAY_KEY_ID
         }
 
-    # 2. Real Razorpay Mode
     try:
         amount = 49900 # ₹499.00
         data = {
@@ -44,7 +40,7 @@ async def create_order(current_user: User = Depends(get_current_user)):
             "receipt": f"receipt_{current_user.id}",
             "notes": {
                 "user_id": current_user.id,
-                "email": current_user.email
+                "plan": "Premium Pro 30"
             }
         }
         order = client.order.create(data=data)
@@ -63,33 +59,28 @@ async def verify_payment(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
-    """
-    Verifies the payment signature and upgrades the user.
-    """
-    # 1. Handle Mock Success
+    """Verifies payment and grants 30 blogs."""
     if "mock" in req.razorpay_order_id:
         current_user.is_premium = True
-        current_user.credits_left = 9999
+        current_user.credits_left = 30 # Grant 30 blogs
         session.add(current_user)
         session.commit()
         return {"status": "success", "message": "Mock upgrade successful"}
 
-    # 2. Real Verification
     try:
         params_dict = {
             'razorpay_order_id': req.razorpay_order_id,
             'razorpay_payment_id': req.razorpay_payment_id,
             'razorpay_signature': req.razorpay_signature
         }
-        # This raises an error if signature is invalid
         client.utility.verify_payment_signature(params_dict)
         
-        # Success! Upgrade user
+        # SUCCESS: Grant 30 blogs and mark as premium
         current_user.is_premium = True
-        current_user.credits_left = 9999
+        current_user.credits_left = 30 
         session.add(current_user)
         session.commit()
         
-        return {"status": "success", "message": "Payment verified and account upgraded!"}
+        return {"status": "success", "message": "Account upgraded with 30 blog credits!"}
     except Exception:
         raise HTTPException(status_code=400, detail="Payment verification failed")
