@@ -23,6 +23,8 @@ export function OnboardingWizard() {
   });
   const [loading, setLoading] = useState(false);
 
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   const handleNext = (val?: string) => {
     const fieldId = steps[currentStep].id;
     const newData = { ...data };
@@ -40,14 +42,14 @@ export function OnboardingWizard() {
   const finish = async (finalData: any) => {
     setLoading(true);
     try {
-      await axios.patch('http://localhost:8000/api/v1/auth/profile', {
+      await axios.patch(`${apiUrl}/api/v1/auth/profile`, {
         ...finalData,
         onboarding_completed: true
       });
       await refreshUser();
     } catch (e) {
       console.error("Failed to finish onboarding", e);
-      alert("Something went wrong. Please try again.");
+      alert("Something went wrong. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -82,11 +84,11 @@ export function OnboardingWizard() {
             exit={{ opacity: 0, x: -20 }}
             className="p-8"
           >
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3 mb-6 text-left">
               <div className="p-3 bg-blue-500/20 rounded-xl text-blue-400">
                 <stepInfo.icon className="w-6 h-6" />
               </div>
-              <div className="text-left">
+              <div>
                 <p className="text-[10px] font-bold text-blue-500 uppercase tracking-[0.2em] mb-1">Step {currentStep + 1} of {steps.length}</p>
                 <h2 className="text-2xl font-bold text-white leading-tight">{stepInfo.title}</h2>
               </div>
