@@ -5,6 +5,7 @@ langgraph
 langchain
 langchain-openai
 langchain-community
+langchain-core
 python-dotenv
 python-jose[cryptography]
 passlib[bcrypt]
@@ -12,7 +13,6 @@ sqlmodel
 google-auth
 google-auth-oauthlib
 requests
-stripe
 httpx
 jinja2
 python-multipart
@@ -23,3 +23,4 @@ psycopg2-binary
 slowapi
 gunicorn
 tavily-python
+google-genai
