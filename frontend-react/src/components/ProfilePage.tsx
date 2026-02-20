@@ -7,6 +7,7 @@ import axios from 'axios';
 export function ProfilePage({ onBack }: { onBack: () => void }) {
   const { user, refreshUser } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
   
   const [data, setData] = useState({
     full_name: '',
@@ -20,7 +21,6 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Sync state with user data
   useEffect(() => {
     if (user) {
       setData({
@@ -32,8 +32,6 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
       });
     }
   }, [user]);
-
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const handleUpdate = async () => {
     setLoading(true);
@@ -82,14 +80,13 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
       </button>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Left Col: Avatar & Badge */}
         <div className="space-y-6">
-          <GlassCard className="text-center p-8">
+          <GlassCard className="text-center p-8 text-left">
             <div className="relative inline-block group">
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500/30 bg-black/40 mb-4 mx-auto relative">
                 {user.profile_image ? (
                   <img 
-                    src={`http://localhost:8000${user.profile_image}`} 
+                    src={`${apiUrl}${user.profile_image}`} 
                     alt="Profile" 
                     className="w-full h-full object-cover"
                   />
@@ -154,7 +151,6 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
           </GlassCard>
         </div>
 
-        {/* Right Col: Edit Form */}
         <div className="md:col-span-2 space-y-6 text-left">
           <GlassCard className="p-8">
             <h3 className="text-2xl font-bold text-white mb-8 border-b border-white/5 pb-4">Personal Details</h3>
