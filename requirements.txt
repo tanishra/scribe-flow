@@ -4,6 +4,7 @@ pydantic[email]
 langgraph
 langchain
 langchain-openai
+langchain-community
 python-dotenv
 python-jose[cryptography]
 passlib[bcrypt]
@@ -21,3 +22,4 @@ razorpay
 psycopg2-binary
 slowapi
 gunicorn
+tavily-python
