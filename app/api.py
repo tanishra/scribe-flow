@@ -36,18 +36,18 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Secure CORS
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
-# Add localhost:3000 just in case
-origins = [
-    FRONTEND_URL,
-    "http://localhost:5173",
-    "http://localhost:3000"
-]
+# --- DEBUG LOGGER ---
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"Incoming request: {request.method} {request.url}")
+    response = await call_next(request)
+    logger.info(f"Response status: {response.status_code}")
+    return response
 
+# --- PERMISSIVE CORS (For Debugging) ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins, 
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -88,7 +88,6 @@ async def generate_blog_task(job_id: str, topic: str):
     try:
         jobs_db[job_id]["status"] = "processing"
         
-        # Update Database status
         with next(get_session()) as session:
             db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
             if db_blog:
@@ -173,7 +172,7 @@ api_router.include_router(auth.router)
 api_router.include_router(payment.router)
 
 @api_router.post("/generate", response_model=Dict[str, str], status_code=202)
-@limiter.limit("5/minute") # Rate limit: 5 requests per minute per IP
+@limiter.limit("5/minute")
 async def create_blog_job(
     request: Request,
     blog_req: BlogRequest, 
