@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
-import { User, Briefcase, Info, ArrowRight, CheckCircle, MapPin, Loader2 } from 'lucide-react';
+import { User, Briefcase, Info, ArrowRight, MapPin, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
 const steps = [

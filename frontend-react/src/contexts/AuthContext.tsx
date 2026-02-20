@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
 
 interface User {
   id: number;

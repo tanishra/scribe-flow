@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Clock, CheckCircle, XCircle, Loader2, ExternalLink, Download, FileText, Calendar } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Loader2, ExternalLink, FileText } from 'lucide-react';
 import { GlassCard } from './GlassCard';
 
 interface BlogHistoryItem {

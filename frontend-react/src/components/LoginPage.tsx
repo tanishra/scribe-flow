@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
-import { Mail, ArrowRight, Loader2, Globe, AlertCircle } from 'lucide-react';
+import { Mail, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 

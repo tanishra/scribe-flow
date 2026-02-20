@@ -6,7 +6,7 @@ import { ProfilePage } from "./components/ProfilePage";
 import { BlogHistory } from "./components/BlogHistory";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { LogOut, Zap, User as UserIcon, Settings, Clock, LayoutDashboard } from "lucide-react";
+import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
 

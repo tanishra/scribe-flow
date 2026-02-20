@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import JSZip from "jszip";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, FileText, Download, CheckCircle, AlertCircle, RefreshCw, Archive } from "lucide-react";
+import { Send, Download, CheckCircle, AlertCircle, RefreshCw, Archive } from "lucide-react";
 import { GlassCard } from "./GlassCard";
 import { LoadingScreen } from "./LoadingScreen";
 import { MarkdownRenderer } from "./MarkdownRenderer";

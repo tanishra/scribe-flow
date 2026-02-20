@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
-import { User, Mail, Briefcase, Info, Camera, Save, ArrowLeft, ShieldCheck, Zap } from 'lucide-react';
+import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap } from 'lucide-react';
 import axios from 'axios';
 
 export function ProfilePage({ onBack }: { onBack: () => void }) {
