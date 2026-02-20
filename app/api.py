@@ -1,0 +1,268 @@
+import uuid
+import json
+import os
+from typing import Dict, Optional, List, Any
+from fastapi import FastAPI, BackgroundTasks, HTTPException, APIRouter, Depends, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+from pathlib import Path
+from sqlmodel import Session, select
+from datetime import datetime
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+# Internal package imports
+from .main import run
+from .services.logging_service import logger
+from .database import create_db_and_tables, get_session
+from .routers import auth, payment
+from .dependencies import get_current_user
+from .schemas.db_models import User, Blog
+from .schemas.models import Plan, EvidenceItem
+from .utils.slug import slugify
+
+# --- Security & Rate Limiting ---
+limiter = Limiter(key_func=get_remote_address)
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="ScribeFlow AI API",
+    description="A production-grade API for generating high-impact blogs using LangGraph and AI agents.",
+    version="1.0.0"
+)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Secure CORS
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+# Add localhost:3000 just in case
+origins = [
+    FRONTEND_URL,
+    "http://localhost:5173",
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins, 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Serve generated images as static files
+static_dir = Path("outputs")
+static_dir.mkdir(parents=True, exist_ok=True)
+(static_dir / "images").mkdir(parents=True, exist_ok=True)
+(static_dir / "profiles").mkdir(parents=True, exist_ok=True)
+(static_dir / "blogs").mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory="outputs"), name="static")
+
+# Active job storage
+jobs_db: Dict[str, Dict] = {}
+
+# --- Pydantic Models for API Requests/Responses ---
+
+class BlogRequest(BaseModel):
+    topic: str = Field(..., description="The subject of the blog to be generated.")
+    as_of: Optional[str] = Field(None, description="Optional date context for news-based blogs.")
+
+class JobStatusResponse(BaseModel):
+    job_id: str
+    status: str
+    blog_title: Optional[str] = None
+    download_url: Optional[str] = None
+    images: List[str] = Field(default_factory=list)
+    plan: Optional[Any] = None
+    evidence: Optional[List[Any]] = None
+    error: Optional[str] = None
+
+# --- Background Task ---
+
+async def generate_blog_task(job_id: str, topic: str):
+    """Background worker to run the LangGraph workflow."""
+    logger.info(f"Background task started for Job ID: {job_id}")
+    try:
+        jobs_db[job_id]["status"] = "processing"
+        
+        # Update Database status
+        with next(get_session()) as session:
+            db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+            if db_blog:
+                db_blog.status = "processing"
+                session.add(db_blog)
+                session.commit()
+
+        # Run the main generation logic
+        result = await run(topic)
+        
+        # Extract results
+        plan = result.get("plan")
+        evidence = result.get("evidence", [])
+        image_specs = result.get("image_specs", [])
+        
+        # Construct Safe URLs
+        raw_title = plan.blog_title if plan else "Unknown Title"
+        safe_name = slugify(raw_title)
+        download_url = f"/static/blogs/{safe_name}.md"
+        image_urls = [f"/static/images/{spec['filename']}" for spec in image_specs]
+
+        # Serialization
+        plan_dict = plan.model_dump() if hasattr(plan, "model_dump") else plan
+        evidence_list = [e.model_dump() if hasattr(e, "model_dump") else e for e in evidence]
+
+        # Update SQL Database
+        with next(get_session()) as session:
+            db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+            if db_blog:
+                db_blog.status = "completed"
+                db_blog.title = raw_title
+                db_blog.download_url = download_url
+                db_blog.plan_json = json.dumps(plan_dict)
+                db_blog.evidence_json = json.dumps(evidence_list)
+                db_blog.images_json = json.dumps(image_urls)
+                db_blog.updated_at = datetime.utcnow()
+                session.add(db_blog)
+                session.commit()
+
+        # Update In-memory
+        jobs_db[job_id].update({
+            "status": "completed",
+            "blog_title": raw_title,
+            "download_url": download_url,
+            "images": image_urls,
+            "plan": plan_dict,
+            "evidence": evidence_list
+        })
+        
+        logger.info(f"Job {job_id} completed successfully.")
+        
+    except Exception as e:
+        logger.error(f"Error in background job {job_id}: {str(e)}", exc_info=True)
+        jobs_db[job_id]["status"] = "failed"
+        jobs_db[job_id]["error"] = str(e)
+        
+        with next(get_session()) as session:
+            db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+            if db_blog:
+                db_blog.status = "failed"
+                db_blog.error = str(e)
+                session.add(db_blog)
+                session.commit()
+
+# --- API Router Setup ---
+
+@app.on_event("startup")
+def on_startup():
+    # Fix SQLite permissions if it exists
+    if os.path.exists("database.db"):
+        try:
+            os.chmod("database.db", 0o666)
+        except:
+            pass
+    create_db_and_tables()
+    for route in app.routes:
+        methods = getattr(route, "methods", "N/A")
+        print(f"Route: {route.path} | Methods: {methods}")
+
+api_router = APIRouter(prefix="/api/v1")
+api_router.include_router(auth.router)
+api_router.include_router(payment.router)
+
+@api_router.post("/generate", response_model=Dict[str, str], status_code=202)
+@limiter.limit("5/minute") # Rate limit: 5 requests per minute per IP
+async def create_blog_job(
+    request: Request,
+    blog_req: BlogRequest, 
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    if not current_user.is_premium and current_user.credits_left <= 0:
+        raise HTTPException(status_code=403, detail="Free tier limit reached. Please upgrade.")
+
+    job_id = str(uuid.uuid4())
+    logger.info(f"--- API REQUEST --- User ID: {current_user.id} | Topic: {blog_req.topic}")
+    
+    new_blog = Blog(job_id=job_id, user_id=current_user.id, topic=blog_req.topic, status="queued")
+    session.add(new_blog)
+    
+    if not current_user.is_premium:
+        current_user.credits_left -= 1
+        session.add(current_user)
+    
+    session.commit()
+    
+    jobs_db[job_id] = {"topic": blog_req.topic, "status": "queued"}
+    background_tasks.add_task(generate_blog_task, job_id, blog_req.topic)
+    
+    return {"job_id": job_id}
+
+@api_router.get("/status/{job_id}", response_model=JobStatusResponse)
+async def get_job_status(job_id: str, session: Session = Depends(get_session)):
+    db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+    if db_blog and db_blog.status in ["completed", "failed"]:
+        return {
+            "job_id": db_blog.job_id,
+            "status": db_blog.status,
+            "blog_title": db_blog.title,
+            "download_url": db_blog.download_url,
+            "images": json.loads(db_blog.images_json) if db_blog.images_json else [],
+            "plan": json.loads(db_blog.plan_json) if db_blog.plan_json else None,
+            "evidence": json.loads(db_blog.evidence_json) if db_blog.evidence_json else [],
+            "error": db_blog.error
+        }
+
+    job_data = jobs_db.get(job_id)
+    if job_data:
+        return {
+            "job_id": job_id,
+            "status": job_data["status"],
+            "blog_title": job_data.get("blog_title"),
+            "download_url": job_data.get("download_url"),
+            "images": job_data.get("images", []),
+            "plan": job_data.get("plan"),
+            "evidence": job_data.get("evidence", []),
+            "error": job_data.get("error")
+        }
+    
+    if db_blog:
+        return {
+            "job_id": db_blog.job_id,
+            "status": db_blog.status,
+            "blog_title": db_blog.topic,
+            "download_url": None,
+            "images": [],
+            "plan": None,
+            "evidence": [],
+            "error": None
+        }
+
+    raise HTTPException(status_code=404, detail="Job not found")
+
+@api_router.get("/history", response_model=List[JobStatusResponse])
+async def get_history(current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+    statement = select(Blog).where(Blog.user_id == current_user.id).order_by(Blog.created_at.desc())
+    blogs = session.exec(statement).all()
+    return [
+        {
+            "job_id": b.job_id,
+            "status": b.status,
+            "blog_title": b.title or b.topic,
+            "download_url": b.download_url,
+            "images": json.loads(b.images_json) if b.images_json else [],
+            "plan": json.loads(b.plan_json) if b.plan_json else None,
+            "evidence": json.loads(b.evidence_json) if b.evidence_json else [],
+            "error": b.error
+        }
+        for b in blogs
+    ]
+
+app.include_router(api_router)
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "version": "1.0.0"}

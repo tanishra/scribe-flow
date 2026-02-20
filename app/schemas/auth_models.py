@@ -1,0 +1,37 @@
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional
+
+class OTPRequest(BaseModel):
+    identifier: EmailStr = Field(..., description="A valid email address is required.")
+
+class OTPVerify(BaseModel):
+    identifier: EmailStr
+    code: str
+
+class GoogleLogin(BaseModel):
+    token: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    gender: Optional[str] = None
+    profession: Optional[str] = None
+    source: Optional[str] = None
+    bio: Optional[str] = None
+    onboarding_completed: Optional[bool] = None
+
+class UserOut(BaseModel):
+    id: int
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
+    gender: Optional[str] = None
+    profession: Optional[str] = None
+    source: Optional[str] = None
+    bio: Optional[str] = None
+    profile_image: Optional[str] = None
+    onboarding_completed: bool
+    credits_left: int
+    is_premium: bool
