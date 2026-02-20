@@ -1,0 +1,9 @@
+.env
+database.db
+__pycache__
+node_modules
+dist
+.DS_Store
+.vscode
+outputs/
+backend.py
