@@ -2568,3 +2568,4 @@ NameError: name 'datetime' is not defined
 2026-02-20 17:47:30,947 - blog_writer_ai - INFO - [auth_service.py:44] - To: abcd@gmail.com
 2026-02-20 17:47:30,947 - blog_writer_ai - INFO - [auth_service.py:45] - Code: 910761
 2026-02-20 17:47:30,947 - blog_writer_ai - INFO - [auth_service.py:46] - --- END MOCK ---
+2026-02-20 19:15:59,937 - blog_writer_ai - INFO - [auth_service.py:76] - OTP successfully sent to st035486@gmail.com

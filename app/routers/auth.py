@@ -16,7 +16,7 @@ from ..schemas.auth_models import (
 from ..schemas.db_models import User, OTP
 from ..services.auth_service import (
     generate_otp_code,
-    send_mock_otp,
+    send_email_otp,
     verify_google_token,
     create_access_token,
     ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -28,7 +28,7 @@ from ..dependencies import get_current_user
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/send-otp")
-def send_otp(request: OTPRequest, session: Session = Depends(get_session)):
+async def send_otp(request: OTPRequest, session: Session = Depends(get_session)):
     code = generate_otp_code()
     existing_otp = session.exec(select(OTP).where(OTP.identifier == request.identifier)).first()
     if existing_otp:
@@ -41,7 +41,12 @@ def send_otp(request: OTPRequest, session: Session = Depends(get_session)):
     )
     session.add(otp_entry)
     session.commit()
-    send_mock_otp(request.identifier, code)
+    
+    # Send Real Email
+    sent = await send_email_otp(request.identifier, code)
+    if not sent:
+        raise HTTPException(status_code=500, detail="Failed to send verification email.")
+        
     return {"message": "OTP sent successfully."}
 
 @router.post("/verify-otp", response_model=Token)
