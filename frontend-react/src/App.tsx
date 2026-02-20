@@ -4,9 +4,10 @@ import { LoginPage } from "./components/LoginPage";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 import { ProfilePage } from "./components/ProfilePage";
 import { BlogHistory } from "./components/BlogHistory";
+import { SupportModal } from "./components/SupportModal";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard } from "lucide-react";
+import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
 
@@ -19,6 +20,7 @@ function MainLayout() {
   const { user, logout, refreshUser } = useAuth();
   const [view, setView] = useState<'dashboard' | 'profile' | 'history'>('dashboard');
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
 
   const handleUpgrade = async () => {
     try {
@@ -90,6 +92,8 @@ function MainLayout() {
     return <OnboardingWizard />;
   }
 
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/20 backdrop-blur-xl">
@@ -132,6 +136,14 @@ function MainLayout() {
                   </button>
                </div>
             )}
+
+            <button 
+                onClick={() => setIsSupportOpen(true)}
+                className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+                title="Help & Feedback"
+            >
+                <HelpCircle className="w-5 h-5" />
+            </button>
             
             <div className="flex items-center gap-3 pl-4 border-l border-white/10">
                 <button 
@@ -148,7 +160,7 @@ function MainLayout() {
                     </div>
                     <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 overflow-hidden group-hover:border-blue-500/50 transition-all">
                         {user.profile_image ? (
-                            <img src={`http://localhost:8000${user.profile_image}`} className="w-full h-full object-cover" />
+                            <img src={`${apiUrl}${user.profile_image}`} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-600">
                                 <UserIcon className="w-5 h-5" />
@@ -179,6 +191,8 @@ function MainLayout() {
           <ProfilePage onBack={() => setView('dashboard')} />
         )}
       </div>
+
+      <SupportModal isOpen={isSupportOpen} onClose={() => setIsSupportOpen(false)} />
     </>
   );
 }
