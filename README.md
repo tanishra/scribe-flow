@@ -1,20 +1,21 @@
-# ✍️ ScribeFlow AI
+# ScribeFlow AI
 
-**ScribeFlow AI** is a production-grade, multi-agent content engine designed to transform a single topic into a high-impact, research-backed, and visually rich blog post in minutes. Unlike simple LLM wrappers, ScribeFlow uses an advanced **LangGraph** orchestration to perform deep web research, architect a strategic outline, and generate unique visual assets in parallel.
+A production-grade, multi-agent content engine designed to transform a single topic into a high-impact, research-backed, and visually rich blog post in minutes. ScribeFlow leverages **LangGraph** orchestration to perform deep web research, architect strategic outlines, and generate unique visual assets in parallel—now featuring secure authentication, persistent history, and integrated payments.
 
 ---
 
 ## Why It Matters
-Writing a high-quality technical blog typically takes 4–8 hours of research, drafting, and asset creation. ScribeFlow reduces this to **under 2 minutes** while maintaining:
-*   **Near to Zero Hallucination:** Strict grounding in real-time web data via Tavily.
-*   **Technical Precision:** Native support for professional **LaTeX** math and verified code snippets.
-*   **Visual Engagement:** Automatically generates custom diagrams and images using Gemini 2.5 Flash.
-*   **Ready-to-Publish:** Outputs are bundled into ZIP files containing Markdown and optimized image assets.
+Writing a high-quality technical blog typically takes hours of research and drafting. ScribeFlow reduces this to **under 2 minutes** while maintaining:
+*   **Near to Zero Hallucination:** Strict grounding in real-time web data via Tavily Search.
+*   **Secure Authentication:** Native support for Google OAuth and Passwordless Email OTP verification.
+*   **Integrated Payments:** Built-in **Razorpay** support for UPI and Card payments, featuring a 3-blog free tier and Premium Pro plan.
+*   **Data Persistence:** SQL-backed history allows users to revisit, preview, and download previously generated blogs anytime.
+*   **Visual Engagement:** Automatically generates custom diagrams and images using Gemini 2.0 Flash.
 
 ---
 
 ## Architecture
-The system is built on a "Plan-Execute-Verify" cycle using an asynchronous multi-agent graph.
+The system is built on an asynchronous multi-agent graph, utilizing a "Plan-Execute-Persist" cycle.
 
 ```mermaid
 graph TD
@@ -23,7 +24,7 @@ graph TD
     Router -- No --> Orchestrator
     Research --> Orchestrator[Strategic Planner]
     
-    subgraph Parallel Workers
+    subgraph Parallel Content Workers
     Orchestrator --> W1[Section Worker 1]
     Orchestrator --> W2[Section Worker 2]
     Orchestrator --> W3[Section Worker N]
@@ -33,11 +34,11 @@ graph TD
     Reducer --> ImgDecide[Visual Strategist]
     
     subgraph Parallel Image Workers
-    ImgDecide --> IW1[DALL-E/Gemini Worker 1]
-    ImgDecide --> IW2[DALL-E/Gemini Worker 2]
+    ImgDecide --> IW1[Gemini Image Worker 1]
+    ImgDecide --> IW2[Gemini Image Worker 2]
     end
     
-    IW1 & IW2 --> Finalize[Final Polishing & Persistence]
+    IW1 & IW2 --> Finalize[SQL Persistence & Saving]
     Finalize --> End((END))
 ```
 
@@ -49,9 +50,9 @@ graph TD
 1. **Fork the Repo:** Click the **Fork** button at the top right of this page to create your own copy.
 2. **Clone & Setup:**
 ```bash
-# Clone your fork (replace YOUR_USERNAME)
-git clone https://github.com/YOUR_USERNAME/ScribeFlow-AI.git
-cd ScribeFlow-AI
+# Clone your fork
+git clone https://github.com/tanishra/scribe-flow.git
+cd Scribe-flow
 
 # Setup Backend
 pip install -r requirements.txt
@@ -62,11 +63,29 @@ npm install
 ```
 
 ### 2. Configuration
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory with the following keys:
 ```env
-OPENAI_API_KEY=your_key
-TAVILY_API_KEY=your_key
-GOOGLE_API_KEY=your_key
+# AI Services
+OPENAI_API_KEY=your_openai_key
+TAVILY_API_KEY=your_tavily_key
+GOOGLE_API_KEY=your_gemini_key
+
+# Authentication
+VITE_GOOGLE_CLIENT_ID=your_google_id.apps.googleusercontent.com
+SECRET_KEY=your_jwt_secret_key
+
+# Email OTP (SMTP)
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_gmail_app_password
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+
+# Payments (Razorpay)
+RAZORPAY_KEY_ID=your_razorpay_key
+RAZORPAY_KEY_SECRET=your_razorpay_secret
+
+# Database
+DATABASE_URL=sqlite:///database.db # Or your Postgres URL
 ```
 
 ### 3. Running Locally
@@ -74,7 +93,7 @@ You need two terminal windows:
 
 **Terminal 1: FastAPI Backend**
 ```bash
-python -m app.backend
+python -m uvicorn app.api:app --reload
 ```
 
 **Terminal 2: React Frontend**
