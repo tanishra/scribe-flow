@@ -10,16 +10,21 @@ interface MarkdownRendererProps {
 }
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
-  const backendUrl = "http://localhost:8000";
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const transformImageUri = (src: string) => {
+    // If it's already an absolute URL (starts with http), leave it
+    if (src.startsWith("http")) return src;
+    
+    // Handle the internal relative paths used by the backend
     if (src.startsWith("../images/")) {
-      return `${backendUrl}/static/images/${src.replace("../images/", "")}`;
+      return `${apiUrl}/static/images/${src.replace("../images/", "")}`;
     }
     if (src.startsWith("/")) {
-      return `${backendUrl}${src}`;
+      return `${apiUrl}${src}`;
     }
-    return src;
+    // Fallback for simple names
+    return `${apiUrl}/static/images/${src}`;
   };
 
   return (
@@ -30,23 +35,23 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         urlTransform={transformImageUri}
         components={{
           // --- HEADINGS: High Contrast and Distinct Fonts ---
-          h1: ({ node, ...props }) => (
+          h1: ({ ...props }) => (
             <h1 className="text-5xl md:text-6xl font-black text-white mb-12 mt-8 tracking-tighter leading-tight border-l-8 border-blue-500 pl-6 py-2 bg-gradient-to-r from-blue-500/10 to-transparent rounded-r-xl" {...props} />
           ),
-          h2: ({ node, ...props }) => (
+          h2: ({ ...props }) => (
             <h2 className="text-3xl md:text-4xl font-extrabold text-cyan-400 mb-8 mt-24 tracking-tight flex items-center gap-3 border-b border-white/10 pb-4" {...props} />
           ),
-          h3: ({ node, ...props }) => (
+          h3: ({ ...props }) => (
             <h3 className="text-2xl font-bold text-purple-400 mb-4 mt-12 tracking-wide uppercase" {...props} />
           ),
           
           // --- BODY TEXT: Clean, readable, and smaller than headings ---
-          p: ({ node, ...props }) => (
+          p: ({ ...props }) => (
             <p className="text-slate-300 text-lg leading-relaxed mb-8 font-normal" {...props} />
           ),
           
           // --- CITATIONS / LINKS: Blue and underlined like Streamlit ---
-          a: ({ node, ...props }) => (
+          a: ({ ...props }) => (
             <a 
               className="text-blue-400 font-medium underline underline-offset-4 hover:text-blue-300 transition-colors" 
               target="_blank" 
@@ -56,7 +61,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           ),
 
           // --- CODE BLOCKS: Proper Syntax Highlighting ---
-          code({ node, inline, className, children, ...props }: any) {
+          code({ inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
             return !inline && match ? (
               <div className="my-8 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
@@ -86,12 +91,12 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           },
 
           // --- LISTS: Better Spacing ---
-          ul: ({ node, ...props }) => <ul className="list-disc pl-8 mb-8 space-y-3 text-slate-300 text-lg" {...props} />,
-          ol: ({ node, ...props }) => <ol className="list-decimal pl-8 mb-8 space-y-3 text-slate-300 text-lg" {...props} />,
-          li: ({ node, ...props }) => <li className="pl-2" {...props} />,
+          ul: ({ ...props }) => <ul className="list-disc pl-8 mb-8 space-y-3 text-slate-300 text-lg" {...props} />,
+          ol: ({ ...props }) => <ol className="list-decimal pl-8 mb-8 space-y-3 text-slate-300 text-lg" {...props} />,
+          li: ({ ...props }) => <li className="pl-2" {...props} />,
 
           // --- IMAGES: Consistent with your previous request ---
-          img: ({ node, ...props }) => (
+          img: ({ ...props }) => (
             <div className="my-16 flex flex-col items-center group">
               <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
                 <img 
@@ -108,7 +113,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           ),
 
           // --- BLOCKQUOTES ---
-          blockquote: ({ node, ...props }) => (
+          blockquote: ({ ...props }) => (
             <blockquote className="border-l-4 border-purple-500 bg-purple-500/5 p-6 rounded-r-2xl my-8 italic text-slate-300" {...props} />
           ),
         }}
