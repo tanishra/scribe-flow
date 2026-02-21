@@ -271,11 +271,11 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                                     className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                                   >
                                       {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />}
-                                      {publishUrl ? "RE-POST AS DRAFT" : "POST AS DRAFT TO DEV.TO"}
+                                      {publishUrl ? "RE-PUBLISH TO DEV.TO" : "PUBLISH LIVE TO DEV.TO"}
                                   </button>
                                   {publishUrl && (
                                       <a href={publishUrl} target="_blank" className="flex items-center justify-center gap-2 text-blue-400 text-sm font-bold hover:underline">
-                                          View Draft on Dev.to <ExternalLink className="w-4 h-4" />
+                                          View Post on Dev.to <ExternalLink className="w-4 h-4" />
                                       </a>
                                   )}
                               </div>
