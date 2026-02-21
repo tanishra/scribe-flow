@@ -25,7 +25,7 @@ function MainLayout() {
 
   const handleUpgrade = async () => {
     try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "" : 'http://localhost:8000');
         // 1. Create Order on Backend
         const res = await axios.post(`${apiUrl}/api/v1/payment/create-order`);
         const order = res.data;
