@@ -6,6 +6,7 @@ import { ProfilePage } from "./components/ProfilePage";
 import { BlogHistory } from "./components/BlogHistory";
 import { SupportModal } from "./components/SupportModal";
 import { AdminDashboard } from "./components/AdminDashboard";
+import { PublicBlogViewer } from "./components/PublicBlogViewer";
 import { AuthProvider, useAuth, getApiUrl } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck, X, Check } from "lucide-react";
@@ -13,6 +14,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./components/GlassCard";
 import axios from "axios";
+import { Routes, Route, useNavigate } from "react-router-dom";
 
 // ============================================================
 // CONFIGURATION: Fetched from environment variables
@@ -30,12 +32,10 @@ function MainLayout() {
 
   const handleUpgrade = async (plan: 'basic' | 'pro') => {
     try {
-        // 1. Create Order on Backend
         const res = await axios.post(`${apiUrl}/api/v1/payment/create-order`, { plan });
         const order = res.data;
 
         if (order.mock) {
-            // Instant success for Dev mode
             await axios.post(`${apiUrl}/api/v1/payment/verify`, {
                 razorpay_order_id: order.order_id,
                 razorpay_payment_id: "pay_mock_123",
@@ -48,7 +48,6 @@ function MainLayout() {
             return;
         }
 
-        // 2. Open Razorpay Checkout Modal
         const options = {
             key: order.key,
             amount: order.amount,
@@ -57,7 +56,6 @@ function MainLayout() {
             description: plan === 'basic' ? "20 Blog Credits" : "50 Blog Credits",
             order_id: order.order_id,
             handler: async function (response: any) {
-                // 3. Verify Payment on Backend
                 try {
                     await axios.post(`${apiUrl}/api/v1/payment/verify`, {
                         razorpay_order_id: response.razorpay_order_id,
@@ -323,7 +321,10 @@ function App() {
       <AuthProvider>
         <Background />
         <main className="relative z-10 min-h-screen text-slate-200 selection:bg-cyan-500/30">
-          <MainLayout />
+          <Routes>
+            <Route path="/" element={<MainLayout />} />
+            <Route path="/share/:jobId" element={<PublicBlogViewer />} />
+          </Routes>
         </main>
       </AuthProvider>
     </GoogleOAuthProvider>
