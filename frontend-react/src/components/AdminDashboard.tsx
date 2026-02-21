@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Users, FileText, MessageSquare, ShieldCheck, Zap, 
     Mail, Calendar, Search, ArrowLeft, Trash2, 
-    TrendingUp, Coins, BarChart3, MoreVertical, UserX, UserCheck
+    TrendingUp, Coins, BarChart3, MoreVertical, UserX, UserCheck, ChevronRight
 } from 'lucide-react';
 import { GlassCard } from './GlassCard';
 import { getApiUrl } from '../contexts/AuthContext';
