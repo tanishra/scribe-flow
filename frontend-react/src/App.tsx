@@ -14,11 +14,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./components/GlassCard";
 import axios from "axios";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
-// ============================================================
-// CONFIGURATION: Fetched from environment variables
-// ============================================================
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 function MainLayout() {
@@ -44,7 +41,7 @@ function MainLayout() {
             });
             await refreshUser();
             setIsPricingOpen(false);
-            alert("Upgrade Successful (Mock Mode)!");
+            alert("Credits Added Successfully!");
             return;
         }
 
@@ -74,9 +71,7 @@ function MainLayout() {
                 name: user?.full_name || "",
                 email: user?.email || "",
             },
-            theme: {
-                color: "#2563eb",
-            },
+            theme: { color: "#2563eb" },
         };
 
         const rzp = new (window as any).Razorpay(options);
@@ -84,7 +79,6 @@ function MainLayout() {
 
     } catch (e) {
         alert("Could not initiate payment.");
-        console.error(e);
     }
   };
 
@@ -94,10 +88,7 @@ function MainLayout() {
   };
 
   if (!user) return <LoginPage />;
-
-  if (!user.onboarding_completed) {
-    return <OnboardingWizard />;
-  }
+  if (!user.onboarding_completed) return <OnboardingWizard />;
 
   return (
     <>
@@ -149,25 +140,18 @@ function MainLayout() {
                 </button>
             </div>
 
-            <button 
-                onClick={() => setIsSupportOpen(true)}
-                className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
-                title="Help & Feedback"
-            >
+            <button onClick={() => setIsSupportOpen(true)} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
                 <HelpCircle className="w-5 h-5" />
             </button>
             
             <div className="flex items-center gap-3 pl-4 border-l border-white/10">
-                <button 
-                    onClick={() => setView('profile')}
-                    className="flex items-center gap-3 group text-left"
-                >
+                <button onClick={() => setView('profile')} className="flex items-center gap-3 group text-left">
                     <div className="text-right hidden sm:block">
                         <p className="text-sm text-white font-medium group-hover:text-blue-400 transition-colors">
                             {user.full_name || 'My Profile'}
                         </p>
                         <p className="text-[10px] text-slate-500 uppercase tracking-widest">
-                            {user.is_premium ? 'Premium Pro' : 'Free Tier'}
+                            {user.credits_left} Credits Left
                         </p>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 overflow-hidden group-hover:border-blue-500/50 transition-all">
@@ -181,10 +165,7 @@ function MainLayout() {
                     </div>
                 </button>
 
-                <button 
-                    onClick={logout}
-                    className="p-2 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-colors"
-                >
+                <button onClick={logout} className="p-2 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-colors">
                     <LogOut className="w-5 h-5" />
                 </button>
             </div>
@@ -193,115 +174,34 @@ function MainLayout() {
       </header>
 
       <div className="pt-24 pb-12">
-        {view === 'dashboard' && (
-          <BlogGenerator initialJobId={selectedJobId} onReset={() => setSelectedJobId(null)} />
-        )}
-        {view === 'history' && (
-          <BlogHistory onSelect={handleViewHistoryItem} />
-        )}
-        {view === 'profile' && (
-          <ProfilePage onBack={() => setView('dashboard')} />
-        )}
-        {view === 'admin' && (
-          <AdminDashboard onBack={() => setView('dashboard')} />
-        )}
+        {view === 'dashboard' && <BlogGenerator initialJobId={selectedJobId} onReset={() => setSelectedJobId(null)} />}
+        {view === 'history' && <BlogHistory onSelect={handleViewHistoryItem} />}
+        {view === 'profile' && <ProfilePage onBack={() => setView('dashboard')} />}
+        {view === 'admin' && <AdminDashboard onBack={() => setView('dashboard')} />}
       </div>
 
-      {/* Pricing Modal */}
       <AnimatePresence>
         {isPricingOpen && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="w-full max-w-4xl"
-            >
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="w-full max-w-4xl">
               <GlassCard className="relative overflow-hidden p-8">
-                <button 
-                  onClick={() => setIsPricingOpen(false)}
-                  className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-lg"
-                >
+                <button onClick={() => setIsPricingOpen(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-lg">
                   <X className="w-6 h-6" />
                 </button>
-
                 <div className="text-center mb-12">
-                  <h2 className="text-3xl font-black text-white mb-2">Refuel Your Creativity</h2>
-                  <p className="text-slate-400">Choose a credit pack to continue generating high-impact blogs.</p>
+                  <h2 className="text-3xl font-black text-white mb-2">Get More Credits</h2>
+                  <p className="text-slate-400">Choose a pack to keep generating high-quality blogs.</p>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Basic Plan */}
-                  <div className="relative group">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                    <div className="relative bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 text-left h-full flex flex-col">
-                      <div className="mb-8">
-                        <h3 className="text-xl font-bold text-white mb-2">Essential Pack</h3>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-4xl font-black text-white">₹499</span>
-                          <span className="text-slate-500 text-sm">/ one-time</span>
-                        </div>
-                      </div>
-                      
-                      <ul className="space-y-4 mb-12 flex-grow">
-                        <li className="flex items-center gap-3 text-slate-300">
-                          <div className="p-1 bg-blue-500/20 rounded-full text-blue-400"><Check className="w-4 h-4" /></div>
-                          <span className="font-bold text-white">20 High-Quality Blogs</span>
-                        </li>
-                        <li className="flex items-center gap-3 text-slate-400 text-sm">
-                          <Check className="w-4 h-4 text-slate-600" />
-                          Deep Web Research
-                        </li>
-                        <li className="flex items-center gap-3 text-slate-400 text-sm">
-                          <Check className="w-4 h-4 text-slate-600" />
-                          AI Image Generation
-                        </li>
-                      </ul>
-
-                      <button 
-                        onClick={() => handleUpgrade('basic')}
-                        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95"
-                      >
-                        Buy 20 Credits
-                      </button>
-                    </div>
+                  <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 flex flex-col">
+                    <h3 className="text-xl font-bold text-white mb-2">Essential Pack</h3>
+                    <div className="text-4xl font-black text-white mb-8">₹499 <span className="text-slate-500 text-sm">/ 20 Credits</span></div>
+                    <button onClick={() => handleUpgrade('basic')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all">Buy 20 Credits</button>
                   </div>
-
-                  {/* Pro Plan */}
-                  <div className="relative group">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl blur opacity-40 group-hover:opacity-60 transition duration-500"></div>
-                    <div className="relative bg-[#0a0a0a] border border-blue-500/30 rounded-3xl p-8 text-left h-full flex flex-col">
-                      <div className="absolute top-4 right-8 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Best Value</div>
-                      <div className="mb-8">
-                        <h3 className="text-xl font-bold text-white mb-2">Ultimate Pack</h3>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-4xl font-black text-white">₹999</span>
-                          <span className="text-slate-500 text-sm">/ one-time</span>
-                        </div>
-                      </div>
-                      
-                      <ul className="space-y-4 mb-12 flex-grow">
-                        <li className="flex items-center gap-3 text-slate-300">
-                          <div className="p-1 bg-blue-500/20 rounded-full text-blue-400"><Check className="w-4 h-4" /></div>
-                          <span className="font-bold text-white">50 High-Quality Blogs</span>
-                        </li>
-                        <li className="flex items-center gap-3 text-slate-300">
-                          <div className="p-1 bg-blue-500/20 rounded-full text-blue-400"><Check className="w-4 h-4" /></div>
-                          <span>Priority Processing</span>
-                        </li>
-                        <li className="flex items-center gap-3 text-slate-400 text-sm">
-                          <Check className="w-4 h-4 text-slate-600" />
-                          Full Visual Gallery
-                        </li>
-                      </ul>
-
-                      <button 
-                        onClick={() => handleUpgrade('pro')}
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95"
-                      >
-                        Buy 50 Credits
-                      </button>
-                    </div>
+                  <div className="bg-[#0a0a0a] border border-blue-500/30 rounded-3xl p-8 flex flex-col">
+                    <h3 className="text-xl font-bold text-white mb-2">Ultimate Pack</h3>
+                    <div className="text-4xl font-black text-white mb-8">₹999 <span className="text-slate-500 text-sm">/ 50 Credits</span></div>
+                    <button onClick={() => handleUpgrade('pro')} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-2xl transition-all">Buy 50 Credits</button>
                   </div>
                 </div>
               </GlassCard>
@@ -309,7 +209,6 @@ function MainLayout() {
           </div>
         )}
       </AnimatePresence>
-
       <SupportModal isOpen={isSupportOpen} onClose={() => setIsSupportOpen(false)} />
     </>
   );

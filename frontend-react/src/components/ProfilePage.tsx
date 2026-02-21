@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth, getApiUrl } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
-import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap } from 'lucide-react';
+import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins } from 'lucide-react';
 import axios from 'axios';
 
 export function ProfilePage({ onBack }: { onBack: () => void }) {
@@ -122,19 +122,12 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
             <h3 className="text-xl font-bold text-white line-clamp-1">{user.full_name || 'Creator'}</h3>
             <p className="text-slate-500 text-sm mb-6">{user.profession || 'Blog Writer'}</p>
 
-            <div className="flex flex-col gap-2">
-                {user.is_premium ? (
-                    <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 p-3 rounded-xl">
-                        <div className="flex items-center justify-center gap-2 text-purple-400 font-bold text-sm uppercase tracking-widest">
-                            <Zap className="w-4 h-4" /> Premium Member
-                        </div>
-                    </div>
-                ) : (
-                    <div className="bg-white/5 border border-white/10 p-3 rounded-xl">
-                        <div className="text-slate-400 text-xs font-semibold mb-1">FREE ACCOUNT</div>
-                        <div className="text-white font-bold">{user.credits_left} Blogs Left</div>
-                    </div>
-                )}
+            <div className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-2 text-blue-400">
+                    <Coins className="w-4 h-4" />
+                    <span className="text-xs font-bold uppercase">Balance</span>
+                </div>
+                <div className="text-white font-black">{user.credits_left} Credits</div>
             </div>
           </GlassCard>
 

@@ -127,10 +127,9 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Total Users', value: stats?.total_users, icon: Users, color: 'text-blue-400' },
-          { label: 'Premium', value: stats?.premium_users, icon: Zap, color: 'text-purple-400' },
           { label: 'Total Blogs', value: stats?.total_blogs, icon: FileText, color: 'text-green-400' },
           { label: 'Revenue', value: `₹${stats?.estimated_revenue}`, icon: Coins, color: 'text-yellow-400' },
           { label: 'Support', value: stats?.total_feedback, icon: MessageSquare, color: 'text-orange-400' },
@@ -198,7 +197,6 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                 <thead>
                                     <tr className="text-slate-500 text-[10px] uppercase tracking-[0.2em] bg-white/5">
                                         <th className="p-4 font-bold">Creator</th>
-                                        <th className="p-4 font-bold">Account</th>
                                         <th className="p-4 font-bold">Credits</th>
                                         <th className="p-4 font-bold">Joined</th>
                                         <th className="p-4 font-bold text-center">Security</th>
@@ -220,13 +218,6 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                                         <p className="text-[10px] text-slate-500">{u.email}</p>
                                                     </div>
                                                 </div>
-                                            </td>
-                                            <td className="p-4">
-                                                {u.is_premium ? (
-                                                    <span className="px-2 py-1 rounded-md bg-purple-500/10 text-purple-400 text-[9px] font-black uppercase border border-purple-500/20 tracking-widest">Premium</span>
-                                                ) : (
-                                                    <span className="px-2 py-1 rounded-md bg-white/5 text-slate-500 text-[9px] font-black uppercase border border-white/10 tracking-widest">Free</span>
-                                                )}
                                             </td>
                                             <td className="p-4">
                                                 <button 
