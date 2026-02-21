@@ -238,7 +238,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                                 </button>
                                             </td>
                                             <td className="p-4 text-xs text-slate-500 font-medium">
-                                                {new Date(u.created_at).toLocaleDateString()}
+                                                {new Date(u.created_at + "Z").toLocaleDateString('en-IN')}
                                             </td>
                                             <td className="p-4 text-center">
                                                 <button 
@@ -289,7 +289,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                             </span>
                                         </td>
                                         <td className="p-4 text-[10px] text-slate-500 font-mono text-right pr-8">
-                                            {new Date(b.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                            {new Date(b.created_at + "Z").toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
                                         </td>
                                     </tr>
                                 ))}
@@ -318,7 +318,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">{f.name} • {f.email}</p>
                                             </div>
                                         </div>
-                                        <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{new Date(f.created_at).toLocaleDateString()}</p>
+                                        <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{new Date(f.created_at + "Z").toLocaleDateString('en-IN')}</p>
                                     </div>
                                     <div className="bg-black/40 p-5 rounded-2xl text-sm text-slate-300 border border-white/5 leading-relaxed italic relative">
                                         "{f.message}"

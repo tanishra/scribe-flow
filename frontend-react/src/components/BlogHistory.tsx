@@ -92,7 +92,7 @@ export function BlogHistory({ onSelect }: { onSelect: (job_id: string) => void }
                         <span>•</span>
                         <span className="flex items-center gap-1">
                             <FileText className="w-3 h-3" />
-                            ID: {blog.job_id.slice(0, 8)}...
+                            {blog.created_at ? new Date(blog.created_at + "Z").toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : `ID: ${blog.job_id.slice(0, 8)}...`}
                         </span>
                     </div>
                 </div>
