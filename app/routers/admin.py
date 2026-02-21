@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select, func, delete
 from typing import List, Optional, Dict
 from datetime import datetime, timedelta
@@ -42,6 +42,23 @@ async def get_growth_data(session: Session = Depends(get_session), _ = Depends(c
 @router.get("/users", response_model=List[User])
 async def list_users(session: Session = Depends(get_session), _ = Depends(check_admin)):
     return session.exec(select(User).order_by(User.created_at.desc())).all()
+
+@router.post("/users/{user_id}/credits")
+async def update_user_credits(
+    user_id: int, 
+    credits: int = Query(...), 
+    session: Session = Depends(get_session), 
+    _ = Depends(check_admin)
+):
+    """Admin only: Manually update a user's credit balance."""
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.credits_left = credits
+    session.add(user)
+    session.commit()
+    return {"status": "success", "message": f"Credits updated to {credits}"}
 
 @router.delete("/users/{user_id}")
 async def toggle_user_status(user_id: int, session: Session = Depends(get_session), _ = Depends(check_admin)):
