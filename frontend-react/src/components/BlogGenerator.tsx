@@ -242,7 +242,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     );
   }
 
-  if (status?.status === "queued" || status?.status === "processing") {
+  if (status?.status === "queued" || status?.status === "processing" || (jobId && !status)) {
     return <LoadingScreen />;
   }
 
