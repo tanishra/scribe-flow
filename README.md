@@ -8,7 +8,10 @@ A production-grade, multi-agent content engine designed to transform a single to
 Writing a high-quality technical blog typically takes hours of research and drafting. ScribeFlow reduces this to **under 2 minutes** while maintaining:
 *   **Near to Zero Hallucination:** Strict grounding in real-time web data via Tavily Search.
 *   **Secure Authentication:** Native support for Google OAuth and Passwordless Email OTP verification.
-*   **Integrated Payments:** Built-in **Razorpay** support for UPI and Card payments, featuring a 3-blog free tier and Premium Pro plan.
+*   **Integrated Payments:** Built-in **Razorpay** support for UPI and Card payments, featuring a unified credit-based system for all users.
+*   **One-Click Publishing:** Direct, live distribution to platforms like **Dev.to** with automatic canonical link protection and absolute image resolution.
+*   **SEO & Brand Voice:** Automatic generation of meta descriptions and keywords, with customizable writing tones (Professional, Witty, Technical, etc.).
+*   **In-App Editor:** A full-screen Markdown editor to refine AI-generated content before final distribution.
 *   **Data Persistence:** SQL-backed history allows users to revisit, preview, and download previously generated blogs anytime.
 *   **Visual Engagement:** Automatically generates custom diagrams and images using Gemini 2.0 Flash.
 
