@@ -8,21 +8,18 @@ class User(SQLModel, table=True):
     google_id: Optional[str] = Field(default=None, index=True)
     full_name: Optional[str] = Field(default=None)
     
-    # New Profile Fields
     gender: Optional[str] = Field(default=None)
     profession: Optional[str] = Field(default=None)
     source: Optional[str] = Field(default=None) 
     bio: Optional[str] = Field(default=None)
     profile_image: Optional[str] = Field(default=None)
     
-    # Onboarding Status
     onboarding_completed: bool = Field(default=False)
+    is_admin: bool = Field(default=False) # NEW: Admin flag
     
-    # Auth fields
     is_active: bool = Field(default=True)
     password_hash: Optional[str] = Field(default=None)
     
-    # Credits & Plan
     credits_left: int = Field(default=3) 
     is_premium: bool = Field(default=False)
     
@@ -38,7 +35,6 @@ class Blog(SQLModel, table=True):
     status: str = "queued" 
     download_url: Optional[str] = None
     
-    # Serialized Data
     plan_json: Optional[str] = Field(default=None)
     evidence_json: Optional[str] = Field(default=None)
     images_json: Optional[str] = Field(default=None)
@@ -46,6 +42,14 @@ class Blog(SQLModel, table=True):
     error: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class Feedback(SQLModel, table=True): # NEW: Save feedback to DB
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    email: str
+    subject: str
+    message: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class OTP(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

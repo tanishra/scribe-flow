@@ -33,5 +33,6 @@ class UserOut(BaseModel):
     bio: Optional[str] = None
     profile_image: Optional[str] = None
     onboarding_completed: bool
+    is_admin: bool # ADDED
     credits_left: int
     is_premium: bool

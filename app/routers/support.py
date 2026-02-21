@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session
 from pydantic import BaseModel, EmailStr
 from ..services.auth_service import SMTP_USER, SMTP_PASSWORD, SMTP_SERVER, SMTP_PORT
-from ..dependencies import get_current_user
-from ..schemas.db_models import User
+from ..database import get_session
+from ..schemas.db_models import Feedback
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -16,32 +17,34 @@ class FeedbackRequest(BaseModel):
     message: str
 
 @router.post("/send")
-async def send_feedback(req: FeedbackRequest):
-    """Sends user feedback to tanishrajput9@gmail.com"""
+async def send_feedback(req: FeedbackRequest, session: Session = Depends(get_session)):
+    """Sends user feedback to admin and saves to DB"""
+    # 1. Save to DB
+    new_feedback = Feedback(
+        name=req.name,
+        email=req.email,
+        subject=req.subject,
+        message=req.message
+    )
+    session.add(new_feedback)
+    session.commit()
+
+    # 2. Send Email
     if not SMTP_USER or not SMTP_PASSWORD:
-        raise HTTPException(status_code=500, detail="Mail server not configured.")
+        return {"status": "success", "message": "Saved to DB (Email skipped)"}
 
     try:
         msg = MIMEMultipart()
         msg['From'] = SMTP_USER
         msg['To'] = "tanishrajput9@gmail.com"
         msg['Subject'] = f"ScribeFlow Feedback: {req.subject}"
-
-        body = f"""
-        <h3>New Support Message from {req.name}</h3>
-        <p><strong>User Email:</strong> {req.email}</p>
-        <p><strong>Subject:</strong> {req.subject}</p>
-        <hr/>
-        <p><strong>Message:</strong></p>
-        <p>{req.message}</p>
-        """
-        msg.attach(MIMEText(body, 'html'))
-
+        body = f"Support Message from {req.name} ({req.email})\n\n{req.message}"
+        msg.attach(MIMEText(body, 'plain'))
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SMTP_USER, SMTP_PASSWORD)
             server.sendmail(SMTP_USER, "tanishrajput9@gmail.com", msg.as_string())
+    except:
+        pass # Still return success if DB save worked
         
-        return {"status": "success", "message": "Feedback sent successfully!"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to send feedback: {str(e)}")
+    return {"status": "success", "message": "Feedback received!"}

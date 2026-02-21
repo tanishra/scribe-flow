@@ -17,7 +17,7 @@ from slowapi.errors import RateLimitExceeded
 from .main import run
 from .services.logging_service import logger
 from .database import create_db_and_tables, get_session
-from .routers import auth, payment, support
+from .routers import auth, payment, support, admin
 from .dependencies import get_current_user
 from .schemas.db_models import User, Blog
 from .schemas.models import Plan, EvidenceItem
@@ -171,6 +171,7 @@ api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth.router)
 api_router.include_router(payment.router)
 api_router.include_router(support.router)
+api_router.include_router(admin.router)
 
 @api_router.post("/generate", response_model=Dict[str, str], status_code=202)
 @limiter.limit("5/minute")
