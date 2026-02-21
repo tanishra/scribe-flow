@@ -14,22 +14,26 @@ class OrchestratorNode:
         planner = self.llm.with_structured_output(Plan)
         evidence = state.get("evidence", [])
         mode = state.get("mode", "closed_book")
+        requested_tone = state.get("user_tone", "Professional")
 
-        logger.info(f"Planning blog for topic with {len(evidence)} evidence items in {mode} mode.")
+        logger.info(f"Planning blog for topic with {len(evidence)} evidence items in {mode} mode. Tone: {requested_tone}")
 
         plan = planner.invoke(
             [
                 SystemMessage(content=ORCHESTRATION_PROMPT),
                 HumanMessage(
                     content=(
-                        f"Topic: {state['topic']}"
-                        f"Mode: {mode}"
+                        f"Topic: {state['topic']}\n"
+                        f"Requested Tone: {requested_tone}\n"
+                        f"Mode: {mode}\n"
                         f"Evidence (ONLY use for fresh claims; may be empty):"
                         f"{[e.model_dump() for e in evidence][:16]}"
                     )
                 ),
             ]
         )
+        # Ensure the plan object carries the requested tone forward
+        plan.tone = requested_tone
         logger.info(f"Plan generated: '{plan.blog_title}' with {len(plan.tasks)} tasks.")
         return {"plan": plan}
 
