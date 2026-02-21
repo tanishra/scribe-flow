@@ -11,6 +11,7 @@ interface User {
   bio?: string;
   profile_image?: string;
   onboarding_completed: boolean;
+  is_admin: boolean;
   credits_left: number;
   is_premium: boolean;
 }
