@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "http://13.61.4.241:8000/api/v1/:path*"
+    },
+    {
+      "source": "/static/:path*",
+      "destination": "http://13.61.4.241:8000/static/:path*"
+    }
+  ]
+}
