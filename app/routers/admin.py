@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select, func, delete
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime, timedelta
 from ..database import get_session
 from ..schemas.db_models import User, Blog, Feedback
@@ -15,14 +15,11 @@ def check_admin(current_user: User = Depends(get_current_user)):
 
 @router.get("/stats")
 async def get_stats(session: Session = Depends(get_session), _ = Depends(check_admin)):
-    """Overview statistics for the dashboard."""
     total_users = session.exec(select(func.count(User.id))).one()
     total_blogs = session.exec(select(func.count(Blog.id))).one()
     total_feedback = session.exec(select(func.count(Feedback.id))).one()
     premium_users = session.exec(select(func.count(User.id)).where(User.is_premium == True)).one()
     
-    # Calculate revenue (Approximate based on Premium users)
-    # 499 for basic, 999 for pro - let's assume average 600 per premium user for stats
     estimated_revenue = premium_users * 499 
 
     return {
@@ -35,7 +32,6 @@ async def get_stats(session: Session = Depends(get_session), _ = Depends(check_a
 
 @router.get("/analytics/growth")
 async def get_growth_data(session: Session = Depends(get_session), _ = Depends(check_admin)):
-    """Returns data for a growth chart (last 7 days)."""
     growth = []
     for i in range(6, -1, -1):
         date = (datetime.utcnow() - timedelta(days=i)).date()
@@ -48,32 +44,33 @@ async def list_users(session: Session = Depends(get_session), _ = Depends(check_
     return session.exec(select(User).order_by(User.created_at.desc())).all()
 
 @router.delete("/users/{user_id}")
-async def delete_user(user_id: int, session: Session = Depends(get_session), _ = Depends(check_admin)):
-    """Hard delete a user and all their blogs."""
+async def toggle_user_status(user_id: int, session: Session = Depends(get_session), _ = Depends(check_admin)):
+    """Soft Delete: Mark user as inactive instead of deleting history."""
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Delete their blogs first
-    session.exec(delete(Blog).where(Blog.user_id == user_id))
-    session.delete(user)
-    session.commit()
-    return {"status": "success", "message": "User and associated data deleted."}
-
-@router.post("/users/{user_id}/credits")
-async def update_user_credits(user_id: int, credits: int, session: Session = Depends(get_session), _ = Depends(check_admin)):
-    user = session.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    user.credits_left = credits
+    # Toggle active status
+    user.is_active = not user.is_active
     session.add(user)
     session.commit()
-    return {"status": "success"}
+    status = "Deactivated" if not user.is_active else "Activated"
+    return {"status": "success", "message": f"User account {status}."}
 
 @router.get("/blogs")
 async def list_all_blogs(session: Session = Depends(get_session), _ = Depends(check_admin)):
-    """View every blog generated on the platform."""
-    return session.exec(select(Blog).order_by(Blog.created_at.desc())).all()
+    """Join Blog and User tables to show who created what."""
+    statement = select(Blog, User.full_name, User.email).join(User, Blog.user_id == User.id).order_by(Blog.created_at.desc())
+    results = session.exec(statement).all()
+    
+    blogs_with_users = []
+    for blog, name, email in results:
+        blog_dict = blog.model_dump()
+        blog_dict["user_name"] = name or "Anonymous"
+        blog_dict["user_email"] = email
+        blogs_with_users.append(blog_dict)
+        
+    return blogs_with_users
 
 @router.get("/feedback", response_model=List[Feedback])
 async def list_feedback(session: Session = Depends(get_session), _ = Depends(check_admin)):
