@@ -6,7 +6,7 @@ import { ProfilePage } from "./components/ProfilePage";
 import { BlogHistory } from "./components/BlogHistory";
 import { SupportModal } from "./components/SupportModal";
 import { AdminDashboard } from "./components/AdminDashboard";
-import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { AuthProvider, useAuth, getApiUrl } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck } from "lucide-react";
 import { useState } from "react";
@@ -23,9 +23,10 @@ function MainLayout() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
 
+  const apiUrl = getApiUrl();
+
   const handleUpgrade = async () => {
     try {
-        const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "" : 'http://localhost:8000');
         // 1. Create Order on Backend
         const res = await axios.post(`${apiUrl}/api/v1/payment/create-order`);
         const order = res.data;
@@ -92,8 +93,6 @@ function MainLayout() {
   if (!user.onboarding_completed) {
     return <OnboardingWizard />;
   }
-
-  const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "" : 'http://localhost:8000');
 
   return (
     <>

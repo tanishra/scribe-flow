@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, MessageSquare, Loader2, CheckCircle } from 'lucide-react';
 import { GlassCard } from './GlassCard';
 import axios from 'axios';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, getApiUrl } from '../contexts/AuthContext';
 
 export function SupportModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { user } = useAuth();
@@ -16,7 +16,7 @@ export function SupportModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     message: ''
   });
 
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const apiUrl = getApiUrl();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

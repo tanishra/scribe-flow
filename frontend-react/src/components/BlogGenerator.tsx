@@ -6,7 +6,7 @@ import { Send, Download, CheckCircle, AlertCircle, RefreshCw, Archive } from "lu
 import { GlassCard } from "./GlassCard";
 import { LoadingScreen } from "./LoadingScreen";
 import { MarkdownRenderer } from "./MarkdownRenderer";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth, getApiUrl } from "../contexts/AuthContext";
 
 interface JobStatus {
   job_id: string;
@@ -34,7 +34,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   const [isBundling, setIsBundling] = useState(false);
 
   const { refreshUser } = useAuth();
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const apiUrl = getApiUrl();
 
   useEffect(() => {
     if (initialJobId) {
@@ -349,7 +349,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                       {status.images.map((imgUrl: string, i: number) => (
                         <div key={i} className="group relative overflow-hidden rounded-2xl border border-white/10 bg-black/20">
                           <img 
-                            src={`${apiUrl}${imgUrl}`} 
+                            src={`${apiUrl}${imgUrl}?t=${Date.now()}`} 
                             alt={`Generated visual ${i+1}`}
                             className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                           />
@@ -387,7 +387,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
 
 function FetchAndRenderMarkdown({ url }: { url: string }) {
   const [content, setContent] = useState<string | null>(null);
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const apiUrl = getApiUrl();
 
   useEffect(() => {
     axios.get(`${apiUrl}${url}`).then(res => setContent(res.data));

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, getApiUrl } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
 import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap } from 'lucide-react';
 import axios from 'axios';
@@ -7,7 +7,8 @@ import axios from 'axios';
 export function ProfilePage({ onBack }: { onBack: () => void }) {
   const { user, refreshUser } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  
+  const apiUrl = getApiUrl();
   
   const [data, setData] = useState({
     full_name: '',
@@ -86,7 +87,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500/30 bg-black/40 mb-4 mx-auto relative">
                 {user.profile_image ? (
                   <img 
-                    src={`${user.profile_image}?t=${Date.now()}`} 
+                    src={`${apiUrl}${user.profile_image}?t=${Date.now()}`} 
                     alt="Profile" 
                     className="w-full h-full object-cover"
                   />

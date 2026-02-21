@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Users, FileText, MessageSquare, ShieldCheck, Zap, Mail, Calendar, Search, ArrowLeft, MoreVertical } from 'lucide-react';
 import { GlassCard } from './GlassCard';
+import { getApiUrl } from '../contexts/AuthContext';
 
 interface UserData {
   id: number;
@@ -39,7 +40,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
   const [activeTab, setActiveTab] = useState<'users' | 'feedback'>('users');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  const apiUrl = getApiUrl();
 
   useEffect(() => {
     fetchData();

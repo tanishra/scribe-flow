@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Clock, CheckCircle, XCircle, Loader2, ExternalLink, FileText } from 'lucide-react';
 import { GlassCard } from './GlassCard';
+import { getApiUrl } from '../contexts/AuthContext';
 
 interface BlogHistoryItem {
   job_id: string;
@@ -16,13 +17,14 @@ export function BlogHistory({ onSelect }: { onSelect: (job_id: string) => void }
   const [blogs, setBlogs] = useState<BlogHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const apiUrl = getApiUrl();
+
   useEffect(() => {
     fetchHistory();
   }, []);
 
   const fetchHistory = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
       const res = await axios.get(`${apiUrl}/api/v1/history`);
       setBlogs(res.data);
     } catch (e) {
