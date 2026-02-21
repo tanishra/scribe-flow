@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth, getApiUrl } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
 import { Mail, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 
 export function LoginPage() {
@@ -46,19 +46,24 @@ export function LoginPage() {
     }
   };
 
-  const handleGoogleSuccess = async (response: any) => {
-    setLoading(true);
-    try {
-      const res = await axios.post(`${apiUrl}/api/v1/auth/google-login`, {
-        token: response.credential
-      });
-      login(res.data.access_token);
-    } catch (err) {
-      setError('Google Login failed.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // CUSTOM GOOGLE LOGIN HOOK
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      try {
+        // Use the access_token from the response
+        const res = await axios.post(`${apiUrl}/api/v1/auth/google-login`, {
+          token: tokenResponse.access_token
+        });
+        login(res.data.access_token);
+      } catch (err) {
+        setError('Google Login failed.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => setError('Google Sign-In failed'),
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -79,18 +84,15 @@ export function LoginPage() {
 
         {step === 'email' ? (
           <div className="space-y-6">
-            {/* Google Login at the TOP */}
-            <div className="flex justify-center bg-white/5 p-4 rounded-2xl border border-white/10 hover:border-white/20 transition-all">
-              <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setError('Google Sign-In failed')}
-                theme="outline" // Removed white background
-                shape="rectangular"
-                size="large"
-                width="100%"
-                text="signin_with"
-              />
-            </div>
+            {/* 100% CUSTOM GOOGLE BUTTON - NO WHITE BACKGROUND */}
+            <button
+              onClick={() => googleLogin()}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white font-semibold py-3.5 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
+            >
+              <img src="https://www.gstatic.com/images/branding/googleg/svg/google_g_logo.svg" className="w-5 h-5" alt="Google" />
+              <span>Continue with Google</span>
+            </button>
 
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
