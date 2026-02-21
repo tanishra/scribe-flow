@@ -78,46 +78,50 @@ export function LoginPage() {
         )}
 
         {step === 'email' ? (
-          <form onSubmit={handleSendOTP} className="space-y-4">
-            <div className="space-y-2 text-left">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
-                <input
-                  required
-                  type="email"
-                  placeholder="name@example.com"
-                  className="w-full bg-black/20 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95 disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continue'}
-              <ArrowRight className="w-5 h-5" />
-            </button>
-
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
-              <div className="relative flex justify-center text-xs uppercase"><span className="bg-[#0a0a0a] px-2 text-slate-500 font-bold tracking-widest">Or continue with</span></div>
-            </div>
-
-            <div className="flex justify-center">
+          <div className="space-y-6">
+            {/* Google Login at the TOP */}
+            <div className="flex justify-center bg-white/5 p-4 rounded-2xl border border-white/10 hover:border-white/20 transition-all">
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={() => setError('Google Sign-In failed')}
-                theme="filled_black"
-                shape="pill"
+                theme="outline" // Removed white background
+                shape="rectangular"
                 size="large"
                 width="100%"
+                text="signin_with"
               />
             </div>
-          </form>
+
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
+              <div className="relative flex justify-center text-xs uppercase"><span className="bg-[#0a0a0a] px-4 text-slate-500 font-bold tracking-widest">Or login with Email</span></div>
+            </div>
+
+            <form onSubmit={handleSendOTP} className="space-y-4">
+              <div className="space-y-2 text-left">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
+                  <input
+                    required
+                    type="email"
+                    placeholder="name@example.com"
+                    className="w-full bg-black/20 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95 disabled:opacity-50"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continue with OTP'}
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            </form>
+          </div>
         ) : (
           <form onSubmit={handleVerifyOTP} className="space-y-4">
             <div className="space-y-2 text-left">
