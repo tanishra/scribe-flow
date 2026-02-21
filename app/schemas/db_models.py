@@ -23,6 +23,9 @@ class User(SQLModel, table=True):
     credits_left: int = Field(default=3) 
     is_premium: bool = Field(default=False)
     
+    # Integrations
+    devto_api_key: Optional[str] = Field(default=None) # NEW
+    
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -32,7 +35,7 @@ class Blog(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.id", index=True)
     topic: str
     title: Optional[str] = None
-    tone: Optional[str] = Field(default="Professional") # NEW
+    tone: Optional[str] = Field(default="Professional")
     
     status: str = "queued" 
     download_url: Optional[str] = None
@@ -42,8 +45,8 @@ class Blog(SQLModel, table=True):
     images_json: Optional[str] = Field(default=None)
     
     # SEO Fields
-    meta_description: Optional[str] = Field(default=None) # NEW
-    keywords: Optional[str] = Field(default=None) # NEW
+    meta_description: Optional[str] = Field(default=None)
+    keywords: Optional[str] = Field(default=None)
     
     error: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

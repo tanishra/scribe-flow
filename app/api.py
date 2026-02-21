@@ -17,7 +17,7 @@ from slowapi.errors import RateLimitExceeded
 from .main import run
 from .services.logging_service import logger
 from .database import create_db_and_tables, get_session
-from .routers import auth, payment, support, admin
+from .routers import auth, payment, support, admin, publish
 from .dependencies import get_current_user
 from .schemas.db_models import User, Blog
 from .schemas.models import Plan, EvidenceItem
