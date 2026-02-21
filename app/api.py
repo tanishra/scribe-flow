@@ -173,6 +173,7 @@ api_router.include_router(auth.router)
 api_router.include_router(payment.router)
 api_router.include_router(support.router)
 api_router.include_router(admin.router)
+api_router.include_router(publish.router)
 
 @api_router.post("/generate", response_model=Dict[str, str], status_code=202)
 @limiter.limit("5/minute")

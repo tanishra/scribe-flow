@@ -6,7 +6,7 @@ from .services.logging_service import logger
 async def run(topic: str, tone: str = "Professional"):
     """
     Main entry point for the Blog Generation Agent.
-    Corrected to run the workflow exactly ONCE.
+    Runs the workflow exactly ONCE and extracts full state.
     """
     logger.info("==================================================")
     logger.info("       BLOG WRITER PRO - STARTING WORKFLOW        ")
@@ -24,12 +24,16 @@ async def run(topic: str, tone: str = "Professional"):
     }
     
     try:
-        # Run the workflow exactly ONCE and get the final state
+        # ainvoke returns the FULL final state dictionary
         final_state = await app.ainvoke(initial_state)
         
+        # Log evidence count for debugging
+        evidence = final_state.get("evidence", [])
+        logger.info(f"Final state captured with {len(evidence)} evidence items.")
+
         final_output = {
             "plan": final_state.get("plan"),
-            "evidence": final_state.get("evidence", []),
+            "evidence": evidence,
             "image_specs": final_state.get("image_specs", []),
             "seo": final_state.get("seo", {})
         }

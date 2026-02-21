@@ -22,6 +22,7 @@ class UserProfileUpdate(BaseModel):
     source: Optional[str] = None
     bio: Optional[str] = None
     onboarding_completed: Optional[bool] = None
+    devto_api_key: Optional[str] = None # NEW
 
 class UserOut(BaseModel):
     id: int
@@ -33,6 +34,7 @@ class UserOut(BaseModel):
     bio: Optional[str] = None
     profile_image: Optional[str] = None
     onboarding_completed: bool
-    is_admin: bool # ADDED
+    is_admin: bool
     credits_left: int
     is_premium: bool
+    devto_api_key: Optional[str] = None # NEW
