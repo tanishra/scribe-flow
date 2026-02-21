@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
     Send, Download, CheckCircle, AlertCircle, 
     RefreshCw, Archive, Edit3, Save, Share2, 
-    ChevronDown, Sparkles, Search as SearchIcon, Globe 
+    ChevronDown, Sparkles, Search as SearchIcon, Globe, X, Loader2
 } from "lucide-react";
 import { GlassCard } from "./GlassCard";
 import { LoadingScreen } from "./LoadingScreen";
