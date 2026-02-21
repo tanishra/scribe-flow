@@ -64,7 +64,7 @@ async def publish_to_devto(
     payload = {
         "article": {
             "title": db_blog.title,
-            "published": False, # Save as Draft
+            "published": True, # Publish LIVE immediately
             "body_markdown": content,
             "description": db_blog.meta_description or "",
             "tags": clean_tags[:4], # Dev.to limit is 4 tags
