@@ -2,7 +2,7 @@ import uuid
 import json
 import os
 from typing import Dict, Optional, List, Any
-from fastapi import FastAPI, BackgroundTasks, HTTPException, APIRouter, Depends, Request
+from fastapi import FastAPI, BackgroundTasks, HTTPException, APIRouter, Depends, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -77,7 +77,11 @@ jobs_db: Dict[str, Dict] = {}
 
 class BlogRequest(BaseModel):
     topic: str = Field(..., description="The subject of the blog to be generated.")
+    tone: Optional[str] = Field("Professional", description="The tone/style of the blog.")
     as_of: Optional[str] = Field(None, description="Optional date context for news-based blogs.")
+
+class UpdateBlogRequest(BaseModel):
+    content: str = Field(..., description="The updated markdown content.")
 
 class JobStatusResponse(BaseModel):
     job_id: str
@@ -88,10 +92,13 @@ class JobStatusResponse(BaseModel):
     plan: Optional[Any] = None
     evidence: Optional[List[Any]] = None
     error: Optional[str] = None
+    # SEO Fields
+    meta_description: Optional[str] = None
+    keywords: Optional[str] = None
 
 # --- Background Task ---
 
-async def generate_blog_task(job_id: str, topic: str):
+async def generate_blog_task(job_id: str, topic: str, tone: str):
     """Background worker to run the LangGraph workflow."""
     logger.info(f"Background task started for Job ID: {job_id}")
     try:
@@ -104,13 +111,14 @@ async def generate_blog_task(job_id: str, topic: str):
                 session.add(db_blog)
                 session.commit()
 
-        # Run the main generation logic
-        result = await run(topic)
+        # Run the main generation logic with TONE
+        result = await run(topic, tone=tone)
         
         # Extract results
         plan = result.get("plan")
         evidence = result.get("evidence", [])
         image_specs = result.get("image_specs", [])
+        seo_data = result.get("seo", {}) # NEW: Extract SEO data
         
         # Construct Safe URLs
         raw_title = plan.blog_title if plan else "Unknown Title"
@@ -132,6 +140,11 @@ async def generate_blog_task(job_id: str, topic: str):
                 db_blog.plan_json = json.dumps(plan_dict)
                 db_blog.evidence_json = json.dumps(evidence_list)
                 db_blog.images_json = json.dumps(image_urls)
+                
+                # Save SEO Data
+                db_blog.meta_description = seo_data.get("meta_description")
+                db_blog.keywords = seo_data.get("keywords")
+                
                 db_blog.updated_at = datetime.utcnow()
                 session.add(db_blog)
                 session.commit()
@@ -143,7 +156,9 @@ async def generate_blog_task(job_id: str, topic: str):
             "download_url": download_url,
             "images": image_urls,
             "plan": plan_dict,
-            "evidence": evidence_list
+            "evidence": evidence_list,
+            "meta_description": seo_data.get("meta_description"),
+            "keywords": seo_data.get("keywords")
         })
         
         logger.info(f"Job {job_id} completed successfully.")
@@ -195,9 +210,15 @@ async def create_blog_job(
         raise HTTPException(status_code=403, detail="Free tier limit reached. Please upgrade.")
 
     job_id = str(uuid.uuid4())
-    logger.info(f"--- API REQUEST --- User ID: {current_user.id} | Topic: {blog_req.topic}")
+    logger.info(f"--- API REQUEST --- User ID: {current_user.id} | Topic: {blog_req.topic} | Tone: {blog_req.tone}")
     
-    new_blog = Blog(job_id=job_id, user_id=current_user.id, topic=blog_req.topic, status="queued")
+    new_blog = Blog(
+        job_id=job_id, 
+        user_id=current_user.id, 
+        topic=blog_req.topic, 
+        tone=blog_req.tone, # Save Tone
+        status="queued"
+    )
     session.add(new_blog)
     
     if not current_user.is_premium:
@@ -207,7 +228,7 @@ async def create_blog_job(
     session.commit()
     
     jobs_db[job_id] = {"topic": blog_req.topic, "status": "queued"}
-    background_tasks.add_task(generate_blog_task, job_id, blog_req.topic)
+    background_tasks.add_task(generate_blog_task, job_id, blog_req.topic, blog_req.tone)
     
     return {"job_id": job_id}
 
@@ -223,7 +244,9 @@ async def get_job_status(job_id: str, session: Session = Depends(get_session)):
             "images": json.loads(db_blog.images_json) if db_blog.images_json else [],
             "plan": json.loads(db_blog.plan_json) if db_blog.plan_json else None,
             "evidence": json.loads(db_blog.evidence_json) if db_blog.evidence_json else [],
-            "error": db_blog.error
+            "error": db_blog.error,
+            "meta_description": db_blog.meta_description,
+            "keywords": db_blog.keywords
         }
 
     job_data = jobs_db.get(job_id)
@@ -236,7 +259,9 @@ async def get_job_status(job_id: str, session: Session = Depends(get_session)):
             "images": job_data.get("images", []),
             "plan": job_data.get("plan"),
             "evidence": job_data.get("evidence", []),
-            "error": job_data.get("error")
+            "error": job_data.get("error"),
+            "meta_description": job_data.get("meta_description"),
+            "keywords": job_data.get("keywords")
         }
     
     if db_blog:
@@ -252,6 +277,65 @@ async def get_job_status(job_id: str, session: Session = Depends(get_session)):
         }
 
     raise HTTPException(status_code=404, detail="Job not found")
+
+@api_router.patch("/blogs/{job_id}")
+async def update_blog_content(
+    job_id: str, 
+    update_req: UpdateBlogRequest,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """Allows user to edit and save their blog content."""
+    db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+    
+    if not db_blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+        
+    if db_blog.user_id != current_user.id and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this blog")
+
+    # Overwrite the file on disk
+    if db_blog.download_url:
+        # Remove the leading /static/ prefix to get the relative system path
+        relative_path = db_blog.download_url.lstrip("/") 
+        # But wait, download_url is "/static/blogs/..."
+        # And we mounted "outputs" to "/static".
+        # So "/static/blogs/foo.md" maps to "outputs/blogs/foo.md"
+        
+        # Correct path resolution
+        file_path = Path("outputs") / relative_path.replace("static/", "")
+        
+        try:
+            file_path.write_text(update_req.content, encoding="utf-8")
+            return {"status": "success", "message": "Blog updated successfully"}
+        except Exception as e:
+            logger.error(f"Failed to save blog edit: {e}")
+            raise HTTPException(status_code=500, detail="Failed to save changes to file")
+            
+    raise HTTPException(status_code=400, detail="Blog file not found")
+
+@api_router.get("/public/blogs/{job_id}")
+async def get_public_blog(job_id: str, session: Session = Depends(get_session)):
+    """Public read-only access to a blog."""
+    db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+    
+    if not db_blog or db_blog.status != "completed":
+        raise HTTPException(status_code=404, detail="Blog not found or not ready")
+    
+    # Read content from file
+    content = ""
+    if db_blog.download_url:
+        relative_path = db_blog.download_url.lstrip("/").replace("static/", "")
+        file_path = Path("outputs") / relative_path
+        if file_path.exists():
+            content = file_path.read_text(encoding="utf-8")
+
+    return {
+        "title": db_blog.title,
+        "content": content,
+        "meta_description": db_blog.meta_description,
+        "author": "ScribeFlow User" # Keep anonymous for privacy unless we add a setting
+    }
 
 @api_router.get("/history", response_model=List[JobStatusResponse])
 async def get_history(current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):

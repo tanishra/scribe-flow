@@ -1,6 +1,6 @@
 from __future__ import annotations
 import operator
-from typing import TypedDict, List, Annotated, Literal, Optional
+from typing import TypedDict, List, Annotated, Literal, Optional, Dict
 from pydantic import BaseModel, Field
 
 class Task(BaseModel):
@@ -65,8 +65,13 @@ class ImageTask(BaseModel):
     spec: ImageSpec
     topic: str
 
+class SEOData(BaseModel):
+    meta_description: str = Field(..., description="SEO meta description (150-160 chars)")
+    keywords: str = Field(..., description="Comma-separated SEO keywords")
+
 class State(TypedDict):
     topic: str
+    user_tone: str # NEW
     mode: str
     needs_research: bool
     queries: List[str]
@@ -78,4 +83,5 @@ class State(TypedDict):
     image_specs: List[dict]
     # (placeholder, replacement_md, success, task_id)
     image_results: Annotated[List[tuple[str, str, bool, int]], operator.add]
+    seo: Dict[str, str] # NEW
     final: str

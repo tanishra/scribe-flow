@@ -3,7 +3,7 @@ import asyncio
 import json
 from langgraph.types import Send
 from langchain_core.messages import SystemMessage, HumanMessage
-from ..schemas.models import State, GlobalImagePlan, ImageTask, ImageSpec
+from ..schemas.models import State, GlobalImagePlan, ImageTask, ImageSpec, SEOData
 from ..prompts.templates import DECIDE_IMAGES_SYSTEM
 from ..services.llm_service import get_llm
 from ..services.image_service import generate_image_bytes
@@ -29,7 +29,8 @@ class ImageWorkerNode:
                 img_bytes = await generate_image_bytes(spec.prompt)
                 out_path.write_bytes(img_bytes)
                 logger.debug(f"Saved image to {out_path}")
-                replacement_md = f"\n![{spec.alt}](../images/{spec.filename})\n*{spec.caption}*\n"
+                # Use absolute static path for frontend compatibility
+                replacement_md = f"\n![{spec.alt}](/static/images/{spec.filename})\n*{spec.caption}*\n"
                 success = True
             except Exception as e:
                 logger.warning(f"Image generation failed for {spec.filename}: {e}")
@@ -40,7 +41,7 @@ class ImageWorkerNode:
                     f"> **Error:** {e}\n"
                 )
         else:
-            replacement_md = f"\n![{spec.alt}](../images/{spec.filename})\n*{spec.caption}*\n"
+            replacement_md = f"\n![{spec.alt}](/static/images/{spec.filename})\n*{spec.caption}*\n"
             success = True
 
         return {
@@ -64,7 +65,6 @@ class ReducerNode:
         logger.info(f"--- REDUCER: DECIDING IMAGES START (Optimized) ---")
         plan = state["plan"]
         
-        # FAST: Only send the Plan/Tasks to the LLM, not the 3000 words of MD
         tasks_summary = [{"id": t.id, "title": t.title, "goal": t.goal} for t in plan.tasks]
         
         try:
@@ -101,30 +101,43 @@ class ReducerNode:
         ]
 
     async def finalize_blog(self, state: State) -> dict:
-        """Collects results and programmatically places images into the text."""
+        """Collects results, places images, and generates SEO data."""
         logger.info(f"--- REDUCER: FINALIZING BLOG START ---")
         plan = state["plan"]
         sections_map = {task_id: content for task_id, content in state["sections"]}
         image_results = state.get("image_results", [])
 
-        # Programmatically attach images to the end of their respective sections
+        # Place images
         for placeholder, replacement, success, task_id in image_results:
             if task_id in sections_map:
                 logger.debug(f"Attaching {placeholder} to section {task_id}")
                 sections_map[task_id] += f"\n\n{replacement}"
             else:
-                # Fallback: append to bottom of last section
                 if sections_map:
-                    logger.warning(f"Task ID {task_id} not found. Appending to bottom.")
                     last_id = max(sections_map.keys())
                     sections_map[last_id] += f"\n\n{replacement}"
 
-        # Re-merge everything (Correctly OUTSIDE the loop)
         ordered_ids = sorted(sections_map.keys())
         body = "\n\n".join([sections_map[i] for i in ordered_ids]).strip()
         final_md = f"# {plan.blog_title}\n\n{body}\n"
 
-        # Setup paths and save with safe slugified filename
+        # SEO Generation
+        logger.info("Generating SEO metadata...")
+        try:
+            seo_llm = self.llm.with_structured_output(SEOData)
+            seo_result = await asyncio.to_thread(
+                seo_llm.invoke,
+                [
+                    SystemMessage(content="You are an SEO expert. Generate a meta description (150-160 chars) and comma-separated keywords for the following blog post."),
+                    HumanMessage(content=f"Title: {plan.blog_title}\n\nContent Preview: {body[:3000]}"),
+                ]
+            )
+            seo_data = seo_result.model_dump()
+        except Exception as e:
+            logger.error(f"SEO generation failed: {e}")
+            seo_data = {"meta_description": "", "keywords": ""}
+
+        # Save file
         blogs_dir = Path("outputs/blogs")
         blogs_dir.mkdir(parents=True, exist_ok=True)
         safe_name = slugify(plan.blog_title)
@@ -136,4 +149,4 @@ class ReducerNode:
         except Exception as e:
             logger.error(f"Failed to write final blog file: {e}")
 
-        return {"final": final_md}
+        return {"final": final_md, "seo": seo_data}

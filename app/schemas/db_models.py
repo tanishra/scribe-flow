@@ -15,7 +15,7 @@ class User(SQLModel, table=True):
     profile_image: Optional[str] = Field(default=None)
     
     onboarding_completed: bool = Field(default=False)
-    is_admin: bool = Field(default=False) # NEW: Admin flag
+    is_admin: bool = Field(default=False)
     
     is_active: bool = Field(default=True)
     password_hash: Optional[str] = Field(default=None)
@@ -32,6 +32,8 @@ class Blog(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.id", index=True)
     topic: str
     title: Optional[str] = None
+    tone: Optional[str] = Field(default="Professional") # NEW
+    
     status: str = "queued" 
     download_url: Optional[str] = None
     
@@ -39,11 +41,15 @@ class Blog(SQLModel, table=True):
     evidence_json: Optional[str] = Field(default=None)
     images_json: Optional[str] = Field(default=None)
     
+    # SEO Fields
+    meta_description: Optional[str] = Field(default=None) # NEW
+    keywords: Optional[str] = Field(default=None) # NEW
+    
     error: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-class Feedback(SQLModel, table=True): # NEW: Save feedback to DB
+class Feedback(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     email: str
