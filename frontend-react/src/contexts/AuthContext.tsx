@@ -14,6 +14,7 @@ interface User {
   is_admin: boolean;
   credits_left: number;
   is_premium: boolean;
+  devto_api_key?: string;
 }
 
 interface AuthContextType {
