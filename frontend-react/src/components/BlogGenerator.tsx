@@ -314,6 +314,30 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
             </div>
           )}
 
+          {activeTab === "evidence" && (
+            <div className="space-y-6 text-left">
+              <h3 className="text-xl font-bold text-white border-b border-white/10 pb-4">Cited Research</h3>
+              <div className="grid gap-4">
+                {status.evidence?.map((item: any, i: number) => (
+                <div key={i} className="bg-white/5 p-6 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group">
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 font-bold hover:underline block mb-2 text-lg group-hover:text-blue-300">
+                    {item.title}
+                    </a>
+                    <div className="flex gap-3 text-[10px] font-black uppercase tracking-widest text-slate-600 mb-4">
+                    <span>{item.source || "Web"}</span>
+                    <span>•</span>
+                    <span>{item.published_at || "Archive"}</span>
+                    </div>
+                    <p className="text-slate-400 text-sm italic leading-relaxed">"{item.snippet}"</p>
+                </div>
+                ))}
+                {(!status.evidence || status.evidence.length === 0) && (
+                    <div className="py-20 text-center text-slate-500 italic">No research evidence was cited for this article.</div>
+                )}
+              </div>
+            </div>
+          )}
+
           {activeTab === "images" && (
             <div className="space-y-6 text-left">
               <h3 className="text-xl font-bold text-white border-b border-white/10 pb-4">Visual Gallery</h3>
