@@ -221,9 +221,14 @@ async def create_blog_job(
     )
     session.add(new_blog)
     
-    if not current_user.is_premium:
-        current_user.credits_left -= 1
-        session.add(current_user)
+    # Re-fetch user in current session to ensure credit deduction works
+    db_user = session.get(User, current_user.id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not db_user.is_premium:
+        db_user.credits_left -= 1
+        session.add(db_user)
     
     session.commit()
     
