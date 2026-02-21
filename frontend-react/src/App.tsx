@@ -8,8 +8,10 @@ import { SupportModal } from "./components/SupportModal";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { AuthProvider, useAuth, getApiUrl } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck } from "lucide-react";
+import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck, X, Check } from "lucide-react";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { GlassCard } from "./components/GlassCard";
 import axios from "axios";
 
 // ============================================================
@@ -22,13 +24,14 @@ function MainLayout() {
   const [view, setView] = useState<'dashboard' | 'profile' | 'history' | 'admin'>('dashboard');
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
 
   const apiUrl = getApiUrl();
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (plan: 'basic' | 'pro') => {
     try {
         // 1. Create Order on Backend
-        const res = await axios.post(`${apiUrl}/api/v1/payment/create-order`);
+        const res = await axios.post(`${apiUrl}/api/v1/payment/create-order`, { plan });
         const order = res.data;
 
         if (order.mock) {
@@ -36,9 +39,11 @@ function MainLayout() {
             await axios.post(`${apiUrl}/api/v1/payment/verify`, {
                 razorpay_order_id: order.order_id,
                 razorpay_payment_id: "pay_mock_123",
-                razorpay_signature: "sig_mock_123"
+                razorpay_signature: "sig_mock_123",
+                plan: plan
             });
             await refreshUser();
+            setIsPricingOpen(false);
             alert("Upgrade Successful (Mock Mode)!");
             return;
         }
@@ -49,7 +54,7 @@ function MainLayout() {
             amount: order.amount,
             currency: "INR",
             name: "ScribeFlow AI",
-            description: "Premium Pro Upgrade",
+            description: plan === 'basic' ? "20 Blog Credits" : "50 Blog Credits",
             order_id: order.order_id,
             handler: async function (response: any) {
                 // 3. Verify Payment on Backend
@@ -57,10 +62,12 @@ function MainLayout() {
                     await axios.post(`${apiUrl}/api/v1/payment/verify`, {
                         razorpay_order_id: response.razorpay_order_id,
                         razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature
+                        razorpay_signature: response.razorpay_signature,
+                        plan: plan
                     });
                     await refreshUser();
-                    alert("Payment Successful! You are now a Premium user.");
+                    setIsPricingOpen(false);
+                    alert("Payment Successful! Credits added.");
                 } catch (err) {
                     alert("Verification failed. Please contact support.");
                 }
@@ -137,14 +144,12 @@ function MainLayout() {
           </div>
           
           <div className="flex items-center gap-4">
-            {!user.is_premium && (
-               <div className="hidden md:flex items-center gap-4 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">
-                  <span>Credits: {user.credits_left}/3</span>
-                  <button onClick={handleUpgrade} className="text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 border-l border-white/10 pl-4">
-                     <Zap className="w-3 h-3" /> Upgrade
-                  </button>
-               </div>
-            )}
+            <div className="hidden md:flex items-center gap-4 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">
+                <span>Credits: {user.credits_left}</span>
+                <button onClick={() => setIsPricingOpen(true)} className="text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 border-l border-white/10 pl-4">
+                    <Zap className="w-3 h-3" /> Get Credits
+                </button>
+            </div>
 
             <button 
                 onClick={() => setIsSupportOpen(true)}
@@ -203,6 +208,109 @@ function MainLayout() {
           <AdminDashboard onBack={() => setView('dashboard')} />
         )}
       </div>
+
+      {/* Pricing Modal */}
+      <AnimatePresence>
+        {isPricingOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="w-full max-w-4xl"
+            >
+              <GlassCard className="relative overflow-hidden p-8">
+                <button 
+                  onClick={() => setIsPricingOpen(false)}
+                  className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-lg"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl font-black text-white mb-2">Refuel Your Creativity</h2>
+                  <p className="text-slate-400">Choose a credit pack to continue generating high-impact blogs.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Basic Plan */}
+                  <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+                    <div className="relative bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 text-left h-full flex flex-col">
+                      <div className="mb-8">
+                        <h3 className="text-xl font-bold text-white mb-2">Essential Pack</h3>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-4xl font-black text-white">₹499</span>
+                          <span className="text-slate-500 text-sm">/ one-time</span>
+                        </div>
+                      </div>
+                      
+                      <ul className="space-y-4 mb-12 flex-grow">
+                        <li className="flex items-center gap-3 text-slate-300">
+                          <div className="p-1 bg-blue-500/20 rounded-full text-blue-400"><Check className="w-4 h-4" /></div>
+                          <span className="font-bold text-white">20 High-Quality Blogs</span>
+                        </li>
+                        <li className="flex items-center gap-3 text-slate-400 text-sm">
+                          <Check className="w-4 h-4 text-slate-600" />
+                          Deep Web Research
+                        </li>
+                        <li className="flex items-center gap-3 text-slate-400 text-sm">
+                          <Check className="w-4 h-4 text-slate-600" />
+                          AI Image Generation
+                        </li>
+                      </ul>
+
+                      <button 
+                        onClick={() => handleUpgrade('basic')}
+                        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                      >
+                        Buy 20 Credits
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Pro Plan */}
+                  <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl blur opacity-40 group-hover:opacity-60 transition duration-500"></div>
+                    <div className="relative bg-[#0a0a0a] border border-blue-500/30 rounded-3xl p-8 text-left h-full flex flex-col">
+                      <div className="absolute top-4 right-8 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Best Value</div>
+                      <div className="mb-8">
+                        <h3 className="text-xl font-bold text-white mb-2">Ultimate Pack</h3>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-4xl font-black text-white">₹999</span>
+                          <span className="text-slate-500 text-sm">/ one-time</span>
+                        </div>
+                      </div>
+                      
+                      <ul className="space-y-4 mb-12 flex-grow">
+                        <li className="flex items-center gap-3 text-slate-300">
+                          <div className="p-1 bg-blue-500/20 rounded-full text-blue-400"><Check className="w-4 h-4" /></div>
+                          <span className="font-bold text-white">50 High-Quality Blogs</span>
+                        </li>
+                        <li className="flex items-center gap-3 text-slate-300">
+                          <div className="p-1 bg-blue-500/20 rounded-full text-blue-400"><Check className="w-4 h-4" /></div>
+                          <span>Priority Processing</span>
+                        </li>
+                        <li className="flex items-center gap-3 text-slate-400 text-sm">
+                          <Check className="w-4 h-4 text-slate-600" />
+                          Full Visual Gallery
+                        </li>
+                      </ul>
+
+                      <button 
+                        onClick={() => handleUpgrade('pro')}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                      >
+                        Buy 50 Credits
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </GlassCard>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <SupportModal isOpen={isSupportOpen} onClose={() => setIsSupportOpen(false)} />
     </>
