@@ -52,13 +52,23 @@ async def publish_to_devto(
     backend_url = "http://13.61.4.241:8000" # Your EC2 IP
     content = content.replace("(/static/", f"({backend_url}/static/")
 
+    # Clean tags for Dev.to (must be alphanumeric, no spaces)
+    raw_tags = [t.strip() for t in (db_blog.keywords or "ai, automation").split(",")]
+    clean_tags = []
+    for t in raw_tags:
+        # Convert to lowercase, replace spaces with hyphens, remove special chars
+        clean = t.lower().replace(" ", "-").replace("_", "-")
+        clean = "".join(c for c in clean if c.isalnum() or c == "-")
+        if clean and len(clean) >= 2:
+            clean_tags.append(clean[:20]) # Dev.to limit is 20 chars
+    
     payload = {
         "article": {
             "title": db_blog.title,
             "published": False, # Save as Draft
             "body_markdown": content,
             "description": db_blog.meta_description or "",
-            "tags": [t.strip() for t in (db_blog.keywords or "ai, automation").split(",")[:4]],
+            "tags": clean_tags[:4], # Dev.to limit is 4 tags
             "canonical_url": scribe_flow_url
         }
     }
