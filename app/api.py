@@ -53,13 +53,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Custom StaticFiles to ensure CORS headers are sent for images
+class CORSStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
+
 # Serve generated images as static files
 static_dir = Path("outputs")
 static_dir.mkdir(parents=True, exist_ok=True)
 (static_dir / "images").mkdir(parents=True, exist_ok=True)
 (static_dir / "profiles").mkdir(parents=True, exist_ok=True)
 (static_dir / "blogs").mkdir(parents=True, exist_ok=True)
-app.mount("/static", StaticFiles(directory="outputs"), name="static")
+app.mount("/static", CORSStaticFiles(directory="outputs"), name="static")
 
 # Active job storage
 jobs_db: Dict[str, Dict] = {}
