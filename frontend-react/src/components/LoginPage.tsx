@@ -1,162 +1,156 @@
 import { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, getApiUrl } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
-import { Mail, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { Mail, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 
 export function LoginPage() {
   const { login } = useAuth();
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'request' | 'verify'>('request');
+  const [step, setStep] = useState<'email' | 'otp'>('email');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
-  const validateEmail = (email: string) => {
-    return String(email)
-      .toLowerCase()
-      .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      );
-  };
+  const apiUrl = getApiUrl();
 
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-  const handleRequestOtp = async () => {
-    if (!validateEmail(identifier)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
+  const handleSendOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    setError(null);
+    setError('');
     try {
-      await axios.post(`${apiUrl}/api/v1/auth/send-otp`, { identifier });
-      setStep('verify');
-    } catch (e: any) {
-      const msg = e.response?.data?.detail;
-      const valErr = e.response?.data?.detail?.[0]?.msg;
-      setError(valErr || msg || "Failed to send OTP. Please check your email format.");
+      await axios.post(`${apiUrl}/api/v1/auth/send-otp`, { identifier: email });
+      setStep('otp');
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to send OTP. Try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyOtp = async () => {
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    setError(null);
+    setError('');
     try {
-      const res = await axios.post(`${apiUrl}/api/v1/auth/verify-otp`, { identifier, code: otp });
-      login(res.data.access_token);
-    } catch (e: any) {
-      setError(e.response?.data?.detail || "Invalid OTP");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSuccess = async (credentialResponse: any) => {
-    setLoading(true);
-    try {
-      const res = await axios.post(`${apiUrl}/api/v1/auth/google-login`, { 
-        token: credentialResponse.credential 
+      const res = await axios.post(`${apiUrl}/api/v1/auth/verify-otp`, {
+        identifier: email,
+        code: otp
       });
       login(res.data.access_token);
-    } catch (e: any) {
-      setError(e.response?.data?.detail || "Google Login Failed");
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Invalid OTP.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (response: any) => {
+    setLoading(true);
+    try {
+      const res = await axios.post(`${apiUrl}/api/v1/auth/google-login`, {
+        token: response.credential
+      });
+      login(res.data.access_token);
+    } catch (err) {
+      setError('Google Login failed.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[80vh] px-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <GlassCard className="w-full max-w-md p-8">
-        <h2 className="text-3xl font-bold text-white mb-2 text-center">Welcome Back</h2>
-        <p className="text-slate-400 text-center mb-8">Sign in to create amazing content.</p>
-
-        {/* Google Login */}
-        <div className="mb-8 flex justify-center">
-            <GoogleLogin
-                onSuccess={handleGoogleSuccess}
-                onError={() => setError("Google Login Failed")}
-                theme="filled_black"
-                shape="pill"
-            />
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/20 text-blue-500 mb-4">
+            <ShieldCheck className="w-8 h-8" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
+          <p className="text-slate-400">Secure access to your AI writing studio</p>
         </div>
 
-        <div className="flex items-center gap-4 mb-6">
-            <div className="h-px bg-white/10 flex-1" />
-            <span className="text-slate-500 text-sm">OR</span>
-            <div className="h-px bg-white/10 flex-1" />
-        </div>
+        {error && (
+          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            {error}
+          </div>
+        )}
 
-        {/* Input Form (Email Only) */}
-        <div className="space-y-4">
-          {step === 'request' ? (
-            <>
+        {step === 'email' ? (
+          <form onSubmit={handleSendOTP} className="space-y-4">
+            <div className="space-y-2 text-left">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-3.5 w-5 h-5 text-slate-500" />
                 <input
+                  required
                   type="email"
-                  value={identifier}
-                  onChange={(e) => {
-                    setIdentifier(e.target.value);
-                    if (error) setError(null);
-                  }}
-                  placeholder="Enter your email"
-                  className={`w-full bg-black/20 border ${error ? 'border-red-500/50' : 'border-white/10'} rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50`}
+                  placeholder="name@example.com"
+                  className="w-full bg-black/20 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-              <button
-                onClick={handleRequestOtp}
-                disabled={loading || !identifier}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? <Loader2 className="animate-spin w-5 h-5" /> : <>Send OTP <ArrowRight className="w-4 h-4" /></>}
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-slate-400 text-center">
-                Enter the code sent to <span className="text-white">{identifier}</span>
-              </p>
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95 disabled:opacity-50"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continue'}
+              <ArrowRight className="w-5 h-5" />
+            </button>
+
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
+              <div className="relative flex justify-center text-xs uppercase"><span className="bg-[#0a0a0a] px-2 text-slate-500 font-bold tracking-widest">Or continue with</span></div>
+            </div>
+
+            <div className="flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError('Google Sign-In failed')}
+                theme="filled_black"
+                shape="pill"
+                size="large"
+                width="100%"
+              />
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={handleVerifyOTP} className="space-y-4">
+            <div className="space-y-2 text-left">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Enter Verification Code</label>
               <input
+                required
                 type="text"
+                placeholder="000000"
+                maxLength={6}
+                className="w-full bg-black/20 border border-white/10 rounded-xl py-4 text-center text-2xl font-bold tracking-[0.5em] text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                placeholder="######"
-                className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-center text-2xl tracking-widest text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                maxLength={6}
               />
-              <button
-                onClick={handleVerifyOtp}
-                disabled={loading || otp.length !== 6}
-                className="w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? <Loader2 className="animate-spin w-5 h-5" /> : "Verify & Login"}
-              </button>
-              <button 
-                onClick={() => { setStep('request'); setError(null); }}
-                className="w-full text-slate-500 text-sm hover:text-white transition-colors"
-              >
-                Change Email
-              </button>
-            </>
-          )}
-          
-          {error && (
-            <div className="flex items-start gap-2 text-red-400 text-sm bg-red-900/10 p-3 rounded-lg border border-red-900/20">
-              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-              <span>{error}</span>
+              <p className="text-xs text-slate-500 text-center mt-4">
+                We sent a 6-digit code to <span className="text-white font-medium">{email}</span>
+              </p>
             </div>
-          )}
-        </div>
-        
-        <div className="mt-8 pt-4 border-t border-white/5 text-center text-xs text-slate-600">
-           Dev Mode: Check backend console for Mock OTP codes.
-        </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify & Login'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setStep('email')}
+              className="w-full text-slate-500 hover:text-white text-sm font-medium transition-colors py-2"
+            >
+              Change Email
+            </button>
+          </form>
+        )}
       </GlassCard>
     </div>
   );

@@ -27,6 +27,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// Centralized API URL logic for the entire app
+export const getApiUrl = () => {
+    const envUrl = import.meta.env.VITE_API_URL;
+    if (envUrl) return envUrl;
+    // If no environment variable, use relative paths in production, and localhost in dev
+    return import.meta.env.DEV ? 'http://localhost:8000' : '';
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
@@ -44,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshUser = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? "" : 'http://localhost:8000');
+      const apiUrl = getApiUrl();
       const res = await axios.get(`${apiUrl}/api/v1/auth/me`);
       setUser(res.data);
     } catch (e) {
