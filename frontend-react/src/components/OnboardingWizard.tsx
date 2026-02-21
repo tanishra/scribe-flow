@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, getApiUrl } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
 import { User, Briefcase, Info, ArrowRight, MapPin, Loader2 } from 'lucide-react';
 import axios from 'axios';
@@ -23,7 +23,8 @@ export function OnboardingWizard() {
   });
   const [loading, setLoading] = useState(false);
 
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  // Use the production-aware helper to avoid localhost in production
+  const apiUrl = getApiUrl();
 
   const handleNext = (val?: string) => {
     const fieldId = steps[currentStep].id;
@@ -46,6 +47,7 @@ export function OnboardingWizard() {
         ...finalData,
         onboarding_completed: true
       });
+      // Force refresh to update the global user state and close the wizard
       await refreshUser();
     } catch (e) {
       console.error("Failed to finish onboarding", e);
