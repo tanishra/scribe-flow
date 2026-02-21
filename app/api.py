@@ -221,15 +221,16 @@ async def create_blog_job(
     )
     session.add(new_blog)
     
-    # Re-fetch user in current session to ensure credit deduction works
+    # Universal credit deduction for all users
     db_user = session.get(User, current_user.id)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if not db_user.is_premium:
-        db_user.credits_left -= 1
-        session.add(db_user)
-    
+    if db_user.credits_left <= 0:
+        raise HTTPException(status_code=403, detail="Insufficient credits. Please purchase more.")
+
+    db_user.credits_left -= 1
+    session.add(db_user)
     session.commit()
     
     jobs_db[job_id] = {"topic": blog_req.topic, "status": "queued"}
