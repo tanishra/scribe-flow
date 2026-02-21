@@ -86,7 +86,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
               <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500/30 bg-black/40 mb-4 mx-auto relative">
                 {user.profile_image ? (
                   <img 
-                    src={`${apiUrl}${user.profile_image}`} 
+                    src={`${apiUrl}${user.profile_image}?t=${Date.now()}`} 
                     alt="Profile" 
                     className="w-full h-full object-cover"
                   />

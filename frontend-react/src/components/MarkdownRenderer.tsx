@@ -16,15 +16,16 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
     // If it's already an absolute URL (starts with http), leave it
     if (src.startsWith("http")) return src;
     
+    const timestamp = Date.now();
     // Handle the internal relative paths used by the backend
     if (src.startsWith("../images/")) {
-      return `${apiUrl}/static/images/${src.replace("../images/", "")}`;
+      return `${apiUrl}/static/images/${src.replace("../images/", "")}?t=${timestamp}`;
     }
     if (src.startsWith("/")) {
-      return `${apiUrl}${src}`;
+      return `${apiUrl}${src}?t=${timestamp}`;
     }
     // Fallback for simple names
-    return `${apiUrl}/static/images/${src}`;
+    return `${apiUrl}/static/images/${src}?t=${timestamp}`;
   };
 
   return (

@@ -170,7 +170,7 @@ function MainLayout() {
                     </div>
                     <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 overflow-hidden group-hover:border-blue-500/50 transition-all">
                         {user.profile_image ? (
-                            <img src={`${apiUrl}${user.profile_image}`} className="w-full h-full object-cover" />
+                            <img src={`${apiUrl}${user.profile_image}?t=${Date.now()}`} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-600">
                                 <UserIcon className="w-5 h-5" />
