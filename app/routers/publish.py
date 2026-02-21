@@ -16,7 +16,7 @@ async def publish_to_devto(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
-    """Posts the blog as a draft to Dev.to."""
+    """Posts the blog LIVE to Dev.to. Supports re-publishing (updates)."""
     if not current_user.devto_api_key:
         raise HTTPException(status_code=400, detail="Dev.to API key not found in profile.")
 
@@ -38,35 +38,28 @@ async def publish_to_devto(
     if not content:
         raise HTTPException(status_code=400, detail="Blog content is empty.")
 
-    # Format for Dev.to
-    # Dev.to expects a specific JSON structure
-    # We add a canonical URL pointing to our public share link
-    # And we fix image URLs to be absolute
-    
     # Base URL for ScribeFlow
     scribe_flow_url = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
     
-    # Fix relative images: /static/images/foo.png -> http://13.61.4.241:8000/static/images/foo.png
-    # Dev.to needs absolute URLs to render images
-    backend_url = "http://13.61.4.241:8000" # Your EC2 IP
+    # Fix relative images to absolute URLs for Dev.to
+    backend_url = "http://13.61.4.241:8000"
     content = content.replace("(/static/", f"({backend_url}/static/")
 
-    # Clean tags for Dev.to (must be strictly ALPHANUMERIC)
+    # Clean tags for Dev.to (strictly ALPHANUMERIC)
     raw_tags = [t.strip() for t in (db_blog.keywords or "ai, automation").split(",")]
     clean_tags = []
     for t in raw_tags:
-        # Remove all non-alphanumeric characters (including hyphens and spaces)
         clean = "".join(c for c in t.lower() if c.isalnum())
         if clean and len(clean) >= 2:
-            clean_tags.append(clean[:20]) # Dev.to limit is 20 chars
+            clean_tags.append(clean[:20])
     
     payload = {
         "article": {
             "title": db_blog.title,
-            "published": True, # Publish LIVE immediately
+            "published": True,
             "body_markdown": content,
             "description": db_blog.meta_description or "",
-            "tags": clean_tags[:4], # Dev.to limit is 4 tags
+            "tags": clean_tags[:4],
             "canonical_url": scribe_flow_url
         }
     }
@@ -76,17 +69,37 @@ async def publish_to_devto(
         "Content-Type": "application/json"
     }
 
+    # Logic: If devto_url already exists, we UPDATE. Otherwise, we CREATE.
+    # Note: Dev.to update API requires the numeric ID of the article.
+    # We can try to extract the ID from the URL if we have it.
+    
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post("https://dev.to/api/articles", json=payload, headers=headers)
-            if response.status_code == 201:
+            if db_blog.devto_url:
+                # Update existing (requires numeric ID)
+                # Example URL: https://dev.to/username/title-slug-12345
+                # The ID is the last part of the slug.
+                article_id = db_blog.devto_url.split("-")[-1]
+                response = await client.put(f"https://dev.to/api/articles/{article_id}", json=payload, headers=headers)
+                action = "updated"
+            else:
+                # Create new
+                response = await client.post("https://dev.to/api/articles", json=payload, headers=headers)
+                action = "posted"
+
+            if response.status_code in [200, 201]:
                 data = response.json()
+                db_blog.devto_url = data.get("url")
+                session.add(db_blog)
+                session.commit()
                 return {
                     "status": "success", 
-                    "message": "Blog posted as draft to Dev.to!",
+                    "message": f"Blog {action} successfully on Dev.to!",
                     "url": data.get("url")
                 }
             else:
+                # If update failed (maybe ID changed), fallback to a fresh POST
+                # Dev.to usually blocks this via canonical_url, so we report the error.
                 logger.error(f"Dev.to API error: {response.text}")
                 raise HTTPException(status_code=response.status_code, detail=f"Dev.to Error: {response.text}")
         except Exception as e:

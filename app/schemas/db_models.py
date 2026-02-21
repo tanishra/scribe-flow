@@ -48,6 +48,9 @@ class Blog(SQLModel, table=True):
     meta_description: Optional[str] = Field(default=None)
     keywords: Optional[str] = Field(default=None)
     
+    # Publishing
+    devto_url: Optional[str] = Field(default=None) # NEW
+    
     error: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
