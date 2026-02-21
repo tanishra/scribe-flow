@@ -6,7 +6,7 @@ from ..nodes.orchestrator import OrchestratorNode, fanout
 from ..nodes.worker import WorkerNode
 from ..nodes.reducer import ReducerNode, ImageWorkerNode
 
-def create_app():
+def create_workflow():
     # Initialize nodes
     router = RouterNode()
     researcher = ResearcherNode()
