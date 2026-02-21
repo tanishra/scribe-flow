@@ -9,7 +9,7 @@
       "destination": "http://13.61.4.241:8000/static/:path*"
     },
     {
-      "source": "/((?!api/v1|static).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]

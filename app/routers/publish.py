@@ -43,9 +43,8 @@ async def publish_to_devto(
     # We add a canonical URL pointing to our public share link
     # And we fix image URLs to be absolute
     
-    # Base URL for ScribeFlow (In Prod, this should be your Vercel domain)
-    # For now, we'll try to detect it or use a placeholder
-    scribe_flow_url = f"https://scribe-flow.vercel.app/share/{job_id}" # Update with actual domain if known
+    # Base URL for ScribeFlow
+    scribe_flow_url = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
     
     # Fix relative images: /static/images/foo.png -> http://13.61.4.241:8000/static/images/foo.png
     # Dev.to needs absolute URLs to render images
