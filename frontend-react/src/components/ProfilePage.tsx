@@ -181,7 +181,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                             className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                         />
                     </div>
-                    <p className="text-[9px] text-slate-600 mt-2 italic">Settings > Extensions > Generate API Key</p>
+                    <p className="text-[9px] text-slate-600 mt-2 italic">Settings &gt; Extensions &gt; Generate API Key</p>
                 </div>
             </div>
 
