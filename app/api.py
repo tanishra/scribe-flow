@@ -123,7 +123,16 @@ async def generate_blog_task(job_id: str, topic: str, tone: str):
 
         # Serialization
         plan_dict = plan.model_dump() if hasattr(plan, "model_dump") else plan
-        evidence_list = [e.model_dump() if hasattr(e, "model_dump") else e for e in evidence]
+        # Ensure evidence objects are properly converted to dicts
+        evidence_list = []
+        for e in evidence:
+            if hasattr(e, "model_dump"):
+                evidence_list.append(e.model_dump())
+            elif isinstance(e, dict):
+                evidence_list.append(e)
+            else:
+                # Fallback for unexpected types
+                evidence_list.append(str(e))
 
         # Update SQL Database
         with next(get_session()) as session:

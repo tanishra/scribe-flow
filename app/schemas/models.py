@@ -71,17 +71,17 @@ class SEOData(BaseModel):
 
 class State(TypedDict):
     topic: str
-    user_tone: str # NEW
+    user_tone: str
     mode: str
     needs_research: bool
     queries: List[str]
-    evidence: List[EvidenceItem]
+    # Use operator.add to ensure research evidence is preserved in the state
+    evidence: Annotated[List[EvidenceItem], operator.add] 
     plan: Optional[Plan]
     sections: Annotated[List[tuple[int, str]], operator.add]
     merged_md: str
     md_with_placeholders: str
     image_specs: List[dict]
-    # (placeholder, replacement_md, success, task_id)
     image_results: Annotated[List[tuple[str, str, bool, int]], operator.add]
-    seo: Dict[str, str] # NEW
+    seo: Dict[str, str]
     final: str
