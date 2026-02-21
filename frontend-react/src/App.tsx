@@ -5,9 +5,10 @@ import { OnboardingWizard } from "./components/OnboardingWizard";
 import { ProfilePage } from "./components/ProfilePage";
 import { BlogHistory } from "./components/BlogHistory";
 import { SupportModal } from "./components/SupportModal";
+import { AdminDashboard } from "./components/AdminDashboard";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle } from "lucide-react";
+import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
 
@@ -18,7 +19,7 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 function MainLayout() {
   const { user, logout, refreshUser } = useAuth();
-  const [view, setView] = useState<'dashboard' | 'profile' | 'history'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'profile' | 'history' | 'admin'>('dashboard');
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
 
@@ -124,6 +125,15 @@ function MainLayout() {
                     <Clock className="w-4 h-4" />
                     History
                 </button>
+                {user.is_admin && (
+                    <button 
+                        onClick={() => setView('admin')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${view === 'admin' ? 'bg-blue-500/20 text-blue-400' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        <ShieldCheck className="w-4 h-4" />
+                        Admin
+                    </button>
+                )}
             </nav>
           </div>
           
@@ -189,6 +199,9 @@ function MainLayout() {
         )}
         {view === 'profile' && (
           <ProfilePage onBack={() => setView('dashboard')} />
+        )}
+        {view === 'admin' && (
+          <AdminDashboard onBack={() => setView('dashboard')} />
         )}
       </div>
 
