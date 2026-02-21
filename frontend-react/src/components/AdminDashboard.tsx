@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Users, FileText, MessageSquare, ShieldCheck, Zap, 
     Mail, Calendar, Search, ArrowLeft, Trash2, 
-    TrendingUp, Coins, BarChart3, ChevronRight, X
+    TrendingUp, Coins, BarChart3, MoreVertical, UserX, UserCheck
 } from 'lucide-react';
 import { GlassCard } from './GlassCard';
 import { getApiUrl } from '../contexts/AuthContext';
@@ -16,6 +16,7 @@ interface UserData {
   profession: string;
   credits_left: number;
   is_premium: boolean;
+  is_active: boolean;
   created_at: string;
 }
 
@@ -34,6 +35,8 @@ interface BlogData {
     topic: string;
     status: string;
     user_id: number;
+    user_name: string; // JOINED DATA
+    user_email: string; // JOINED DATA
     created_at: string;
 }
 
@@ -91,12 +94,13 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
     } catch (e) { alert("Failed to update credits"); }
   };
 
-  const handleDeleteUser = async (userId: number, email: string) => {
-    if (!confirm(`Are you sure you want to PERMANENTLY delete user ${email}? This cannot be undone.`)) return;
+  const handleToggleStatus = async (userId: number, email: string, currentStatus: boolean) => {
+    const action = currentStatus ? "DEACTIVATE" : "ACTIVATE";
+    if (!confirm(`Are you sure you want to ${action} user ${email}?`)) return;
     try {
         await axios.delete(`${apiUrl}/api/v1/admin/users/${userId}`);
         fetchData();
-    } catch (e) { alert("Failed to delete user"); }
+    } catch (e) { alert("Failed to change user status"); }
   };
 
   const filteredUsers = users.filter(u => 
@@ -104,7 +108,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
     u.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <div className="py-20 text-center text-blue-500 animate-pulse font-bold tracking-widest">INITIALIZING CONTROL CENTER...</div>;
+  if (loading) return <div className="py-20 text-center text-blue-500 animate-pulse font-bold tracking-widest uppercase">Initializing Admin Engine...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
@@ -114,22 +118,22 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
           Back to Dashboard
         </button>
         <div className="text-right">
-            <h2 className="text-2xl font-black text-white flex items-center justify-end gap-3">
+            <h2 className="text-2xl font-black text-white flex items-center justify-end gap-3 tracking-tighter">
                 <ShieldCheck className="w-6 h-6 text-blue-500" />
-                Admin Panel
+                SYSTEM CONTROL
             </h2>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Platform Monitoring & Control</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mt-1">Platform Integrity & Insights</p>
         </div>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {[
-          { label: 'Users', value: stats?.total_users, icon: Users, color: 'text-blue-400' },
+          { label: 'Total Users', value: stats?.total_users, icon: Users, color: 'text-blue-400' },
           { label: 'Premium', value: stats?.premium_users, icon: Zap, color: 'text-purple-400' },
           { label: 'Total Blogs', value: stats?.total_blogs, icon: FileText, color: 'text-green-400' },
           { label: 'Revenue', value: `₹${stats?.estimated_revenue}`, icon: Coins, color: 'text-yellow-400' },
-          { label: 'Feedback', value: stats?.total_feedback, icon: MessageSquare, color: 'text-orange-400' },
+          { label: 'Support', value: stats?.total_feedback, icon: MessageSquare, color: 'text-orange-400' },
         ].map((s, i) => (
           <GlassCard key={i} className="p-6">
             <div className="flex flex-col gap-4">
@@ -149,9 +153,9 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
       <div className="flex flex-wrap gap-2 p-1 bg-white/5 border border-white/10 rounded-2xl w-fit">
         {[
             { id: 'users', label: 'Users', icon: Users },
-            { id: 'blogs', label: 'Global Blogs', icon: FileText },
+            { id: 'blogs', label: 'Global Feed', icon: FileText },
             { id: 'feedback', label: 'Support', icon: MessageSquare },
-            { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+            { id: 'analytics', label: 'Growth', icon: BarChart3 },
         ].map((tab) => (
             <button
                 key={tab.id}
@@ -175,14 +179,14 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
         >
-            <GlassCard className="overflow-hidden">
+            <GlassCard className="overflow-hidden min-h-[50vh]">
                 {activeTab === 'users' && (
                     <>
                         <div className="p-4 border-b border-white/5 flex justify-end">
                             <div className="relative w-full md:w-72">
                                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
                                 <input 
-                                    placeholder="Search users..."
+                                    placeholder="Search directory..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full bg-black/20 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
@@ -193,56 +197,57 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="text-slate-500 text-[10px] uppercase tracking-[0.2em] bg-white/5">
-                                        <th className="p-4 font-bold">Identity</th>
-                                        <th className="p-4 font-bold">Status</th>
+                                        <th className="p-4 font-bold">Creator</th>
+                                        <th className="p-4 font-bold">Account</th>
                                         <th className="p-4 font-bold">Credits</th>
-                                        <th className="p-4 font-bold">Registered</th>
-                                        <th className="p-4 font-bold text-center">Actions</th>
+                                        <th className="p-4 font-bold">Joined</th>
+                                        <th className="p-4 font-bold text-center">Security</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
                                     {filteredUsers.map((u) => (
-                                        <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
+                                        <tr key={u.id} className={`hover:bg-white/[0.02] transition-colors ${!u.is_active ? 'opacity-50' : ''}`}>
                                             <td className="p-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 font-bold border border-blue-500/20">
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border ${u.is_active ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-slate-500/10 text-slate-500 border-slate-500/20'}`}>
                                                         {u.email.charAt(0).toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-bold text-white">{u.full_name || 'Anonymous'}</p>
+                                                        <p className="text-sm font-bold text-white flex items-center gap-2">
+                                                            {u.full_name || 'Anonymous'}
+                                                            {!u.is_active && <span className="text-[8px] bg-red-500/20 text-red-400 px-1 rounded">DISABLED</span>}
+                                                        </p>
                                                         <p className="text-[10px] text-slate-500">{u.email}</p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="p-4">
                                                 {u.is_premium ? (
-                                                    <span className="px-2 py-1 rounded-md bg-purple-500/10 text-purple-400 text-[9px] font-black uppercase border border-purple-500/20">Pro</span>
+                                                    <span className="px-2 py-1 rounded-md bg-purple-500/10 text-purple-400 text-[9px] font-black uppercase border border-purple-500/20 tracking-widest">Premium</span>
                                                 ) : (
-                                                    <span className="px-2 py-1 rounded-md bg-white/5 text-slate-500 text-[9px] font-black uppercase border border-white/10">Free</span>
+                                                    <span className="px-2 py-1 rounded-md bg-white/5 text-slate-500 text-[9px] font-black uppercase border border-white/10 tracking-widest">Free</span>
                                                 )}
                                             </td>
                                             <td className="p-4">
                                                 <button 
                                                     onClick={() => handleUpdateCredits(u.id, u.credits_left)}
-                                                    className="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded-lg transition-all"
+                                                    className="flex items-center gap-2 hover:bg-white/5 px-2 py-1 rounded-lg transition-all group"
                                                 >
                                                     <span className="text-sm font-mono text-blue-400 font-bold">{u.credits_left}</span>
-                                                    <Coins className="w-3 h-3 text-slate-600" />
+                                                    <Coins className="w-3 h-3 text-slate-600 group-hover:text-yellow-500" />
                                                 </button>
                                             </td>
                                             <td className="p-4 text-xs text-slate-500 font-medium">
                                                 {new Date(u.created_at).toLocaleDateString()}
                                             </td>
-                                            <td className="p-4">
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <button 
-                                                        onClick={() => handleDeleteUser(u.id, u.email)}
-                                                        className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-                                                        title="Delete User"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
+                                            <td className="p-4 text-center">
+                                                <button 
+                                                    onClick={() => handleToggleStatus(u.id, u.email, u.is_active)}
+                                                    className={`p-2 rounded-lg transition-all ${u.is_active ? 'text-slate-600 hover:text-red-400 hover:bg-red-500/10' : 'text-green-500 bg-green-500/10'}`}
+                                                    title={u.is_active ? "Deactivate Account" : "Activate Account"}
+                                                >
+                                                    {u.is_active ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}
@@ -257,20 +262,24 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="text-slate-500 text-[10px] uppercase tracking-[0.2em] bg-white/5">
-                                    <th className="p-4 font-bold">Title / Topic</th>
-                                    <th className="p-4 font-bold">Status</th>
-                                    <th className="p-4 font-bold">Created At</th>
-                                    <th className="p-4 font-bold">User ID</th>
+                                    <th className="p-4 font-bold">Article Title</th>
+                                    <th className="p-4 font-bold">Author</th>
+                                    <th className="p-4 font-bold text-center">Status</th>
+                                    <th className="p-4 font-bold text-right pr-8">Date</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
                                 {blogs.map((b) => (
                                     <tr key={b.id} className="hover:bg-white/[0.02] transition-colors">
-                                        <td className="p-4 max-w-xs">
+                                        <td className="p-4 max-w-sm">
                                             <p className="text-sm font-bold text-white truncate">{b.title || b.topic}</p>
-                                            <p className="text-[10px] text-slate-500 truncate italic">{b.topic}</p>
+                                            <p className="text-[10px] text-slate-500 truncate italic">Topic: {b.topic}</p>
                                         </td>
                                         <td className="p-4">
+                                            <p className="text-xs font-bold text-blue-400">{b.user_name}</p>
+                                            <p className="text-[9px] text-slate-600 font-mono uppercase tracking-tight">{b.user_email}</p>
+                                        </td>
+                                        <td className="p-4 text-center">
                                             <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase border ${
                                                 b.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
                                                 b.status === 'failed' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
@@ -279,10 +288,9 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                                 {b.status}
                                             </span>
                                         </td>
-                                        <td className="p-4 text-xs text-slate-500">
-                                            {new Date(b.created_at).toLocaleString()}
+                                        <td className="p-4 text-[10px] text-slate-500 font-mono text-right pr-8">
+                                            {new Date(b.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
                                         </td>
-                                        <td className="p-4 text-xs font-mono text-slate-400">#{b.user_id}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -291,28 +299,38 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                 )}
 
                 {activeTab === 'feedback' && (
-                    <div className="p-6 space-y-6">
+                    <div className="p-6 space-y-6 max-w-4xl">
                         {feedback.length === 0 ? (
-                            <p className="text-center py-20 text-slate-500 italic">No support messages received yet.</p>
+                            <div className="text-center py-20">
+                                <MessageSquare className="w-12 h-12 text-slate-700 mx-auto mb-4" />
+                                <p className="text-slate-500 italic">No support messages received yet.</p>
+                            </div>
                         ) : (
                             feedback.map((f) => (
-                                <div key={f.id} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col gap-4">
+                                <div key={f.id} className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col gap-4 group hover:border-blue-500/30 transition-all">
                                     <div className="flex justify-between items-start">
                                         <div className="flex gap-4">
-                                            <div className="p-3 bg-orange-500/10 rounded-xl text-orange-400">
-                                                <MessageSquare className="w-5 h-5" />
+                                            <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                                                <Mail className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-white">{f.subject}</h4>
-                                                <p className="text-xs text-slate-500">From: {f.name} ({f.email})</p>
+                                                <h4 className="font-bold text-white group-hover:text-blue-400 transition-colors">{f.subject}</h4>
+                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">{f.name} • {f.email}</p>
                                             </div>
                                         </div>
-                                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{new Date(f.created_at).toLocaleDateString()}</p>
+                                        <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{new Date(f.created_at).toLocaleDateString()}</p>
                                     </div>
-                                    <div className="bg-black/20 p-4 rounded-xl text-sm text-slate-300 border border-white/5 leading-relaxed italic">
+                                    <div className="bg-black/40 p-5 rounded-2xl text-sm text-slate-300 border border-white/5 leading-relaxed italic relative">
                                         "{f.message}"
                                     </div>
-                                    <a href={`mailto:${f.email}`} className="text-blue-400 text-xs font-bold hover:underline w-fit">Reply via Email</a>
+                                    <div className="flex justify-end">
+                                        <a 
+                                            href={`mailto:${f.email}?subject=Re: ${f.subject}`} 
+                                            className="flex items-center gap-2 text-blue-400 text-[10px] font-black uppercase tracking-widest hover:text-white transition-colors"
+                                        >
+                                            Reply to Message <ChevronRight className="w-3 h-3" />
+                                        </a>
+                                    </div>
                                 </div>
                             ))
                         )}
@@ -320,28 +338,43 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                 )}
 
                 {activeTab === 'analytics' && (
-                    <div className="p-8">
-                        <div className="flex items-center gap-3 mb-8">
-                            <TrendingUp className="w-6 h-6 text-green-400" />
-                            <h3 className="text-xl font-bold text-white">Platform Growth</h3>
+                    <div className="p-12">
+                        <div className="flex items-center gap-3 mb-12">
+                            <div className="p-3 bg-green-500/20 rounded-2xl text-green-400">
+                                <TrendingUp className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-white tracking-tighter">Growth Metrics</h3>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Acquisition over the last 7 days</p>
+                            </div>
                         </div>
                         
-                        <div className="flex items-end gap-2 h-64 border-b border-l border-white/10 px-4 pb-4">
+                        <div className="flex items-end gap-4 h-80 border-b border-l border-white/10 px-8 pb-8 relative">
+                            {/* Grid Lines */}
+                            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-5 px-8 pb-8">
+                                {[1,2,3,4].map(i => <div key={i} className="w-full border-t border-white"></div>)}
+                            </div>
+
                             {growthData.map((d, i) => (
-                                <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
-                                    <div className="text-[10px] text-slate-500 font-bold opacity-0 group-hover:opacity-100 transition-opacity">{d.users}</div>
+                                <div key={i} className="flex-1 flex flex-col items-center gap-3 group z-10">
+                                    <div className="text-[10px] text-blue-400 font-black opacity-0 group-hover:opacity-100 transition-all transform group-hover:-translate-y-1">{d.users}</div>
                                     <motion.div 
                                         initial={{ height: 0 }}
-                                        animate={{ height: `${(d.users / (stats?.total_users || 1)) * 100}%` }}
-                                        className="w-full max-w-[40px] bg-gradient-to-t from-blue-600 to-cyan-400 rounded-t-lg relative"
+                                        animate={{ height: `${(d.users / (Math.max(...growthData.map(x=>x.users)) || 1)) * 100}%` }}
+                                        className="w-full max-w-[50px] bg-gradient-to-t from-blue-600 via-blue-500 to-cyan-400 rounded-t-xl relative shadow-lg shadow-blue-500/20"
                                     >
-                                        <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg"></div>
+                                        <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-xl"></div>
                                     </motion.div>
-                                    <div className="text-[10px] text-slate-600 font-bold rotate-45 mt-2">{d.date}</div>
+                                    <div className="text-[9px] text-slate-500 font-black tracking-widest rotate-[-45deg] origin-top-left mt-2">{d.date}</div>
                                 </div>
                             ))}
                         </div>
-                        <p className="text-center text-xs text-slate-500 mt-12 italic">User growth over the last 7 days</p>
+                        <div className="mt-20 flex justify-center gap-8">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase">Total User Base</span>
+                            </div>
+                        </div>
                     </div>
                 )}
             </GlassCard>
