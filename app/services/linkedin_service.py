@@ -7,6 +7,21 @@ from .logging_service import logger
 
 class LinkedInService:
     @staticmethod
+    async def get_user_urn(access_token: str) -> str:
+        """Automatically fetches the user's URN (Person ID) using the access token."""
+        url = "https://api.linkedin.com/v2/me"
+        headers = {"Authorization": f"Bearer {access_token}"}
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers)
+            if response.status_code != 200:
+                logger.error(f"Failed to fetch LinkedIn ID: {response.text}")
+                raise Exception("Invalid LinkedIn Access Token")
+            
+            data = response.json()
+            return data.get("id") # This is the ABC123XYZ part
+
+    @staticmethod
     async def generate_teaser(blog_content: str, blog_title: str) -> str:
         """Uses AI to transform a markdown blog into a viral LinkedIn teaser."""
         llm = get_llm()

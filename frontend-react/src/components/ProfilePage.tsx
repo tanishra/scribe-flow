@@ -172,7 +172,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                             <div>
                               <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Create Developer App</p>
                               <p className="text-xs text-slate-400 leading-relaxed">
-                                Create an app at <a href="https://www.linkedin.com/developers/apps" target="_blank" className="text-blue-400 underline inline-flex items-center gap-1">LinkedIn Developers <ExternalLink className="w-3 h-3" /></a>. Associate it with any Company Page you have.
+                                Go to <a href="https://www.linkedin.com/developers/apps" target="_blank" className="text-blue-400 underline inline-flex items-center gap-1">LinkedIn Developers <ExternalLink className="w-3 h-3" /></a>. Associate it with any Company Page you have.
                               </p>
                             </div>
                           </div>

@@ -104,6 +104,20 @@ async def update_profile(
     session: Session = Depends(get_session)
 ):
     update_data = data.model_dump(exclude_unset=True)
+    
+    # AUTO-FETCH LINKEDIN URN
+    # If user provided a token but no URN, or a NEW token, fetch it automatically
+    new_li_token = update_data.get("linkedin_access_token")
+    if new_li_token and (not current_user.linkedin_urn or new_li_token != current_user.linkedin_access_token):
+        try:
+            from ..services.linkedin_service import LinkedInService
+            auto_urn = await LinkedInService.get_user_urn(new_li_token)
+            update_data["linkedin_urn"] = auto_urn
+            logger.info(f"Auto-fetched LinkedIn URN for user {current_user.id}: {auto_urn}")
+        except Exception as e:
+            logger.error(f"Failed to auto-fetch LinkedIn URN: {e}")
+            # We don't raise error here, just let the user save the token at least
+
     for key, value in update_data.items():
         setattr(current_user, key, value)
     
