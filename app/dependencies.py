@@ -24,5 +24,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme), session: Session
     user = session.get(User, int(user_id))
     if user is None:
         raise credentials_exception
+    
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been disabled. Please contact support."
+        )
         
     return user

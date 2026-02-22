@@ -68,6 +68,9 @@ def verify_otp(request: OTPVerify, session: Session = Depends(get_session)):
         session.add(user)
         session.commit()
         session.refresh(user)
+    
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Your account has been disabled.")
             
     access_token = create_access_token(data={"sub": str(user.id)}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     return {"access_token": access_token, "token_type": "bearer"}
@@ -90,6 +93,9 @@ async def google_login(login: GoogleLogin, session: Session = Depends(get_sessio
         session.add(user)
         session.commit()
         session.refresh(user)
+    
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Your account has been disabled.")
         
     access_token = create_access_token(data={"sub": str(user.id)}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     return {"access_token": access_token, "token_type": "bearer"}
