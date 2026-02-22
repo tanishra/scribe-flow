@@ -51,7 +51,9 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
 
   // Publishing State
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublishingHN, setIsPublishingHN] = useState(false);
   const [publishUrl, setPublishUrl] = useState<string | null>(null);
+  const [publishUrlHN, setPublishUrlHN] = useState<string | null>(null);
 
   const { user, refreshUser } = useAuth();
   const apiUrl = getApiUrl();
@@ -135,6 +137,21 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     }
   };
 
+  const handlePublishHashnode = async () => {
+    if (!jobId) return;
+    setIsPublishingHN(true);
+    setPublishUrlHN(null);
+    try {
+        const res = await axios.post(`${apiUrl}/api/v1/publish/hashnode/${jobId}`);
+        setPublishUrlHN(res.data.url);
+        alert(res.data.message);
+    } catch (e: any) {
+        alert(e.response?.data?.detail || "Failed to publish to Hashnode");
+    } finally {
+        setIsPublishingHN(false);
+    }
+  };
+
   const handleShare = () => {
     if (!jobId) return;
     const shareUrl = `${window.location.origin}/share/${jobId}`;
@@ -171,7 +188,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   };
 
   const reset = () => {
-    setTopic(""); setJobId(null); setStatus(null); setError(null); setIsEditing(false); setPublishUrl(null);
+    setTopic(""); setJobId(null); setStatus(null); setError(null); setIsEditing(false); setPublishUrl(null); setPublishUrlHN(null);
     if (onReset) onReset();
   };
 
@@ -242,7 +259,8 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                     <p className="text-slate-400 mt-2">Connect your favorite platforms and share your masterpiece with the world.</p>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-6">
+                      {/* Dev.to */}
                       <div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-left hover:border-blue-500/30 transition-all group">
                           <div className="flex items-center justify-between mb-6">
                               <div className="flex items-center gap-4">
@@ -252,43 +270,34 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                                       <p className="text-xs text-slate-500">Fastest-growing community for developers</p>
                                   </div>
                               </div>
-                              {user?.devto_api_key ? (
-                                  <span className="text-[10px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Connected</span>
-                              ) : (
-                                  <span className="text-[10px] bg-red-500/10 text-red-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Key Missing</span>
-                              )}
+                              {user?.devto_api_key ? <span className="text-[10px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Connected</span> : <span className="text-[10px] bg-red-500/10 text-red-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Key Missing</span>}
                           </div>
-
-                          {!user?.devto_api_key ? (
-                              <p className="text-sm text-slate-400 bg-black/20 p-4 rounded-2xl border border-white/5 italic">
-                                  Go to your <span className="text-blue-400 font-bold">Profile Page</span> to add your Dev.to API key and enable one-click publishing.
-                              </p>
-                          ) : (
+                          {!user?.devto_api_key ? <p className="text-sm text-slate-400 bg-black/20 p-4 rounded-2xl border border-white/5 italic text-center">Update your Dev.to key in <span className="text-blue-400 font-bold">Profile</span> to publish.</p> : (
                               <div className="flex flex-col gap-4">
-                                  <button 
-                                    onClick={handlePublishDevTo}
-                                    disabled={isPublishing}
-                                    className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                                  >
-                                      {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />}
-                                      {publishUrl ? "RE-PUBLISH TO DEV.TO" : "PUBLISH LIVE TO DEV.TO"}
-                                  </button>
-                                  {publishUrl && (
-                                      <a href={publishUrl} target="_blank" className="flex items-center justify-center gap-2 text-blue-400 text-sm font-bold hover:underline">
-                                          View Post on Dev.to <ExternalLink className="w-4 h-4" />
-                                      </a>
-                                  )}
+                                  <button onClick={handlePublishDevTo} disabled={isPublishing} className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50">{isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />} {publishUrl ? "RE-PUBLISH TO DEV.TO" : "PUBLISH LIVE TO DEV.TO"}</button>
+                                  {publishUrl && <a href={publishUrl} target="_blank" className="flex items-center justify-center gap-2 text-blue-400 text-sm font-bold hover:underline">View Post on Dev.to <ExternalLink className="w-4 h-4" /></a>}
                               </div>
                           )}
                       </div>
-                      <div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-left opacity-40 grayscale pointer-events-none">
-                          <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center font-bold text-white border border-white/10">HN</div>
-                              <div>
-                                  <h4 className="text-xl font-bold text-white">Hashnode</h4>
-                                  <p className="text-xs text-slate-500 italic">Coming Soon...</p>
+
+                      {/* Hashnode */}
+                      <div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-left hover:border-blue-500/30 transition-all group">
+                          <div className="flex items-center justify-between mb-6">
+                              <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 bg-[#2942FF] rounded-xl flex items-center justify-center font-bold text-white border border-white/10 text-lg">H</div>
+                                  <div>
+                                      <h4 className="text-xl font-bold text-white">Hashnode</h4>
+                                      <p className="text-xs text-slate-500">The home for developer blogs</p>
+                                  </div>
                               </div>
+                              {user?.hashnode_api_key && user?.hashnode_publication_id ? <span className="text-[10px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Connected</span> : <span className="text-[10px] bg-red-500/10 text-red-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Setup Missing</span>}
                           </div>
+                          {!(user?.hashnode_api_key && user?.hashnode_publication_id) ? <p className="text-sm text-slate-400 bg-black/20 p-4 rounded-2xl border border-white/5 italic text-center">Setup Hashnode in <span className="text-blue-400 font-bold">Profile</span> to publish.</p> : (
+                              <div className="flex flex-col gap-4">
+                                  <button onClick={handlePublishHashnode} disabled={isPublishingHN} className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50">{isPublishingHN ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />} PUBLISH LIVE TO HASHNODE</button>
+                                  {publishUrlHN && <a href={publishUrlHN} target="_blank" className="flex items-center justify-center gap-2 text-blue-400 text-sm font-bold hover:underline">View Post on Hashnode <ExternalLink className="w-4 h-4" /></a>}
+                              </div>
+                          )}
                       </div>
                   </div>
               </div>
@@ -320,14 +329,8 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
               <div className="grid gap-4">
                 {status.evidence?.map((item: any, i: number) => (
                 <div key={i} className="bg-white/5 p-6 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group">
-                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 font-bold hover:underline block mb-2 text-lg group-hover:text-blue-300">
-                    {item.title}
-                    </a>
-                    <div className="flex gap-3 text-[10px] font-black uppercase tracking-widest text-slate-600 mb-4">
-                    <span>{item.source || "Web"}</span>
-                    <span>•</span>
-                    <span>{item.published_at || "Archive"}</span>
-                    </div>
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 font-bold hover:underline block mb-2 text-lg group-hover:text-blue-300">{item.title}</a>
+                    <div className="flex gap-3 text-[10px] font-black uppercase tracking-widest text-slate-600 mb-4"><span>{item.source || "Web"}</span><span>•</span><span>{item.published_at || "Archive"}</span></div>
                     <p className="text-slate-400 text-sm italic leading-relaxed">"{item.snippet}"</p>
                 </div>
                 ))}
