@@ -31,6 +31,7 @@ async def create_order(req: OrderRequest, current_user: User = Depends(get_curre
     
     # Logic for amounts
     amounts = {
+        "test": 10000,  # ₹100
         "basic": 49900, # ₹499
         "pro": 99900    # ₹999
     }
@@ -75,6 +76,7 @@ async def verify_payment(
     
     # Credit logic
     credits_map = {
+        "test": 5,   # ₹100 -> 5
         "basic": 20, # ₹499 -> 20
         "pro": 50    # ₹999 -> 50
     }

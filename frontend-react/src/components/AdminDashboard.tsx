@@ -171,12 +171,11 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
-          { label: 'Total Users', value: stats?.total_users, icon: Users, color: 'text-blue-400' },
-          { label: 'Total Blogs', value: stats?.total_blogs, icon: FileText, color: 'text-green-400' },
-          { label: 'Revenue', value: `₹${stats?.estimated_revenue}`, icon: Coins, color: 'text-yellow-400' },
-          { label: 'DEV / HN / MED / LI', value: `${stats?.devto_published} / ${stats?.hashnode_published} / ${stats?.medium_published} / ${stats?.linkedin_published}`, icon: Globe, color: 'text-purple-400' },
+          { label: 'Total Active Creators', value: stats?.total_users, icon: Users, color: 'text-blue-400' },
+          { label: 'Total Intelligence Jobs', value: stats?.total_blogs, icon: FileText, color: 'text-green-400' },
+          { label: 'Platform Publications (DEV / HN / MED / LI)', value: `${stats?.devto_published} / ${stats?.hashnode_published} / ${stats?.medium_published} / ${stats?.linkedin_published}`, icon: Globe, color: 'text-purple-400' },
         ].map((s, i) => (
           <GlassCard key={i} className="p-6">
             <div className="flex flex-col gap-4">

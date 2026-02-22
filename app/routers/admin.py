@@ -19,7 +19,6 @@ async def get_stats(session: Session = Depends(get_session), _ = Depends(check_a
     total_users = session.exec(select(func.count(User.id))).one()
     total_blogs = session.exec(select(func.count(Blog.id))).one()
     total_feedback = session.exec(select(func.count(Feedback.id))).one()
-    premium_users = session.exec(select(func.count(User.id)).where(User.is_premium == True)).one()
     
     # Integration Stats
     devto_published = session.exec(select(func.count(Blog.id)).where(Blog.devto_url != None)).one()
@@ -27,14 +26,10 @@ async def get_stats(session: Session = Depends(get_session), _ = Depends(check_a
     medium_published = session.exec(select(func.count(Blog.id)).where(Blog.medium_url != None)).one()
     linkedin_published = session.exec(select(func.count(Blog.id)).where(Blog.linkedin_url != None)).one()
     
-    estimated_revenue = premium_users * 499 
-
     return {
         "total_users": total_users,
         "total_blogs": total_blogs,
         "total_feedback": total_feedback,
-        "premium_users": premium_users,
-        "estimated_revenue": estimated_revenue,
         "devto_published": devto_published,
         "hashnode_published": hashnode_published,
         "medium_published": medium_published,
