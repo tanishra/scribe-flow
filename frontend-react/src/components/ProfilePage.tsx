@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth, getApiUrl } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
-import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen } from 'lucide-react';
+import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen, HelpCircle, ExternalLink } from 'lucide-react';
 import axios from 'axios';
 
 export function ProfilePage({ onBack }: { onBack: () => void }) {
@@ -23,6 +23,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showHashnodeGuide, setShowHashnodeGuide] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -126,13 +127,37 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                 <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3"><div className="w-10 h-10 bg-[#2942FF] rounded-lg flex items-center justify-center font-bold text-white text-xs border border-white/10">H</div><div><h4 className="font-bold text-white">Hashnode</h4><p className="text-[10px] text-slate-500 uppercase font-black">Publish live to Hashnode</p></div></div>
-                        {user.hashnode_api_key && user.hashnode_publication_id ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
+                        <button 
+                          onClick={() => setShowHashnodeGuide(!showHashnodeGuide)}
+                          className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
+                        >
+                          <HelpCircle className="w-3 h-3" />
+                          {showHashnodeGuide ? "Close Guide" : "How to find?"}
+                        </button>
                     </div>
+
+                    {showHashnodeGuide && (
+                      <div className="mb-6 p-4 rounded-xl bg-blue-500/5 border border-blue-500/10 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div>
+                          <p className="text-[10px] font-black text-blue-400 uppercase mb-1">1. Personal Access Token</p>
+                          <p className="text-xs text-slate-400 leading-relaxed">Go to <span className="text-slate-200">Hashnode Settings &gt; Developer</span>. Click "Generate New Token", name it "ScribeFlow", and copy the key.</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-blue-400 uppercase mb-1">2. Publication ID</p>
+                          <p className="text-xs text-slate-400 leading-relaxed">Go to your <span className="text-slate-200">Blog Dashboard</span>. Look at the URL in your browser: <code className="bg-black/40 px-1 py-0.5 rounded text-[10px] text-blue-300">hashnode.com/<b>[THIS-IS-YOUR-ID]</b>/dashboard</code></p>
+                        </div>
+                        <div className="pt-1 flex justify-end">
+                          <a href="https://hashnode.com/settings/developer" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-white transition-colors">
+                            Open Settings <ExternalLink className="w-2.5 h-2.5" />
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" placeholder="Personal Access Token" value={data.hashnode_api_key} onChange={e => setData({...data, hashnode_api_key: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
                         <div className="relative"><BookOpen className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="text" placeholder="Publication ID" value={data.hashnode_publication_id} onChange={e => setData({...data, hashnode_publication_id: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
                     </div>
-                    <p className="text-[9px] text-slate-600 mt-2 italic">Settings &gt; Developer &gt; Tokens | Publication &gt; Settings &gt; ID</p>
                 </div>
             </div>
 
