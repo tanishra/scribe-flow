@@ -31,7 +31,6 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
     devto_api_key: '',
     hashnode_api_key: '',
     hashnode_publication_id: '',
-    medium_token: '',
     linkedin_access_token: '',
     linkedin_urn: '',
   });
@@ -54,7 +53,6 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
         devto_api_key: user.devto_api_key || '',
         hashnode_api_key: user.hashnode_api_key || '',
         hashnode_publication_id: user.hashnode_publication_id || '',
-        medium_token: user.medium_token || '',
         linkedin_access_token: user.linkedin_access_token || '',
         linkedin_urn: user.linkedin_urn || '',
       });
@@ -69,8 +67,8 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
       await refreshUser();
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch (e) {
-      setError("Failed to update profile. Please try again.");
+    } catch (e: any) {
+      setError(e.response?.data?.detail || "Failed to update profile.");
     } finally {
       setLoading(false);
     }
@@ -152,7 +150,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                               className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
                             >
                               <HelpCircle className="w-3 h-3" />
-                              {showLinkedinGuide ? "Hide Tutorial" : "New Setup Guide"}
+                              {showLinkedinGuide ? "Hide Tutorial" : "Setup Guide"}
                             </button>
                             {user.linkedin_access_token && user.linkedin_urn ? (
                                 <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span>
@@ -222,9 +220,9 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
                           <input 
                             type="password" 
-                            name="li_token_v2" 
+                            name="li_token_v3" 
                             autoComplete="new-password" 
-                            placeholder="Paste LinkedIn Access Token" 
+                            placeholder="Paste Access Token here" 
                             value={data.linkedin_access_token} 
                             onChange={e => setData({...data, linkedin_access_token: e.target.value})} 
                             className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" 
@@ -234,9 +232,9 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <User className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
                           <input 
                             type="text" 
-                            name="li_urn_v2" 
+                            name="li_urn_v3" 
                             autoComplete="new-password" 
-                            placeholder="Paste Person ID (e.g. 8Z_xPl9)" 
+                            placeholder="Paste Person ID here" 
                             value={data.linkedin_urn} 
                             onChange={e => setData({...data, linkedin_urn: e.target.value})} 
                             className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" 
@@ -309,11 +307,11 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white border border-white/10"><MediumIcon /></div>
-                          <div><h4 className="font-bold text-white">Medium</h4><p className="text-[10px] text-slate-500 uppercase font-black">Publish live to Medium</p></div>
+                          <div><h4 className="font-bold text-white">Medium</h4><p className="text-[10px] text-slate-500 uppercase font-black">Manual URL Import Flow</p></div>
                         </div>
-                        {user.medium_token ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
+                        <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded font-black">AUTOMATIC URL IMPORT</span>
                     </div>
-                    <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" name="medium_token" autoComplete="off" placeholder="Enter Medium Integration Token" value={data.medium_token} onChange={e => setData({...data, medium_token: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+                    <p className="text-xs text-slate-500 mt-4 leading-relaxed italic">No credentials required. We use Medium's official Import Tool for seamless publishing.</p>
                 </div>
             </div>
 
