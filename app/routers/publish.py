@@ -8,10 +8,74 @@ from ..database import get_session
 from ..schemas.db_models import User, Blog
 from ..dependencies import get_current_user
 from ..services.logging_service import logger
+from ..services.linkedin_service import LinkedInService
 from ..utils.slug import slugify
 from ..utils.hashnode_slug import slugify_hashnode
 
 router = APIRouter(prefix="/publish", tags=["Publishing"])
+
+@router.get("/linkedin/teaser/{job_id}")
+async def get_linkedin_teaser(
+    job_id: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """Generates an attractive LinkedIn teaser for the blog."""
+    db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+    if not db_blog or db_blog.status != "completed":
+        raise HTTPException(status_code=404, detail="Blog not found or not completed.")
+
+    content = ""
+    if db_blog.download_url:
+        relative_path = db_blog.download_url.lstrip("/").replace("static/", "")
+        file_path = Path("outputs") / relative_path
+        if file_path.exists():
+            content = file_path.read_text(encoding="utf-8")
+    
+    if not content:
+        raise HTTPException(status_code=400, detail="Blog content is empty.")
+
+    try:
+        teaser = await LinkedInService.generate_teaser(content, db_blog.title)
+        return {"teaser": teaser}
+    except Exception as e:
+        logger.error(f"Failed to generate LinkedIn teaser: {e}")
+        raise HTTPException(status_code=500, detail="AI failed to generate teaser.")
+
+@router.post("/linkedin/{job_id}")
+async def publish_to_linkedin(
+    job_id: str,
+    teaser_text: str = Body(..., embed=True),
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """Publishes the teaser + article link to LinkedIn."""
+    if not current_user.linkedin_access_token or not current_user.linkedin_urn:
+        raise HTTPException(status_code=400, detail="LinkedIn credentials (Token/URN) missing in profile.")
+
+    db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+    if not db_blog or db_blog.status != "completed":
+        raise HTTPException(status_code=404, detail="Blog not found or not completed.")
+
+    article_url = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
+    
+    try:
+        result = await LinkedInService.publish_post(
+            current_user.linkedin_access_token,
+            current_user.linkedin_urn,
+            teaser_text,
+            article_url,
+            db_blog.title
+        )
+        
+        db_blog.linkedin_url = f"https://www.linkedin.com/feed/update/{result['urn']}"
+        session.add(db_blog)
+        session.commit()
+        
+        return {"status": "success", "message": "Successfully posted to LinkedIn!", "url": db_blog.linkedin_url}
+    except Exception as e:
+        logger.error(f"LinkedIn Publishing Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/devto/{job_id}")
 async def publish_to_devto(

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth, getApiUrl } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
-import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen, HelpCircle, ExternalLink, Code,AlertCircle } from 'lucide-react';
+import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen, HelpCircle, ExternalLink, Code, AlertCircle, Linkedin } from 'lucide-react';
 import axios from 'axios';
 
 // Custom Brand Icons
@@ -31,6 +31,8 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
     devto_api_key: '',
     hashnode_api_key: '',
     hashnode_publication_id: '',
+    linkedin_access_token: '',
+    linkedin_urn: '',
   });
   
   const [loading, setLoading] = useState(false);
@@ -38,6 +40,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showHashnodeGuide, setShowHashnodeGuide] = useState(false);
+  const [showLinkedinGuide, setShowLinkedinGuide] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -50,6 +53,8 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
         devto_api_key: user.devto_api_key || '',
         hashnode_api_key: user.hashnode_api_key || '',
         hashnode_publication_id: user.hashnode_publication_id || '',
+        linkedin_access_token: user.linkedin_access_token || '',
+        linkedin_urn: user.linkedin_urn || '',
       });
     }
   }, [user]);
@@ -132,6 +137,41 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
 
             <h3 className="text-2xl font-bold text-white mb-8 border-b border-white/5 pb-4 flex items-center gap-3"><Globe className="w-6 h-6 text-blue-400" /> Integrations Vault</h3>
             <div className="space-y-6">
+                {/* LinkedIn */}
+                <div className="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all group">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#0077B5] rounded-lg flex items-center justify-center text-white border border-white/10"><Linkedin className="w-5 h-5" /></div>
+                          <div><h4 className="font-bold text-white">LinkedIn</h4><p className="text-[10px] text-slate-500 uppercase font-black">Viral Social Teasers</p></div>
+                        </div>
+                        <button 
+                          onClick={() => setShowLinkedinGuide(!showLinkedinGuide)}
+                          className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
+                        >
+                          <HelpCircle className="w-3 h-3" />
+                          {showLinkedinGuide ? "Close Guide" : "Get Token?"}
+                        </button>
+                    </div>
+
+                    {showLinkedinGuide && (
+                      <div className="mb-6 p-5 rounded-2xl bg-blue-500/5 border border-blue-500/10 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="pb-3 border-b border-white/5">
+                          <p className="text-[10px] font-black text-blue-400 uppercase mb-1 flex items-center gap-2"><Key className="w-3 h-3" /> 1. Access Token</p>
+                          <p className="text-xs text-slate-400 leading-relaxed">Go to <a href="https://www.linkedin.com/developers/tools/oauth/token-generator" target="_blank" className="text-slate-200 underline">LinkedIn Token Generator</a>. Select your App, and add the <code className="text-blue-300">w_member_social</code> permission.</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-blue-400 uppercase mb-1 flex items-center gap-2"><User className="w-3 h-3" /> 2. Person URN</p>
+                          <p className="text-xs text-slate-400 leading-relaxed">After generating the token, use the <code className="text-blue-300">/me</code> endpoint in the same tool to find your ID (e.g., <code className="text-blue-300">urn:li:person:ABC123XYZ</code>).</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" placeholder="LinkedIn Access Token" value={data.linkedin_access_token} onChange={e => setData({...data, linkedin_access_token: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+                        <div className="relative"><BookOpen className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="text" placeholder="Person ID (e.g. ABC123XYZ)" value={data.linkedin_urn} onChange={e => setData({...data, linkedin_urn: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+                    </div>
+                </div>
+
                 <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3"><div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center font-bold text-white text-xs border border-white/10">DEV</div><div><h4 className="font-bold text-white">Dev.to</h4><p className="text-[10px] text-slate-500 uppercase font-black">Publish live to Dev.to</p></div></div>

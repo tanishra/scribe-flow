@@ -28,6 +28,8 @@ class User(SQLModel, table=True):
     hashnode_api_key: Optional[str] = Field(default=None) # NEW
     hashnode_publication_id: Optional[str] = Field(default=None) # NEW
     medium_token: Optional[str] = Field(default=None) # NEW
+    linkedin_access_token: Optional[str] = Field(default=None)
+    linkedin_urn: Optional[str] = Field(default=None)
     
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
@@ -55,6 +57,7 @@ class Blog(SQLModel, table=True):
     devto_url: Optional[str] = Field(default=None)
     hashnode_url: Optional[str] = Field(default=None) # NEW
     medium_url: Optional[str] = Field(default=None) # NEW
+    linkedin_url: Optional[str] = Field(default=None)
     
     error: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

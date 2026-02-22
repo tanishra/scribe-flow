@@ -6,7 +6,7 @@ import {
     Send, Download, CheckCircle, AlertCircle, 
     RefreshCw, Archive, Edit3, Save, Share2, 
     ChevronDown, Sparkles, Search as SearchIcon, Globe, X, Loader2, Rocket, ExternalLink,
-    Copy, Check
+    Copy, Check, Linkedin
 } from "lucide-react";
 import { GlassCard } from "./GlassCard";
 import { LoadingScreen } from "./LoadingScreen";
@@ -55,7 +55,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   const [jobId, setJobId] = useState<string | null>(initialJobId || null);
   const [status, setStatus] = useState<JobStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"preview" | "plan" | "evidence" | "images" | "seo" | "publish">("preview");
+  const [activeTab, setActiveTab] = useState<"preview" | "plan" | "evidence" | "images" | "seo" | "publish" | "linkedin">("preview");
   const [isBundling, setIsBundling] = useState(false);
   
   // Editor State
@@ -72,6 +72,12 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   const [copiedShare, setCopiedShare] = useState(false);
   const [publishMessage, setPublishMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
+  // LinkedIn State
+  const [linkedinTeaser, setLinkedinTeaser] = useState("");
+  const [isGeneratingTeaser, setIsGeneratingTeaser] = useState(false);
+  const [isPublishingLI, setIsPublishingLI] = useState(false);
+  const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
+
   const { user, refreshUser } = useAuth();
   const apiUrl = getApiUrl();
 
@@ -81,6 +87,12 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
       pollStatus(initialJobId);
     }
   }, [initialJobId]);
+
+  useEffect(() => {
+    if (activeTab === "linkedin" && !linkedinTeaser && jobId) {
+        generateLinkedinTeaser();
+    }
+  }, [activeTab]);
 
   const startGeneration = async () => {
     if (!topic.trim()) return;
@@ -142,6 +154,33 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
         showPublishMessage('error', "Failed to save changes.");
     } finally {
         setIsSaving(false);
+    }
+  };
+
+  const generateLinkedinTeaser = async () => {
+    if (!jobId) return;
+    setIsGeneratingTeaser(true);
+    try {
+        const res = await axios.get(`${apiUrl}/api/v1/publish/linkedin/teaser/${jobId}`);
+        setLinkedinTeaser(res.data.teaser);
+    } catch (e) {
+        showPublishMessage('error', "Failed to generate LinkedIn teaser.");
+    } finally {
+        setIsGeneratingTeaser(false);
+    }
+  };
+
+  const handlePublishLinkedin = async () => {
+    if (!jobId || !linkedinTeaser) return;
+    setIsPublishingLI(true);
+    try {
+        const res = await axios.post(`${apiUrl}/api/v1/publish/linkedin/${jobId}`, { teaser_text: linkedinTeaser });
+        setLinkedinUrl(res.data.url);
+        showPublishMessage('success', "Posted to LinkedIn!");
+    } catch (e: any) {
+        showPublishMessage('error', e.response?.data?.detail || "LinkedIn Publish Failed");
+    } finally {
+        setIsPublishingLI(false);
     }
   };
 
@@ -265,7 +304,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
             </button>
           </div>
           <div className="flex gap-1 bg-black/40 p-1 rounded-xl">
-            {["preview", "plan", "evidence", "images", "seo", "publish"].map((tab) => (
+            {["preview", "plan", "evidence", "images", "seo", "publish", "linkedin"].map((tab) => (
               <button key={tab} onClick={() => { setActiveTab(tab as any); setIsEditing(false); }} className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? "bg-white/10 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"}`}>{tab}</button>
             ))}
           </div>
@@ -293,6 +332,71 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
               </div>
               {isEditing ? <textarea value={editedContent} onChange={(e) => setContent(e.target.value)} className="w-full min-h-[70vh] bg-black/40 border border-white/10 rounded-2xl p-8 text-slate-300 font-mono text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none" /> : <MarkdownRenderer content={editedContent} />}
             </div>
+          )}
+
+          {activeTab === "linkedin" && (
+              <div className="py-12 max-w-2xl mx-auto text-left">
+                  <div className="text-center mb-12">
+                    <Linkedin className="w-16 h-16 text-[#0077B5] mx-auto mb-4" />
+                    <h2 className="text-3xl font-black text-white tracking-tighter uppercase">LinkedIn Social Teaser</h2>
+                    <p className="text-slate-400 mt-2">Generate a high-impact social post to drive traffic to your blog.</p>
+                  </div>
+
+                  <div className="space-y-6">
+                      <div className="relative group">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-[#0077B5] to-blue-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-all" />
+                          <textarea 
+                            value={linkedinTeaser} 
+                            onChange={(e) => setLinkedinTeaser(e.target.value)}
+                            placeholder="Generating your viral teaser..."
+                            className="relative w-full h-[400px] bg-black/60 border border-white/10 rounded-3xl p-8 text-slate-200 font-sans text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#0077B5]/50 resize-none shadow-2xl"
+                          />
+                          {isGeneratingTeaser && (
+                              <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center gap-4">
+                                  <Loader2 className="w-8 h-8 text-[#0077B5] animate-spin" />
+                                  <p className="text-xs font-black text-white uppercase tracking-widest">AI is architecting your teaser...</p>
+                              </div>
+                          )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <button 
+                            onClick={generateLinkedinTeaser} 
+                            disabled={isGeneratingTeaser || isPublishingLI}
+                            className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all"
+                          >
+                            <RefreshCw className={`w-4 h-4 ${isGeneratingTeaser ? 'animate-spin' : ''}`} /> Regenerate Teaser
+                          </button>
+                          
+                          {!user?.linkedin_access_token ? (
+                              <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold flex items-center gap-2">
+                                  <AlertCircle className="w-4 h-4" /> Connect LinkedIn in Profile to post.
+                              </div>
+                          ) : (
+                              <button 
+                                onClick={handlePublishLinkedin} 
+                                disabled={isPublishingLI || isGeneratingTeaser}
+                                className="flex items-center justify-center gap-3 py-4 rounded-2xl bg-[#0077B5] hover:bg-[#00639a] text-white font-bold transition-all shadow-lg shadow-[#0077B5]/20"
+                              >
+                                {isPublishingLI ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />}
+                                {linkedinUrl ? "UPDATE POST ON LINKEDIN" : "POST LIVE TO LINKEDIN"}
+                              </button>
+                          )}
+                      </div>
+
+                      {linkedinUrl && (
+                          <motion.a 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            href={linkedinUrl} 
+                            target="_blank" 
+                            className="flex items-center justify-center gap-2 p-4 rounded-2xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-black uppercase tracking-widest hover:bg-green-500/20 transition-all"
+                          >
+                            View Post on LinkedIn <ExternalLink className="w-4 h-4" />
+                          </motion.a>
+                      )}
+                  </div>
+              </div>
           )}
 
           {activeTab === "publish" && (
