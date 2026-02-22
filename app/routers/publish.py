@@ -27,7 +27,6 @@ async def publish_to_devto(
     if db_blog.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to publish this blog.")
 
-    # Read content from file
     content = ""
     if db_blog.download_url:
         relative_path = db_blog.download_url.lstrip("/").replace("static/", "")
@@ -38,14 +37,10 @@ async def publish_to_devto(
     if not content:
         raise HTTPException(status_code=400, detail="Blog content is empty.")
 
-    # Base URL for ScribeFlow
     scribe_flow_url = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
-    
-    # Fix relative images to absolute URLs for Dev.to
     backend_url = "http://13.61.4.241:8000"
     content = content.replace("(/static/", f"({backend_url}/static/")
 
-    # Clean tags for Dev.to (strictly ALPHANUMERIC)
     raw_tags = [t.strip() for t in (db_blog.keywords or "ai, automation").split(",")]
     clean_tags = []
     for t in raw_tags:
@@ -69,21 +64,13 @@ async def publish_to_devto(
         "Content-Type": "application/json"
     }
 
-    # Logic: If devto_url already exists, we UPDATE. Otherwise, we CREATE.
-    # Note: Dev.to update API requires the numeric ID of the article.
-    # We can try to extract the ID from the URL if we have it.
-    
     async with httpx.AsyncClient() as client:
         try:
             if db_blog.devto_url:
-                # Update existing (requires numeric ID)
-                # Example URL: https://dev.to/username/title-slug-12345
-                # The ID is the last part of the slug.
                 article_id = db_blog.devto_url.split("-")[-1]
                 response = await client.put(f"https://dev.to/api/articles/{article_id}", json=payload, headers=headers)
                 action = "updated"
             else:
-                # Create new
                 response = await client.post("https://dev.to/api/articles", json=payload, headers=headers)
                 action = "posted"
 
@@ -92,16 +79,94 @@ async def publish_to_devto(
                 db_blog.devto_url = data.get("url")
                 session.add(db_blog)
                 session.commit()
-                return {
-                    "status": "success", 
-                    "message": f"Blog {action} successfully on Dev.to!",
-                    "url": data.get("url")
-                }
+                return {"status": "success", "message": f"Blog {action} successfully on Dev.to!", "url": data.get("url")}
             else:
-                # If update failed (maybe ID changed), fallback to a fresh POST
-                # Dev.to usually blocks this via canonical_url, so we report the error.
-                logger.error(f"Dev.to API error: {response.text}")
                 raise HTTPException(status_code=response.status_code, detail=f"Dev.to Error: {response.text}")
         except Exception as e:
-            logger.error(f"Failed to connect to Dev.to: {e}")
-            raise HTTPException(status_code=500, detail="Failed to connect to Dev.to API.")
+            raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/hashnode/{job_id}")
+async def publish_to_hashnode(
+    job_id: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """Publishes the blog to Hashnode via GraphQL API."""
+    if not current_user.hashnode_api_key or not current_user.hashnode_publication_id:
+        raise HTTPException(status_code=400, detail="Hashnode API Key or Publication ID missing.")
+
+    db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+    if not db_blog or db_blog.status != "completed":
+        raise HTTPException(status_code=404, detail="Blog not found or not completed.")
+
+    content = ""
+    if db_blog.download_url:
+        relative_path = db_blog.download_url.lstrip("/").replace("static/", "")
+        file_path = Path("outputs") / relative_path
+        if file_path.exists():
+            content = file_path.read_text(encoding="utf-8")
+
+    scribe_flow_url = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
+    backend_url = "http://13.61.4.241:8000"
+    content = content.replace("(/static/", f"({backend_url}/static/")
+
+    # Hashnode GraphQL Mutation
+    query = """
+    mutation PublishPost($input: PublishPostInput!) {
+      publishPost(input: $input) {
+        post {
+          url
+          id
+        }
+      }
+    }
+    """
+    
+    # Format tags for Hashnode (they need a specific format, but we'll try simple ones)
+    # Hashnode requires tags to exist. We'll use a few standard ones.
+    
+    variables = {
+        "input": {
+            "title": db_blog.title,
+            "contentMarkdown": content,
+            "publicationId": current_user.hashnode_publication_id,
+            "metaTags": {
+                "description": db_blog.meta_description or "",
+                "title": db_blog.title
+            },
+            "canonicalUrl": scribe_flow_url,
+            # For simplicity, we skip complex tag objects which require IDs on Hashnode
+        }
+    }
+
+    headers = {
+        "Authorization": current_user.hashnode_api_key,
+        "Content-Type": "application/json"
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                "https://gql.hashnode.com/",
+                json={"query": query, "variables": variables},
+                headers=headers
+            )
+            res_data = response.json()
+            
+            if "errors" in res_data:
+                logger.error(f"Hashnode API error: {res_data['errors']}")
+                raise HTTPException(status_code=400, detail=f"Hashnode Error: {res_data['errors'][0]['message']}")
+
+            post_data = res_data["data"]["publishPost"]["post"]
+            db_blog.hashnode_url = post_data["url"]
+            session.add(db_blog)
+            session.commit()
+
+            return {
+                "status": "success",
+                "message": "Blog published successfully to Hashnode!",
+                "url": post_data["url"]
+            }
+        except Exception as e:
+            logger.error(f"Failed to connect to Hashnode: {e}")
+            raise HTTPException(status_code=500, detail=str(e))

@@ -24,7 +24,9 @@ class User(SQLModel, table=True):
     is_premium: bool = Field(default=False)
     
     # Integrations
-    devto_api_key: Optional[str] = Field(default=None) # NEW
+    devto_api_key: Optional[str] = Field(default=None)
+    hashnode_api_key: Optional[str] = Field(default=None) # NEW
+    hashnode_publication_id: Optional[str] = Field(default=None) # NEW
     
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
@@ -49,7 +51,8 @@ class Blog(SQLModel, table=True):
     keywords: Optional[str] = Field(default=None)
     
     # Publishing
-    devto_url: Optional[str] = Field(default=None) # NEW
+    devto_url: Optional[str] = Field(default=None)
+    hashnode_url: Optional[str] = Field(default=None) # NEW
     
     error: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

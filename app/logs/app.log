@@ -2569,3 +2569,199 @@ NameError: name 'datetime' is not defined
 2026-02-20 17:47:30,947 - blog_writer_ai - INFO - [auth_service.py:45] - Code: 910761
 2026-02-20 17:47:30,947 - blog_writer_ai - INFO - [auth_service.py:46] - --- END MOCK ---
 2026-02-20 19:15:59,937 - blog_writer_ai - INFO - [auth_service.py:76] - OTP successfully sent to st035486@gmail.com
+2026-02-20 23:11:18,416 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/auth/me
+2026-02-20 23:11:18,631 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-20 23:17:26,030 - blog_writer_ai - INFO - [api.py:42] - Incoming request: PATCH http://localhost:8000/api/v1/auth/profile
+2026-02-20 23:17:26,156 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-20 23:17:31,963 - blog_writer_ai - INFO - [api.py:42] - Incoming request: PATCH http://localhost:8000/api/v1/auth/profile
+2026-02-20 23:17:31,973 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-20 23:17:34,014 - blog_writer_ai - INFO - [api.py:42] - Incoming request: PATCH http://localhost:8000/api/v1/auth/profile
+2026-02-20 23:17:34,021 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-20 23:18:04,623 - blog_writer_ai - INFO - [api.py:42] - Incoming request: PATCH http://localhost:8000/api/v1/auth/profile
+2026-02-20 23:18:04,657 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-20 23:18:52,132 - blog_writer_ai - INFO - [api.py:42] - Incoming request: PATCH http://localhost:8000/api/v1/auth/profile
+2026-02-20 23:18:52,186 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-20 23:19:40,073 - blog_writer_ai - INFO - [api.py:42] - Incoming request: PATCH http://localhost:8000/api/v1/auth/profile
+2026-02-20 23:19:40,103 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-20 23:26:54,622 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/profiles/d9aec017-3809-4d0e-a63c-73fd08223701.jpeg
+2026-02-20 23:26:54,664 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-20 23:27:13,369 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/profiles/d9aec017-3809-4d0e-a63c-73fd08223701.jpeg
+2026-02-20 23:27:13,374 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-20 23:55:43,886 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/profiles/d9aec017-3809-4d0e-a63c-73fd08223701.jpeg
+2026-02-20 23:55:43,900 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-20 23:56:04,807 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/profiles/a8c30390-6a03-41c1-a21d-37ea25d76c36.jpeg
+2026-02-20 23:56:04,815 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 00:02:24,307 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/profiles/b67703a9-390c-4b84-8e87-dc9522e0fb6d.jpeg
+2026-02-21 00:02:24,311 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 00:32:55,105 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/technology_role_indian_economy.png
+2026-02-21 00:32:55,109 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/policy_reforms_india.png
+2026-02-21 00:32:55,112 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 00:32:55,112 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 00:34:16,778 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/technology_role_indian_economy.png
+2026-02-21 00:34:16,781 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/policy_reforms_india.png
+2026-02-21 00:34:16,784 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 00:34:16,785 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 00:45:18,419 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/auth/me
+2026-02-21 00:45:18,906 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:45:43,375 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/support/send
+2026-02-21 00:45:48,038 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:51:25,869 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/neural_network_architecture.png
+2026-02-21 00:51:25,892 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/loss_function_graph.png
+2026-02-21 00:51:25,906 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/evaluation_metrics_chart.png
+2026-02-21 00:51:25,930 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 00:51:25,933 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 00:51:25,933 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 00:54:51,556 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/auth/me
+2026-02-21 00:54:51,705 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:55:17,085 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/send-otp
+2026-02-21 00:55:21,224 - blog_writer_ai - INFO - [auth_service.py:76] - OTP successfully sent to st035486@gmail.com
+2026-02-21 00:55:21,226 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:55:45,457 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/verify-otp
+2026-02-21 00:55:45,495 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:55:45,502 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/auth/me
+2026-02-21 00:55:45,506 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:56:12,839 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/generate
+2026-02-21 00:56:12,886 - blog_writer_ai - INFO - [api.py:188] - --- API REQUEST --- User ID: 3 | Topic: Convolutional Neural Networks and its math behind it.
+2026-02-21 00:56:12,903 - blog_writer_ai - INFO - [api.py:44] - Response status: 202
+2026-02-21 00:56:12,903 - blog_writer_ai - INFO - [api.py:87] - Background task started for Job ID: 79eb4d0f-95df-45d5-a632-a64358d044ad
+2026-02-21 00:56:12,908 - blog_writer_ai - INFO - [main.py:6] - ==================================================
+2026-02-21 00:56:12,909 - blog_writer_ai - INFO - [main.py:7] - STARTING BLOG WRITER AI (ASYNC): Convolutional Neural Networks and its math behind it.
+2026-02-21 00:56:12,909 - blog_writer_ai - INFO - [main.py:8] - ==================================================
+2026-02-21 00:56:12,913 - blog_writer_ai - DEBUG - [llm_service.py:9] - Initializing ChatOpenAI with model: gpt-4o-mini
+2026-02-21 00:56:13,511 - blog_writer_ai - DEBUG - [llm_service.py:9] - Initializing ChatOpenAI with model: gpt-4o-mini
+2026-02-21 00:56:13,512 - blog_writer_ai - DEBUG - [llm_service.py:9] - Initializing ChatOpenAI with model: gpt-4o-mini
+2026-02-21 00:56:13,512 - blog_writer_ai - DEBUG - [llm_service.py:9] - Initializing ChatOpenAI with model: gpt-4o-mini
+2026-02-21 00:56:13,512 - blog_writer_ai - DEBUG - [llm_service.py:9] - Initializing ChatOpenAI with model: gpt-4o-mini
+2026-02-21 00:56:13,553 - blog_writer_ai - INFO - [router.py:13] - --- ROUTER NODE START ---
+2026-02-21 00:56:13,553 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/auth/me
+2026-02-21 00:56:13,554 - blog_writer_ai - INFO - [router.py:14] - Processing topic: Convolutional Neural Networks and its math behind it.
+2026-02-21 00:56:13,565 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/status/79eb4d0f-95df-45d5-a632-a64358d044ad
+2026-02-21 00:56:13,584 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:56:13,587 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:56:16,761 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/status/79eb4d0f-95df-45d5-a632-a64358d044ad
+2026-02-21 00:56:16,832 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:56:18,309 - blog_writer_ai - INFO - [router.py:24] - Router Decision: Mode=closed_book, Needs Research=False
+2026-02-21 00:56:18,312 - blog_writer_ai - INFO - [router.py:36] - Routing to: orchestrator
+2026-02-21 00:56:18,314 - blog_writer_ai - INFO - [orchestrator.py:13] - --- ORCHESTRATOR NODE START ---
+2026-02-21 00:56:18,317 - blog_writer_ai - INFO - [orchestrator.py:18] - Planning blog for topic with 0 evidence items in closed_book mode.
+2026-02-21 00:56:19,613 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/status/79eb4d0f-95df-45d5-a632-a64358d044ad
+2026-02-21 00:56:19,629 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:56:22,640 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/status/79eb4d0f-95df-45d5-a632-a64358d044ad
+2026-02-21 00:56:22,650 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:56:25,727 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/status/79eb4d0f-95df-45d5-a632-a64358d044ad
+2026-02-21 00:56:25,729 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:56:28,806 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/status/79eb4d0f-95df-45d5-a632-a64358d044ad
+2026-02-21 00:56:28,809 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:56:47,931 - blog_writer_ai - INFO - [orchestrator.py:33] - Plan generated: 'Decoding Convolutional Neural Networks: The Math Behind the Magic' with 8 tasks.
+2026-02-21 00:56:47,932 - blog_writer_ai - INFO - [orchestrator.py:38] - Fanning out 8 tasks to Workers.
+2026-02-21 00:56:47,935 - blog_writer_ai - INFO - [worker.py:18] - --- WORKER NODE START (Task ID: 1) ---
+2026-02-21 00:56:47,935 - blog_writer_ai - INFO - [worker.py:18] - --- WORKER NODE START (Task ID: 2) ---
+2026-02-21 00:56:47,935 - blog_writer_ai - INFO - [worker.py:18] - --- WORKER NODE START (Task ID: 3) ---
+2026-02-21 00:56:47,935 - blog_writer_ai - INFO - [worker.py:18] - --- WORKER NODE START (Task ID: 4) ---
+2026-02-21 00:56:47,935 - blog_writer_ai - INFO - [worker.py:19] - Writing section: 'Understanding the Basics of Convolutional Neural Networks' for topic: Convolutional Neural Networks and its math behind it.
+2026-02-21 00:56:47,936 - blog_writer_ai - INFO - [worker.py:18] - --- WORKER NODE START (Task ID: 5) ---
+2026-02-21 00:56:47,939 - blog_writer_ai - INFO - [worker.py:18] - --- WORKER NODE START (Task ID: 6) ---
+2026-02-21 00:56:47,939 - blog_writer_ai - INFO - [worker.py:19] - Writing section: 'The Mathematical Foundations of Convolutional Layers' for topic: Convolutional Neural Networks and its math behind it.
+2026-02-21 00:56:47,939 - blog_writer_ai - INFO - [worker.py:18] - --- WORKER NODE START (Task ID: 7) ---
+2026-02-21 00:56:47,940 - blog_writer_ai - INFO - [worker.py:19] - Writing section: 'Diving Deeper: Pooling and Its Mathematical Implications' for topic: Convolutional Neural Networks and its math behind it.
+2026-02-21 00:56:47,940 - blog_writer_ai - INFO - [worker.py:18] - --- WORKER NODE START (Task ID: 8) ---
+2026-02-21 00:56:47,940 - blog_writer_ai - INFO - [worker.py:19] - Writing section: 'Activation Functions: The Heartbeat of Neural Networks' for topic: Convolutional Neural Networks and its math behind it.
+2026-02-21 00:56:47,945 - blog_writer_ai - INFO - [worker.py:19] - Writing section: 'Common Mistakes Made When Implementing CNNs' for topic: Convolutional Neural Networks and its math behind it.
+2026-02-21 00:56:47,945 - blog_writer_ai - INFO - [worker.py:19] - Writing section: 'Understanding the Backpropagation Algorithm in CNNs' for topic: Convolutional Neural Networks and its math behind it.
+2026-02-21 00:56:47,947 - blog_writer_ai - INFO - [worker.py:19] - Writing section: 'Real-world Applications of Convolutional Neural Networks' for topic: Convolutional Neural Networks and its math behind it.
+2026-02-21 00:56:47,949 - blog_writer_ai - INFO - [worker.py:19] - Writing section: 'Mastering Convolutional Neural Networks: A Path Forward' for topic: Convolutional Neural Networks and its math behind it.
+2026-02-21 00:56:58,224 - blog_writer_ai - INFO - [worker.py:56] - Successfully wrote section: 'Mastering Convolutional Neural Networks: A Path Forward' (2307 chars)
+2026-02-21 00:57:02,965 - blog_writer_ai - INFO - [worker.py:56] - Successfully wrote section: 'Common Mistakes Made When Implementing CNNs' (3204 chars)
+2026-02-21 00:57:03,376 - blog_writer_ai - INFO - [worker.py:56] - Successfully wrote section: 'Understanding the Basics of Convolutional Neural Networks' (3383 chars)
+2026-02-21 00:57:03,377 - blog_writer_ai - INFO - [worker.py:56] - Successfully wrote section: 'Real-world Applications of Convolutional Neural Networks' (3436 chars)
+2026-02-21 00:57:03,428 - blog_writer_ai - INFO - [worker.py:56] - Successfully wrote section: 'Understanding the Backpropagation Algorithm in CNNs' (2744 chars)
+2026-02-21 00:57:04,189 - blog_writer_ai - INFO - [worker.py:56] - Successfully wrote section: 'Activation Functions: The Heartbeat of Neural Networks' (3162 chars)
+2026-02-21 00:57:04,337 - blog_writer_ai - INFO - [worker.py:56] - Successfully wrote section: 'The Mathematical Foundations of Convolutional Layers' (3100 chars)
+2026-02-21 00:57:04,643 - blog_writer_ai - INFO - [worker.py:56] - Successfully wrote section: 'Diving Deeper: Pooling and Its Mathematical Implications' (3057 chars)
+2026-02-21 00:57:04,646 - blog_writer_ai - INFO - [reducer.py:55] - --- REDUCER: MERGING CONTENT START ---
+2026-02-21 00:57:04,646 - blog_writer_ai - INFO - [reducer.py:58] - Merging 8 sections into final blog.
+2026-02-21 00:57:04,647 - blog_writer_ai - INFO - [reducer.py:64] - --- REDUCER: DECIDING IMAGES START (Optimized) ---
+2026-02-21 00:57:11,791 - blog_writer_ai - INFO - [reducer.py:83] - AI decided on 3 visual placements.
+2026-02-21 00:57:11,792 - blog_writer_ai - INFO - [reducer.py:97] - Fanning out 3 Image Tasks to workers.
+2026-02-21 00:57:11,793 - blog_writer_ai - INFO - [reducer.py:18] - --- IMAGE WORKER START: mathematical_operations_convolutional_layers.png ---
+2026-02-21 00:57:11,794 - blog_writer_ai - INFO - [image_service.py:13] - Generating Gemini image with prompt: Create a diagram showing the mathematical equations and visuals involved in convolutional layers of CNNs, including convolution operation, kernel application, and output generation....
+2026-02-21 00:57:11,836 - blog_writer_ai - INFO - [reducer.py:18] - --- IMAGE WORKER START: pooling_layer_importance.png ---
+2026-02-21 00:57:11,845 - blog_writer_ai - INFO - [image_service.py:13] - Generating Gemini image with prompt: Illustrate the concept of pooling in CNNs, showcasing how pooling layers operate on feature maps, including max pooling and average pooling examples....
+2026-02-21 00:57:11,862 - blog_writer_ai - INFO - [reducer.py:18] - --- IMAGE WORKER START: backpropagation_in_cnns.png ---
+2026-02-21 00:57:11,863 - blog_writer_ai - INFO - [image_service.py:13] - Generating Gemini image with prompt: Design a flowchart or diagram that explains the backpropagation algorithm in CNNs, detailing how gradients are computed and updated through layers....
+2026-02-21 00:57:20,071 - blog_writer_ai - INFO - [image_service.py:55] - Successfully extracted image bytes from Gemini response.
+2026-02-21 00:57:20,073 - blog_writer_ai - DEBUG - [reducer.py:31] - Saved image to outputs/images/mathematical_operations_convolutional_layers.png
+2026-02-21 00:57:21,769 - blog_writer_ai - INFO - [image_service.py:55] - Successfully extracted image bytes from Gemini response.
+2026-02-21 00:57:21,770 - blog_writer_ai - DEBUG - [reducer.py:31] - Saved image to outputs/images/backpropagation_in_cnns.png
+2026-02-21 00:57:23,511 - blog_writer_ai - INFO - [image_service.py:55] - Successfully extracted image bytes from Gemini response.
+2026-02-21 00:57:23,513 - blog_writer_ai - DEBUG - [reducer.py:31] - Saved image to outputs/images/pooling_layer_importance.png
+2026-02-21 00:57:23,515 - blog_writer_ai - INFO - [reducer.py:105] - --- REDUCER: FINALIZING BLOG START ---
+2026-02-21 00:57:23,515 - blog_writer_ai - DEBUG - [reducer.py:113] - Attaching [[IMAGE_1]] to section 2
+2026-02-21 00:57:23,515 - blog_writer_ai - DEBUG - [reducer.py:113] - Attaching [[IMAGE_2]] to section 3
+2026-02-21 00:57:23,515 - blog_writer_ai - DEBUG - [reducer.py:113] - Attaching [[IMAGE_3]] to section 6
+2026-02-21 00:57:23,517 - blog_writer_ai - INFO - [reducer.py:135] - Final blog written to outputs/blogs/decoding_convolutional_neural_networks_the_math_behind_the_magic.md
+2026-02-21 00:57:23,518 - blog_writer_ai - INFO - [main.py:27] - ==================================================
+2026-02-21 00:57:23,518 - blog_writer_ai - INFO - [main.py:28] - BLOG WRITER PRO COMPLETED SUCCESSFULLY
+2026-02-21 00:57:23,518 - blog_writer_ai - INFO - [main.py:29] - ==================================================
+2026-02-21 00:57:23,531 - blog_writer_ai - INFO - [api.py:140] - Job 79eb4d0f-95df-45d5-a632-a64358d044ad completed successfully.
+2026-02-21 00:57:26,709 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/status/79eb4d0f-95df-45d5-a632-a64358d044ad
+2026-02-21 00:57:26,716 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:57:26,868 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/blogs/decoding_convolutional_neural_networks_the_math_behind_the_magic.md
+2026-02-21 00:57:26,909 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:57:27,121 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/mathematical_operations_convolutional_layers.png
+2026-02-21 00:57:27,124 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:57:27,129 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/pooling_layer_importance.png
+2026-02-21 00:57:27,132 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 00:57:27,133 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/backpropagation_in_cnns.png
+2026-02-21 00:57:27,135 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 11:28:53,617 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/auth/me
+2026-02-21 11:29:04,874 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/send-otp
+2026-02-21 11:29:08,768 - blog_writer_ai - INFO - [auth_service.py:76] - OTP successfully sent to tanishrajput9@gmail.com
+2026-02-21 11:29:08,771 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 11:29:27,178 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/verify-otp
+2026-02-21 11:29:42,965 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/verify-otp
+2026-02-21 11:29:42,976 - blog_writer_ai - INFO - [api.py:44] - Response status: 400
+2026-02-21 11:29:43,992 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/verify-otp
+2026-02-21 11:29:43,994 - blog_writer_ai - INFO - [api.py:44] - Response status: 400
+2026-02-21 11:29:57,215 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/send-otp
+2026-02-21 11:30:00,954 - blog_writer_ai - INFO - [auth_service.py:76] - OTP successfully sent to tanishrajput9@gmail.com
+2026-02-21 11:30:00,955 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 11:30:17,359 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/verify-otp
+2026-02-21 11:30:39,622 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/google-login
+2026-02-21 11:31:13,912 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/google-login
+2026-02-21 11:32:04,918 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/google-login
+2026-02-21 11:36:02,392 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/google-login
+2026-02-21 11:36:20,206 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/google-login
+2026-02-21 11:36:29,681 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/send-otp
+2026-02-21 11:36:33,103 - blog_writer_ai - INFO - [auth_service.py:76] - OTP successfully sent to tanishrajput9@gmail.com
+2026-02-21 11:36:33,107 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 11:36:55,153 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/verify-otp
+2026-02-21 11:40:32,878 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/google-login
+2026-02-21 11:40:57,872 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/send-otp
+2026-02-21 11:41:01,647 - blog_writer_ai - INFO - [auth_service.py:76] - OTP successfully sent to st035486@gmail.com
+2026-02-21 11:41:01,651 - blog_writer_ai - INFO - [api.py:44] - Response status: 200
+2026-02-21 11:42:24,524 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/auth/verify-otp
+2026-02-21 11:47:21,217 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/history
+2026-02-21 11:58:28,499 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/api/v1/auth/me
+2026-02-21 12:04:52,451 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/generate
+2026-02-21 12:04:55,048 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/generate
+2026-02-21 12:05:09,271 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/generate
+2026-02-21 12:05:10,081 - blog_writer_ai - INFO - [api.py:42] - Incoming request: POST http://localhost:8000/api/v1/generate
+2026-02-21 12:11:01,736 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/inertia_diagram.png?t=1771656061678
+2026-02-21 12:11:01,757 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/newtons_second_law_formula.png?t=1771656061678
+2026-02-21 12:11:01,759 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/real_world_applications_newtons_laws.png?t=1771656061678
+2026-02-21 12:11:01,806 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 12:11:01,812 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 12:11:01,813 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 12:18:33,411 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/inertia_diagram.png?t=1771656513359
+2026-02-21 12:18:33,421 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/newtons_second_law_formula.png?t=1771656513359
+2026-02-21 12:18:33,462 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/real_world_applications_newtons_laws.png?t=1771656513359
+2026-02-21 12:18:33,470 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 12:18:33,472 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 12:18:33,472 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 12:18:40,941 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/inertia_diagram.png?t=1771656520937
+2026-02-21 12:18:40,944 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/newtons_second_law_formula.png?t=1771656520937
+2026-02-21 12:18:40,945 - blog_writer_ai - INFO - [api.py:42] - Incoming request: GET http://localhost:8000/static/images/real_world_applications_newtons_laws.png?t=1771656520937
+2026-02-21 12:18:40,946 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 12:18:40,947 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
+2026-02-21 12:18:40,948 - blog_writer_ai - INFO - [api.py:44] - Response status: 404
