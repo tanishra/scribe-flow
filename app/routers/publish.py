@@ -8,6 +8,7 @@ from ..schemas.db_models import User, Blog
 from ..dependencies import get_current_user
 from ..services.logging_service import logger
 from ..utils.slug import slugify
+from ..utils.hashnode_slug import slugify_hashnode
 
 router = APIRouter(prefix="/publish", tags=["Publishing"])
 
@@ -134,8 +135,8 @@ async def publish_to_hashnode(
     if not hashnode_tags:
         hashnode_tags = [{"slug": "ai", "name": "AI"}]
     
-    # Generate a unique slug
-    blog_slug = slugify(db_blog.title)
+    # Generate a unique slug for Hashnode using hyphens
+    blog_slug = slugify_hashnode(db_blog.title)
     
     variables = {
         "input": {
