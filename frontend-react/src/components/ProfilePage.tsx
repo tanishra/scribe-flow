@@ -168,21 +168,36 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <div className="flex items-start gap-3">
                             <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">1</div>
                             <div>
-                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Access Token Generator</p>
-                              <p className="text-xs text-slate-400 leading-relaxed">
+                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Enable Required Products</p>
+                              <p className="text-xs text-slate-400 leading-relaxed mb-2">
+                                Go to <a href="https://www.linkedin.com/developers/apps" target="_blank" className="text-blue-400 underline inline-flex items-center gap-1">LinkedIn Developers <ExternalLink className="w-3 h-3" /></a>.
+                              </p>
+                              <ul className="text-[11px] text-slate-500 space-y-1 list-disc ml-4 italic">
+                                <li>Select your App &gt; <b>Products</b> tab.</li>
+                                <li>Request Access to: <span className="text-blue-300">Sign In with LinkedIn using OpenID Connect</span></li>
+                                <li>Request Access to: <span className="text-blue-300">Share on LinkedIn</span></li>
+                              </ul>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">2</div>
+                            <div>
+                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Get Token with 3 Scopes</p>
+                              <p className="text-xs text-slate-400 leading-relaxed mb-2">
                                 Open the <a href="https://www.linkedin.com/developers/tools/oauth/token-generator" target="_blank" className="text-blue-400 underline inline-flex items-center gap-1">Token Generator Tool <ExternalLink className="w-3 h-3" /></a>.
                               </p>
-                              <ul className="mt-2 text-[11px] text-slate-500 space-y-1 list-disc ml-4">
+                              <ul className="text-[11px] text-slate-500 space-y-1 list-disc ml-4 italic">
                                 <li>Select your App.</li>
-                                <li>Check <code className="text-blue-300 font-bold">w_member_social</code>.</li>
-                                <li>Click <b>"Request Token"</b> and copy the long Access Token string.</li>
+                                <li>Check <code className="text-blue-300 font-bold">openid</code>, <code className="text-blue-300 font-bold">profile</code>, and <code className="text-blue-300 font-bold">w_member_social</code>.</li>
+                                <li>Click <b>"Request Token"</b> and authorize. Copy the long <b>Access Token</b>.</li>
                               </ul>
                             </div>
                           </div>
 
                           <div className="bg-black/40 p-5 rounded-2xl border border-white/10 space-y-4">
                             <div className="flex items-center gap-3 border-b border-white/5 pb-2">
-                                <div className="w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs font-black flex-shrink-0">2</div>
+                                <div className="w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs font-black flex-shrink-0">3</div>
                                 <p className="text-[11px] font-black text-white uppercase tracking-wider">How to find your "Person ID" (Simplest Way)</p>
                             </div>
                             <div className="space-y-3">

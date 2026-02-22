@@ -13,53 +13,44 @@ class LinkedInService:
         url_openid = "https://api.linkedin.com/v2/userinfo"
         url_legacy = "https://api.linkedin.com/v2/me"
         
-        headers_v2 = {
+        # We send the version header on EVERYTHING to avoid "NO_VERSION" errors
+        headers = {
             "Authorization": f"Bearer {access_token}",
-            "X-Restli-Protocol-Version": "2.0.0"
-        }
-        
-        headers_simple = {
-            "Authorization": f"Bearer {access_token}"
+            "X-Restli-Protocol-Version": "2.0.0",
+            "Accept": "application/json",
         }
         
         async with httpx.AsyncClient() as client:
-            # Attempt 1: Modern OpenID Connect (Most reliable for new apps)
+            # Attempt 1: Modern OpenID Connect
             try:
-                response = await client.get(url_openid, headers=headers_simple)
+                response = await client.get(url_openid, headers=headers)
                 if response.status_code == 200:
                     data = response.json()
                     logger.info("LinkedIn ID found via OpenID endpoint.")
                     return data.get("sub")
                 else:
-                    logger.warning(f"OpenID endpoint returned {response.status_code}: {response.text}")
+                    logger.warning(f"OpenID failed ({response.status_code}): {response.text}")
             except Exception as e:
                 logger.warning(f"OpenID fetch error: {e}")
 
-            # Attempt 2: Legacy /me with Protocol Version (Standard)
+            # Attempt 2: Legacy /me
             try:
-                response = await client.get(url_legacy, headers=headers_v2)
+                response = await client.get(url_legacy, headers=headers)
                 if response.status_code == 200:
                     data = response.json()
-                    logger.info("LinkedIn ID found via legacy /me with v2 headers.")
+                    logger.info("LinkedIn ID found via legacy /me.")
                     return data.get("id")
                 else:
-                    logger.warning(f"Legacy /me (v2) returned {response.status_code}: {response.text}")
+                    logger.warning(f"Legacy /me failed ({response.status_code}): {response.text}")
             except Exception as e:
-                logger.warning(f"Legacy /me (v2) error: {e}")
-
-            # Attempt 3: Legacy /me without special headers (Fallback)
-            try:
-                response = await client.get(url_legacy, headers=headers_simple)
-                if response.status_code == 200:
-                    data = response.json()
-                    logger.info("LinkedIn ID found via simple /me endpoint.")
-                    return data.get("id")
-            except Exception as e:
-                pass
+                logger.warning(f"Legacy /me error: {e}")
 
             # If all failed
-            logger.error("All LinkedIn ID fetch attempts failed. Token likely missing 'openid' or 'r_liteprofile' scopes.")
-            raise Exception("Please ensure you selected 'openid' and 'profile' scopes in the Token Generator.")
+            logger.error("All LinkedIn ID fetch attempts failed. Scopes missing.")
+            raise HTTPException(
+                status_code=403, 
+                detail="PERMISSION DENIED: Your LinkedIn Token is missing 'openid' or 'profile' scopes. Please enable 'Sign In with LinkedIn using OpenID Connect' in your LinkedIn App Products tab."
+            )
 
     @staticmethod
     async def generate_teaser(blog_content: str, blog_title: str) -> str:
