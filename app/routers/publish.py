@@ -41,7 +41,7 @@ async def publish_to_devto(
         raise HTTPException(status_code=400, detail="Blog content is empty.")
 
     scribe_flow_url = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
-    backend_url = "http://13.61.4.241:8000"
+    backend_url = "https://api.tanish.website"
     content = content.replace("(/static/", f"({backend_url}/static/")
 
     raw_tags = [t.strip() for t in (db_blog.keywords or "ai, automation").split(",")]
@@ -110,7 +110,7 @@ async def publish_to_hashnode(
             content = file_path.read_text(encoding="utf-8")
 
     scribe_flow_url = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
-    backend_url = "http://13.61.4.241:8000"
+    backend_url = "https://api.tanish.website"
     
     # Replace all static paths with absolute URLs
     content = content.replace("(/static/", f"({backend_url}/static/")
