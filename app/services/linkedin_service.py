@@ -9,17 +9,34 @@ class LinkedInService:
     @staticmethod
     async def get_user_urn(access_token: str) -> str:
         """Automatically fetches the user's URN (Person ID) using the access token."""
-        url = "https://api.linkedin.com/v2/me"
-        headers = {"Authorization": f"Bearer {access_token}"}
+        # Try OpenID Connect endpoint first (Modern standard)
+        url_openid = "https://api.linkedin.com/v2/userinfo"
+        # Try legacy endpoint as fallback
+        url_legacy = "https://api.linkedin.com/v2/me"
+        
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "X-Restli-Protocol-Version": "2.0.0"
+        }
         
         async with httpx.AsyncClient() as client:
-            response = await client.get(url, headers=headers)
+            # Attempt 1: OpenID (Returns 'sub' as ID)
+            try:
+                response = await client.get(url_openid, headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    return data.get("sub") # In OpenID, the ID is called 'sub'
+            except Exception as e:
+                logger.warning(f"OpenID fetch failed: {e}")
+
+            # Attempt 2: Legacy /me (Returns 'id' as ID)
+            response = await client.get(url_legacy, headers=headers)
             if response.status_code != 200:
-                logger.error(f"Failed to fetch LinkedIn ID: {response.text}")
-                raise Exception("Invalid LinkedIn Access Token")
+                logger.error(f"LinkedIn ID fetch failed entirely: {response.text}")
+                raise Exception("Invalid LinkedIn Access Token or Missing Scopes (r_liteprofile or openid)")
             
             data = response.json()
-            return data.get("id") # This is the ABC123XYZ part
+            return data.get("id")
 
     @staticmethod
     async def generate_teaser(blog_content: str, blog_title: str) -> str:
