@@ -31,12 +31,12 @@ async def create_order(req: OrderRequest, current_user: User = Depends(get_curre
     
     # Logic for amounts
     amounts = {
-        "test": 10000,  # ₹100
-        "basic": 49900, # ₹499
-        "pro": 99900    # ₹999
+        "test": 10000,   # ₹100
+        "basic": 99900,  # ₹999
+        "pro": 199900    # ₹1999
     }
     
-    amount = amounts.get(req.plan, 49900)
+    amount = amounts.get(req.plan, 99900)
 
     if "mock" in RAZORPAY_KEY_ID:
         return {
@@ -77,16 +77,16 @@ async def verify_payment(
     # Credit logic
     credits_map = {
         "test": 5,   # ₹100 -> 5
-        "basic": 20, # ₹499 -> 20
-        "pro": 50    # ₹999 -> 50
+        "basic": 20, # ₹999 -> 20
+        "pro": 50    # ₹1999 -> 50
     }
     amounts_map = {
         "test": 10000,
-        "basic": 49900,
-        "pro": 99900
+        "basic": 99900,
+        "pro": 199900
     }
     reward = credits_map.get(req.plan, 20)
-    amount = amounts_map.get(req.plan, 49900)
+    amount = amounts_map.get(req.plan, 99900)
 
     if "mock" in req.razorpay_order_id:
         current_user.credits_left += reward

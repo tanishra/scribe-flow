@@ -9,7 +9,7 @@ import { AdminDashboard } from "./components/AdminDashboard";
 import { PublicBlogViewer } from "./components/PublicBlogViewer";
 import { AuthProvider, useAuth, getApiUrl } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck, X, Check, AlertCircle } from "lucide-react";
+import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck, X, Check, AlertCircle, Building2 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./components/GlassCard";
@@ -210,30 +210,39 @@ function MainLayout() {
       <AnimatePresence>
         {isPricingOpen && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="w-full max-w-4xl">
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="w-full max-w-6xl">
               <GlassCard className="relative overflow-hidden p-8">
                 <button onClick={() => setIsPricingOpen(false)} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-lg">
                   <X className="w-6 h-6" />
                 </button>
                 <div className="text-center mb-12">
-                  <h2 className="text-3xl font-black text-white mb-2">Get More Credits</h2>
-                  <p className="text-slate-400">Choose a pack to keep generating high-quality blogs.</p>
+                  <h2 className="text-3xl font-black text-white mb-2">Power Your Intelligence</h2>
+                  <p className="text-slate-400">Choose a high-capacity pack or get a custom quote for your agency.</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 flex flex-col">
-                    <h3 className="text-xl font-bold text-white mb-2">Testing Pack</h3>
-                    <div className="text-4xl font-black text-white mb-8">₹100 <span className="text-slate-500 text-sm">/ 5 Credits</span></div>
-                    <button onClick={() => handleUpgrade('test')} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-2xl transition-all">Buy 5 Credits</button>
+                    <h3 className="text-lg font-bold text-white mb-2">Testing Pack</h3>
+                    <div className="text-3xl font-black text-white mb-8">₹100 <span className="text-slate-500 text-xs">/ 5 Credits</span></div>
+                    <button onClick={() => handleUpgrade('test')} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-2xl text-sm transition-all mt-auto">Buy 5 Credits</button>
                   </div>
                   <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 flex flex-col">
-                    <h3 className="text-xl font-bold text-white mb-2">Essential Pack</h3>
-                    <div className="text-4xl font-black text-white mb-8">₹499 <span className="text-slate-500 text-sm">/ 20 Credits</span></div>
-                    <button onClick={() => handleUpgrade('basic')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition-all">Buy 20 Credits</button>
+                    <h3 className="text-lg font-bold text-white mb-2">Creator Pack</h3>
+                    <div className="text-3xl font-black text-white mb-8">₹999 <span className="text-slate-500 text-xs">/ 20 Credits</span></div>
+                    <button onClick={() => handleUpgrade('basic')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-2xl text-sm transition-all mt-auto">Buy 20 Credits</button>
                   </div>
-                  <div className="bg-[#0a0a0a] border border-blue-500/30 rounded-3xl p-8 flex flex-col">
-                    <h3 className="text-xl font-bold text-white mb-2">Ultimate Pack</h3>
-                    <div className="text-4xl font-black text-white mb-8">₹999 <span className="text-slate-500 text-sm">/ 50 Credits</span></div>
-                    <button onClick={() => handleUpgrade('pro')} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-2xl transition-all">Buy 50 Credits</button>
+                  <div className="bg-[#0a0a0a] border border-blue-500/30 rounded-3xl p-8 flex flex-col relative">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Best Value</div>
+                    <h3 className="text-lg font-bold text-white mb-2">Power User</h3>
+                    <div className="text-3xl font-black text-white mb-8">₹1999 <span className="text-slate-500 text-xs">/ 50 Credits</span></div>
+                    <button onClick={() => handleUpgrade('pro')} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-2xl text-sm transition-all mt-auto">Buy 50 Credits</button>
+                  </div>
+                  <div className="bg-blue-600/5 border border-blue-500/20 rounded-3xl p-8 flex flex-col group hover:bg-blue-600/10 transition-all">
+                    <div className="w-10 h-10 bg-blue-600/20 rounded-xl flex items-center justify-center text-blue-400 mb-4">
+                        <Building2 className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2">Enterprise</h3>
+                    <p className="text-slate-400 text-xs leading-relaxed mb-8">Custom API limits, team collaboration, and priority agent support.</p>
+                    <button onClick={() => { setIsPricingOpen(false); setIsSupportOpen(true); }} className="w-full bg-white text-blue-600 font-bold py-3 rounded-2xl text-sm transition-all mt-auto hover:bg-blue-50">Contact Us</button>
                   </div>
                 </div>
               </GlassCard>
