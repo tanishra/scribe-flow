@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth, getApiUrl } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
-import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen, HelpCircle, ExternalLink, Code, AlertCircle, Linkedin, PlusCircle, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen, HelpCircle, ExternalLink, Code, AlertCircle, Linkedin, PlusCircle, CheckCircle2, PlayCircle, Info } from 'lucide-react';
 import axios from 'axios';
 
 // Custom Brand Icons
@@ -31,6 +31,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
     devto_api_key: '',
     hashnode_api_key: '',
     hashnode_publication_id: '',
+    medium_token: '',
     linkedin_access_token: '',
     linkedin_urn: '',
   });
@@ -53,6 +54,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
         devto_api_key: user.devto_api_key || '',
         hashnode_api_key: user.hashnode_api_key || '',
         hashnode_publication_id: user.hashnode_publication_id || '',
+        medium_token: user.medium_token || '',
         linkedin_access_token: user.linkedin_access_token || '',
         linkedin_urn: user.linkedin_urn || '',
       });
@@ -150,21 +152,27 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                               className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
                             >
                               <HelpCircle className="w-3 h-3" />
-                              {showLinkedinGuide ? "Hide Guide" : "How to get keys?"}
+                              {showLinkedinGuide ? "Hide Guide" : "Setup Tutorial"}
                             </button>
-                            {user.linkedin_access_token ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
+                            {user.linkedin_access_token && user.linkedin_urn ? (
+                                <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span>
+                            ) : (user.linkedin_access_token || user.linkedin_urn) ? (
+                                <span className="text-[10px] bg-orange-500/20 text-orange-400 px-2 py-1 rounded font-black">PARTIAL SETUP</span>
+                            ) : (
+                                <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>
+                            )}
                         </div>
                     </div>
 
                     {showLinkedinGuide && (
-                      <div className="mb-6 p-6 rounded-3xl bg-blue-500/5 border border-blue-500/10 space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                        <div className="space-y-4">
+                      <div className="mb-6 p-6 rounded-3xl bg-blue-500/5 border border-blue-500/10 space-y-6 animate-in fade-in slide-in-from-top-4 duration-500 overflow-hidden">
+                        <div className="space-y-5">
                           <div className="flex items-start gap-3">
                             <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">1</div>
                             <div>
-                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Create a Developer App</p>
+                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Create Developer App</p>
                               <p className="text-xs text-slate-400 leading-relaxed">
-                                Go to <a href="https://www.linkedin.com/developers/createmobile" target="_blank" className="text-blue-400 underline inline-flex items-center gap-1">LinkedIn Developers <ExternalLink className="w-3 h-3" /></a> and create an app. You will need to associate it with a LinkedIn Page (Company Page).
+                                Create an app at <a href="https://www.linkedin.com/developers/apps" target="_blank" className="text-blue-400 underline inline-flex items-center gap-1">LinkedIn Developers <ExternalLink className="w-3 h-3" /></a>. Associate it with any Company Page you have.
                               </p>
                             </div>
                           </div>
@@ -172,37 +180,50 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <div className="flex items-start gap-3">
                             <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">2</div>
                             <div>
-                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Add "Share on LinkedIn" Product</p>
-                              <p className="text-xs text-slate-400 leading-relaxed">
-                                Under your App's <b>Products</b> tab, click "Request access" for <b>Share on LinkedIn</b> and <b>Sign In with LinkedIn</b>.
+                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Get Access Token</p>
+                              <p className="text-xs text-slate-400 leading-relaxed mb-2">
+                                Open the <a href="https://www.linkedin.com/developers/tools/oauth/token-generator" target="_blank" className="text-blue-400 underline inline-flex items-center gap-1">Token Generator <ExternalLink className="w-3 h-3" /></a>.
                               </p>
+                              <ul className="text-[11px] text-slate-500 space-y-1 list-disc ml-4 italic">
+                                <li>Select your App.</li>
+                                <li>Check <code className="text-blue-300 font-bold">w_member_social</code> scope.</li>
+                                <li>Click <b>"Request Token"</b> and follow the popup to authorize. Copy the long <b>Access Token</b> below.</li>
+                              </ul>
                             </div>
                           </div>
 
-                          <div className="flex items-start gap-3">
-                            <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">3</div>
-                            <div>
-                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Generate Your Access Token</p>
-                              <p className="text-xs text-slate-400 leading-relaxed">
-                                Open the <a href="https://www.linkedin.com/developers/tools/oauth/token-generator" target="_blank" className="text-blue-400 underline inline-flex items-center gap-1">Token Generator Tool <ExternalLink className="w-3 h-3" /></a>. Select your App, and check the <code className="text-blue-300">w_member_social</code> scope. Click "Request Token".
-                              </p>
+                          <div className="bg-white/5 p-5 rounded-2xl border border-white/5 space-y-4">
+                            <div className="flex items-center gap-3 border-b border-white/5 pb-2">
+                                <div className="w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs font-black flex-shrink-0">3</div>
+                                <p className="text-[11px] font-black text-white uppercase tracking-wider">How to find your "Person ID" (Visual Guide)</p>
                             </div>
-                          </div>
-
-                          <div className="flex items-start gap-3">
-                            <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">4</div>
-                            <div>
-                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Find your Person ID</p>
-                              <p className="text-xs text-slate-400 leading-relaxed">
-                                In the same Token Generator page, scroll down to <b>Step 2</b>. Run the provided request to the <code className="text-blue-300">/me</code> endpoint. Your <b>Person ID</b> is the <code className="text-orange-300">id</code> field in the response (e.g., <code className="text-orange-300">ABC123XYZ</code>).
-                              </p>
+                            <div className="space-y-3">
+                                <p className="text-xs text-slate-400">On the <b>same</b> Token Generator page, scroll down to <span className="text-white font-bold">Step 2: Use your token</span>.</p>
+                                <div className="bg-black/40 p-4 rounded-xl border border-white/10 space-y-3">
+                                    <p className="text-[10px] text-slate-500 uppercase font-black">Action:</p>
+                                    <div className="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/5">
+                                        <code className="text-xs text-blue-300">GET /me</code>
+                                        <span className="text-[10px] bg-blue-600 text-white px-3 py-1 rounded font-bold">RUN</span>
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 uppercase font-black mt-2">The Result will look like this:</p>
+                                    <div className="text-[10px] text-green-400 font-mono bg-black/20 p-2 rounded-lg leading-tight">
+                                        {'{'}<br />
+                                        &nbsp;&nbsp;"localizedLastName": "User",<br />
+                                        &nbsp;&nbsp;<span className="bg-yellow-500/30">"id": "ABC123XYZ"</span>,  &lt;-- COPY THIS VALUE<br />
+                                        &nbsp;&nbsp;"localizedFirstName": "John"<br />
+                                        {'}'}
+                                    </div>
+                                </div>
+                                <p className="text-[11px] text-slate-400 leading-relaxed">
+                                    Your <b>Person ID</b> is that code (e.g. <code className="text-orange-300">ABC123XYZ</code>). Copy it and paste it in the field below.
+                                </p>
                             </div>
                           </div>
                         </div>
                         
-                        <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-3 text-[10px] text-slate-500 italic">
-                          <CheckCircle2 className="w-4 h-4 text-green-500" />
-                          Once you have both, paste them into the fields below and click "Save All Changes".
+                        <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/10 flex items-center gap-3 text-[10px] text-blue-300 italic">
+                          <Info className="w-4 h-4 flex-shrink-0" />
+                          Tip: You can save just the Access Token now and add the ID later if you're stuck!
                         </div>
                       </div>
                     )}
@@ -212,9 +233,9 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
                           <input 
                             type="password" 
-                            name="linkedin_token_field" 
+                            name="li_token_unique" 
                             autoComplete="new-password" 
-                            placeholder="Enter LinkedIn Access Token" 
+                            placeholder="Paste Access Token here" 
                             value={data.linkedin_access_token} 
                             onChange={e => setData({...data, linkedin_access_token: e.target.value})} 
                             className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" 
@@ -224,9 +245,9 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <User className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
                           <input 
                             type="text" 
-                            name="linkedin_urn_field" 
+                            name="li_urn_unique" 
                             autoComplete="new-password" 
-                            placeholder="Enter Person ID (e.g. ABC123XYZ)" 
+                            placeholder="Paste Person ID here" 
                             value={data.linkedin_urn} 
                             onChange={e => setData({...data, linkedin_urn: e.target.value})} 
                             className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" 
@@ -257,7 +278,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                               <HelpCircle className="w-3 h-3" />
                               {showHashnodeGuide ? "Close Guide" : "How to find?"}
                             </button>
-                            {user.hashnode_api_key ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
+                            {user.hashnode_api_key && user.hashnode_publication_id ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
                         </div>
                     </div>
 
@@ -301,9 +322,9 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white border border-white/10"><MediumIcon /></div>
                           <div><h4 className="font-bold text-white">Medium</h4><p className="text-[10px] text-slate-500 uppercase font-black">Publish live to Medium</p></div>
                         </div>
-                        <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded font-black">AUTOMATIC URL IMPORT</span>
+                        {user.medium_token ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
                     </div>
-                    <p className="text-xs text-slate-500 mt-4 leading-relaxed italic">No credentials required. We use Medium's official Import Tool for seamless publishing.</p>
+                    <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" name="medium_token" autoComplete="off" placeholder="Enter Medium Integration Token" value={data.medium_token} onChange={e => setData({...data, medium_token: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
                 </div>
             </div>
 

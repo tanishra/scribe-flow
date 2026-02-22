@@ -22,9 +22,12 @@ class UserProfileUpdate(BaseModel):
     source: Optional[str] = None
     bio: Optional[str] = None
     onboarding_completed: Optional[bool] = None
-    devto_api_key: Optional[str] = None # NEW
-    hashnode_api_key: Optional[str] = None # NEW
-    hashnode_publication_id: Optional[str] = None # NEW
+    devto_api_key: Optional[str] = None
+    hashnode_api_key: Optional[str] = None
+    hashnode_publication_id: Optional[str] = None
+    medium_token: Optional[str] = None
+    linkedin_access_token: Optional[str] = None
+    linkedin_urn: Optional[str] = None
 
 class UserOut(BaseModel):
     id: int
@@ -40,6 +43,8 @@ class UserOut(BaseModel):
     credits_left: int
     is_premium: bool
     devto_api_key: Optional[str] = None
-    hashnode_api_key: Optional[str] = None # NEW
-    hashnode_publication_id: Optional[str] = None # NEW
-    # NEW
+    hashnode_api_key: Optional[str] = None
+    hashnode_publication_id: Optional[str] = None
+    medium_token: Optional[str] = None
+    linkedin_access_token: Optional[str] = None
+    linkedin_urn: Optional[str] = None
