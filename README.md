@@ -57,11 +57,11 @@ graph TD
 ---
 
 ## Tech Stack
-*   **Backend:** FastAPI, LangGraph, SQLModel (SQLite/PostgreSQL), Gunicorn.
+*   **Backend:** FastAPI, LangGraph, SQLModel (PostgreSQL/Supabase), Gunicorn.
 *   **Frontend:** React 18 (TypeScript), Tailwind CSS, Framer Motion, Lucide Icons.
 *   **AI:** OpenAI (Text), Gemini (Vision), Tavily Search API.
 *   **Payments:** Razorpay API with automated transaction logging.
-*   **Deployment:** AWS EC2 (Gunicorn/Uvicorn), Vercel (Frontend), Let's Encrypt SSL.
+*   **Deployment:** AWS EC2 c7i-flex.large (Gunicorn -w 4), Vercel (Frontend), Let's Encrypt SSL.
 
 ---
 
@@ -88,6 +88,9 @@ Create a `.env` file in the root directory:
 OPENAI_API_KEY=your_openai_key
 GOOGLE_API_KEY=your_gemini_key
 TAVILY_API_KEY=your_tavily_key
+
+# Database
+DATABASE_URL=postgresql://postgres:[pass]@db.xxxx.supabase.co:6543/postgres
 
 # Authentication
 VITE_GOOGLE_CLIENT_ID=your_google_id.apps.googleusercontent.com
