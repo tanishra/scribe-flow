@@ -1,11 +1,11 @@
-# ScribeFlow AI
+# AuthoGraph AI
 
-A production-grade, multi-agent content engine designed to transform a single topic into a high-impact, research-backed, and visually rich blog post in minutes. ScribeFlow leverages **LangGraph** orchestration to perform deep web research, architect strategic outlines, and generate unique visual assets in parallel—featuring secure authentication, multi-platform publishing, and integrated payments.
+A production-grade, multi-agent content engine designed to transform a single topic into a high-impact, research-backed, and visually rich blog post in minutes. AuthoGraph leverages **LangGraph** orchestration to perform deep web research, architect strategic outlines, and generate unique visual assets in parallel—featuring secure authentication, multi-platform publishing, and integrated payments.
 
 ---
 
 ## Core Capabilities
-Writing a high-quality technical blog typically takes hours. ScribeFlow reduces this to **under 5 minutes** while maintaining:
+Writing a high-quality technical blog typically takes hours. AuthoGraph reduces this to **under 5 minutes** while maintaining:
 *   **Agentic Orchestration:** Built on LangGraph for stateful, multi-agent collaboration between researchers, planners, and writers.
 *   **Near-Zero Hallucination:** Strict grounding in real-time web data via **Tavily Search**.
 *   **Multi-Platform Distribution:** Direct, live publishing to **Dev.to**, **Hashnode (v3 API)**, **LinkedIn**, and an optimized crawler-friendly flow for **Medium**.
