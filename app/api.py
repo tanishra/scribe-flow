@@ -30,7 +30,7 @@ limiter = Limiter(key_func=get_remote_address)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="ScribeFlow AI API",
+    title="AuthoGraph AI API",
     description="A production-grade API for generating high-impact blogs using LangGraph and AI agents.",
     version="1.0.0"
 )
@@ -212,7 +212,7 @@ async def render_public_blog(job_id: str, session: Session = Depends(get_session
     html_body = html_body.replace('src="/static/', f'src="{api_base_url}/static/')
 
     # SEO Metadata
-    title = db_blog.title or "ScribeFlow AI Blog"
+    title = db_blog.title or "AuthoGraph AI Blog"
     description = (db_blog.meta_description or "")[:160]
     # IMPORTANT: This is the URL Medium will show as the "Original Source"
     canonical_url = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
@@ -222,19 +222,19 @@ async def render_public_blog(job_id: str, session: Session = Depends(get_session
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
+    <title>{{title}}</title>
     
     <!-- Medium & SEO Meta Tags -->
-    <meta name="description" content="{description}">
-    <link rel="canonical" href="{canonical_url}">
-    <meta name="author" content="ScribeFlow AI">
+    <meta name="description" content="{{description}}">
+    <link rel="canonical" href="{{canonical_url}}">
+    <meta name="author" content="AuthoGraph AI">
     
-    <meta property="og:site_name" content="ScribeFlow">
-    <meta property="og:title" content="{title}">
-    <meta property="og:description" content="{description}">
+    <meta property="og:site_name" content="AuthoGraph">
+    <meta property="og:title" content="{{title}}">
+    <meta property="og:description" content="{{description}}">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="{canonical_url}">
-    <meta property="article:published_time" content="{db_blog.created_at.isoformat()}">
+    <meta property="og:url" content="{{canonical_url}}">
+    <meta property="article:published_time" content="{{db_blog.created_at.isoformat()}}">
     
     <style>
         body {{ font-family: Georgia, Cambria, "Times New Roman", Times, serif; line-height: 1.8; max-width: 740px; margin: 50px auto; padding: 20px; color: #292929; -webkit-font-smoothing: antialiased; }}
@@ -362,7 +362,7 @@ async def get_public_blog(job_id: str, session: Session = Depends(get_session)):
         "title": db_blog.title,
         "content": content,
         "meta_description": db_blog.meta_description,
-        "author": "ScribeFlow User"
+        "author": "AuthoGraph User"
     }
 
 @api_router.get("/history", response_model=List[JobStatusResponse])

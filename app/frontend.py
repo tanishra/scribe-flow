@@ -20,7 +20,7 @@ IMAGES_DIR = BASE_OUTPUT_DIR / "images"
 
 # --- Page Setup ---
     st.set_page_config(
-        page_title="ScribeFlow AI Agent",
+        page_title="AuthoGraph AI Agent",
         page_icon="✍️",
         layout="wide",
         initial_sidebar_state="expanded"
@@ -89,7 +89,7 @@ def render_markdown_with_images(md: str):
 # --- Sidebar ---
 
 with st.sidebar:
-    st.title("✍️ ScribeFlow AI")
+    st.title("✍️ AuthoGraph AI")
     st.caption("v2.0 Production Grade")
     
     with st.expander("🚀 Generate New Blog", expanded=True):

@@ -50,14 +50,14 @@ async def send_email_otp(receiver_email: str, code: str):
 
     try:
         msg = MIMEMultipart()
-        msg['From'] = f"ScribeFlow AI <{SMTP_USER}>"
+        msg['From'] = f"AuthoGraph AI <{SMTP_USER}>"
         msg['To'] = receiver_email
-        msg['Subject'] = f"{code} is your ScribeFlow verification code"
+        msg['Subject'] = f"{code} is your AuthoGraph verification code"
 
         body = f"""
         <html>
             <body style="font-family: sans-serif; padding: 20px; color: #333;">
-                <h2 style="color: #2563eb;">Welcome to ScribeFlow AI</h2>
+                <h2 style="color: #2563eb;">Welcome to AuthoGraph AI</h2>
                 <p>Use the following code to sign in to your account:</p>
                 <div style="background: #f3f4f6; padding: 20px; font-size: 32px; font-weight: bold; letter-spacing: 5px; text-align: center; border-radius: 10px; margin: 20px 0;">
                     {code}

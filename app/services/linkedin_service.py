@@ -117,7 +117,7 @@ class LinkedInService:
                         {
                             "status": "READY",
                             "description": {
-                                "text": "Read the full technical deep-dive on ScribeFlow AI."
+                                "text": "Read the full technical deep-dive on AuthoGraph AI."
                             },
                             "originalUrl": article_url,
                             "title": {

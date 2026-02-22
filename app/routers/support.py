@@ -37,7 +37,7 @@ async def send_feedback(req: FeedbackRequest, session: Session = Depends(get_ses
         msg = MIMEMultipart()
         msg['From'] = SMTP_USER
         msg['To'] = "tanishrajput9@gmail.com"
-        msg['Subject'] = f"ScribeFlow Feedback: {req.subject}"
+        msg['Subject'] = f"AuthoGraph Feedback: {req.subject}"
         body = f"Support Message from {req.name} ({req.email})\n\n{req.message}"
         msg.attach(MIMEText(body, 'plain'))
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
