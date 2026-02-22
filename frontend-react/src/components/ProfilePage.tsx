@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth, getApiUrl } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
-import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen, HelpCircle, ExternalLink, Code } from 'lucide-react';
+import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen, HelpCircle, ExternalLink, Code,AlertCircle } from 'lucide-react';
 import axios from 'axios';
 
 // Custom Brand Icons
