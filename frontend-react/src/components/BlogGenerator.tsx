@@ -272,7 +272,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     return (
       <div className="flex items-center justify-center min-h-[60vh] px-4">
         <GlassCard className="w-full max-w-2xl p-8 text-center">
-          <h1 className="text-4xl font-black text-white mb-2 tracking-tighter">ScribeFlow <span className="text-blue-500">AI</span></h1>
+          <h1 className="text-4xl font-black text-white mb-2 tracking-tighter">AuthoGraph <span className="text-blue-500">AI</span></h1>
           <p className="text-slate-400 mb-8">High-impact technical writing, powered by agents.</p>
           <div className="space-y-6">
             <textarea value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="What should the AI write about today?" className="w-full h-32 bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none transition-all" />

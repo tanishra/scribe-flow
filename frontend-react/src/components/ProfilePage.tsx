@@ -289,7 +289,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                             <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">2</div>
                             <div>
                               <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Generate API Key</p>
-                              <p className="text-xs text-slate-400 leading-relaxed">Scroll down to <span className="text-white font-bold">"DEV Community API Keys"</span>. Provide a name (e.g. "ScribeFlow") and click <b>Generate API Key</b>.</p>
+                              <p className="text-xs text-slate-400 leading-relaxed">Scroll down to <span className="text-white font-bold">"DEV Community API Keys"</span>. Provide a name (e.g. "AuthoGraph") and click <b>Generate API Key</b>.</p>
                             </div>
                           </div>
 

@@ -58,7 +58,7 @@ export function LoadingScreen() {
             <div>
                 <h4 className="text-sm font-bold text-white mb-1">Quality takes a moment</h4>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                    Unlike standard AI, ScribeFlow performs real-time research and multi-agent drafting to ensure high accuracy and technical depth.
+                    Unlike standard AI, AuthoGraph performs real-time research and multi-agent drafting to ensure high accuracy and technical depth.
                 </p>
             </div>
         </div>

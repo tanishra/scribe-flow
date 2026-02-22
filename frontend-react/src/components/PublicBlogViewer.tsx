@@ -60,7 +60,7 @@ export function PublicBlogViewer() {
         <div className="mb-8 flex justify-start">
             <Link to="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-white transition-colors font-bold uppercase text-[10px] tracking-widest group">
                 <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                ScribeFlow Home
+                AuthoGraph Home
             </Link>
         </div>
 
@@ -80,7 +80,7 @@ export function PublicBlogViewer() {
         <div className="mt-12 text-center border-t border-white/5 pt-8">
             <p className="text-slate-500 text-xs uppercase tracking-[0.3em] font-bold mb-4">Crafted with intelligence</p>
             <Link to="/" className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-blue-600/10 text-blue-400 border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all font-black text-xs">
-                GENERATE YOUR OWN BLOG WITH SCRIBEFLOW AI
+                GENERATE YOUR OWN BLOG WITH AUTHOGRAPH AI
             </Link>
         </div>
       </div>

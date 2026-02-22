@@ -55,7 +55,7 @@ function MainLayout() {
             key: order.key,
             amount: order.amount,
             currency: "INR",
-            name: "ScribeFlow AI",
+            name: "AuthoGraph AI",
             description: plan === 'test' ? "5 Blog Credits" : plan === 'basic' ? "20 Blog Credits" : "50 Blog Credits",
             order_id: order.order_id,
             handler: async function (response: any) {
@@ -129,7 +129,7 @@ function MainLayout() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 font-bold text-white shadow-lg shadow-cyan-500/20">
                 AI
                 </div>
-                <span className="text-lg font-bold tracking-tight text-white">ScribeFlow</span>
+                <span className="text-lg font-bold tracking-tight text-white">AuthoGraph</span>
             </button>
 
             <nav className="hidden md:flex items-center gap-1">
