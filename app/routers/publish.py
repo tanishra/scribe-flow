@@ -168,7 +168,9 @@ async def publish_to_hashnode(
     }
 
     if cover_image_url:
-        variables["input"]["coverImageURL"] = cover_image_url
+        variables["input"]["coverImageOptions"] = {
+            "coverImageURL": cover_image_url
+        }
 
     headers = {
         "Authorization": current_user.hashnode_api_key,
