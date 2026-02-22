@@ -208,15 +208,15 @@ async def render_public_blog(job_id: str, session: Session = Depends(get_session
     html_body = markdown.markdown(content, extensions=['extra', 'codehilite', 'toc'])
     
     # Fix image paths
-    base_url = "https://api.tanish.website"
-    html_body = html_body.replace('src="/static/', f'src="{base_url}/static/')
+    api_base_url = "https://api.tanish.website"
+    html_body = html_body.replace('src="/static/', f'src="{api_base_url}/static/')
 
     # SEO Metadata
     title = db_blog.title or "ScribeFlow AI Blog"
     description = (db_blog.meta_description or "")[:160]
-    canonical = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
+    # IMPORTANT: This is the URL Medium will show as the "Original Source"
+    canonical_url = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
 
-    # Build response with raw strings to avoid f-string conflicts with code curly braces
     html_template = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -226,14 +226,14 @@ async def render_public_blog(job_id: str, session: Session = Depends(get_session
     
     <!-- Medium & SEO Meta Tags -->
     <meta name="description" content="{description}">
-    <link rel="canonical" href="{canonical}">
+    <link rel="canonical" href="{canonical_url}">
     <meta name="author" content="ScribeFlow AI">
     
     <meta property="og:site_name" content="ScribeFlow">
     <meta property="og:title" content="{title}">
     <meta property="og:description" content="{description}">
     <meta property="og:type" content="article">
-    <meta property="og:url" content="{canonical}">
+    <meta property="og:url" content="{canonical_url}">
     <meta property="article:published_time" content="{db_blog.created_at.isoformat()}">
     
     <style>
