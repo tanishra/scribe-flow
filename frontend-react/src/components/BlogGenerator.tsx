@@ -6,7 +6,7 @@ import {
     Send, Download, CheckCircle, AlertCircle, 
     RefreshCw, Archive, Edit3, Save, Share2, 
     ChevronDown, Sparkles, Search as SearchIcon, Globe, X, Loader2, Rocket, ExternalLink,
-    Copy, Check, Linkedin
+    Copy, Check, Linkedin, Type
 } from "lucide-react";
 import { GlassCard } from "./GlassCard";
 import { LoadingScreen } from "./LoadingScreen";
@@ -77,6 +77,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   const [isGeneratingTeaser, setIsGeneratingTeaser] = useState(false);
   const [isPublishingLI, setIsPublishingLI] = useState(false);
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
+  const [isEditingTeaser, setIsEditingTeaser] = useState(false);
 
   const { user, refreshUser } = useAuth();
   const apiUrl = getApiUrl();
@@ -160,6 +161,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   const generateLinkedinTeaser = async () => {
     if (!jobId) return;
     setIsGeneratingTeaser(true);
+    setIsEditingTeaser(false);
     try {
         const res = await axios.get(`${apiUrl}/api/v1/publish/linkedin/teaser/${jobId}`);
         setLinkedinTeaser(res.data.teaser);
@@ -176,6 +178,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     try {
         const res = await axios.post(`${apiUrl}/api/v1/publish/linkedin/${jobId}`, { teaser_text: linkedinTeaser });
         setLinkedinUrl(res.data.url);
+        setIsEditingTeaser(false);
         showPublishMessage('success', "Posted to LinkedIn!");
     } catch (e: any) {
         showPublishMessage('error', e.response?.data?.detail || "LinkedIn Publish Failed");
@@ -257,6 +260,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
 
   const reset = () => {
     setTopic(""); setJobId(null); setStatus(null); setError(null); setIsEditing(false); setPublishUrl(null); setPublishUrlHN(null);
+    setLinkedinTeaser(""); setLinkedinUrl(null); setIsEditingTeaser(false);
     if (onReset) onReset();
   };
 
@@ -339,18 +343,38 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                   <div className="text-center mb-12">
                     <Linkedin className="w-16 h-16 text-[#0077B5] mx-auto mb-4" />
                     <h2 className="text-3xl font-black text-white tracking-tighter uppercase">LinkedIn Social Teaser</h2>
-                    <p className="text-slate-400 mt-2">Generate a high-impact social post to drive traffic to your blog.</p>
+                    <p className="text-slate-400 mt-2">Drive professional traffic with a high-impact social post.</p>
                   </div>
 
                   <div className="space-y-6">
+                      <div className="flex justify-between items-center bg-white/5 p-3 rounded-2xl border border-white/5 mb-4">
+                          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 px-3">
+                              {isEditingTeaser ? <Edit3 className="w-3 h-3 text-orange-400" /> : <Type className="w-3 h-3 text-blue-400" />}
+                              {isEditingTeaser ? "Edit Mode" : "Preview Mode"}
+                          </div>
+                          <button 
+                            onClick={() => setIsEditingTeaser(!isEditingTeaser)}
+                            className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isEditingTeaser ? 'bg-orange-500/20 text-orange-400' : 'bg-blue-500/20 text-blue-400'}`}
+                          >
+                            {isEditingTeaser ? "Done Editing" : "Manual Edit"}
+                          </button>
+                      </div>
+
                       <div className="relative group">
                           <div className="absolute -inset-1 bg-gradient-to-r from-[#0077B5] to-blue-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition-all" />
-                          <textarea 
-                            value={linkedinTeaser} 
-                            onChange={(e) => setLinkedinTeaser(e.target.value)}
-                            placeholder="Generating your viral teaser..."
-                            className="relative w-full h-[400px] bg-black/60 border border-white/10 rounded-3xl p-8 text-slate-200 font-sans text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#0077B5]/50 resize-none shadow-2xl"
-                          />
+                          
+                          {isEditingTeaser ? (
+                              <textarea 
+                                value={linkedinTeaser} 
+                                onChange={(e) => setLinkedinTeaser(e.target.value)}
+                                className="relative w-full h-[400px] bg-black/60 border border-[#0077B5]/30 rounded-3xl p-8 text-slate-200 font-sans text-base leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#0077B5]/50 resize-none shadow-2xl"
+                              />
+                          ) : (
+                              <div className="relative w-full min-h-[400px] bg-black/60 border border-white/10 rounded-3xl p-8 text-slate-200 font-sans text-base leading-relaxed whitespace-pre-wrap shadow-2xl overflow-y-auto">
+                                  {linkedinTeaser || "Generating your viral teaser..."}
+                              </div>
+                          )}
+
                           {isGeneratingTeaser && (
                               <div className="absolute inset-0 bg-black/40 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center gap-4">
                                   <Loader2 className="w-8 h-8 text-[#0077B5] animate-spin" />
@@ -365,7 +389,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                             disabled={isGeneratingTeaser || isPublishingLI}
                             className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all"
                           >
-                            <RefreshCw className={`w-4 h-4 ${isGeneratingTeaser ? 'animate-spin' : ''}`} /> Regenerate Teaser
+                            <RefreshCw className={`w-4 h-4 ${isGeneratingTeaser ? 'animate-spin' : ''}`} /> Regenerate
                           </button>
                           
                           {!user?.linkedin_access_token ? (
@@ -375,7 +399,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                           ) : (
                               <button 
                                 onClick={handlePublishLinkedin} 
-                                disabled={isPublishingLI || isGeneratingTeaser}
+                                disabled={isPublishingLI || isGeneratingTeaser || !linkedinTeaser}
                                 className="flex items-center justify-center gap-3 py-4 rounded-2xl bg-[#0077B5] hover:bg-[#00639a] text-white font-bold transition-all shadow-lg shadow-[#0077B5]/20"
                               >
                                 {isPublishingLI ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />}
@@ -433,9 +457,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                           <div className="flex items-center justify-between mb-6">
                               <div className="flex items-center gap-4">
                                   <div className="w-12 h-12 bg-[#2942FF] rounded-xl flex items-center justify-center text-white border border-white/10"><HashnodeIcon /></div>
-                                  <div>
-                                      <h4 className="text-xl font-bold text-white">Hashnode</h4>
-                                      <p className="text-xs text-slate-500">The home for developer blogs</p>
+                                  <div><h4 className="font-bold text-white">Hashnode</h4><p className="text-xs text-slate-500">The home for developer blogs</p>
                                   </div>
                               </div>
                               {user?.hashnode_api_key && user?.hashnode_publication_id ? <span className="text-[10px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Connected</span> : <span className="text-[10px] bg-red-500/10 text-red-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Setup Missing</span>}
@@ -454,7 +476,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                               <div className="flex items-center gap-4">
                                   <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center text-white border border-white/10"><MediumIcon /></div>
                                   <div>
-                                      <h4 className="text-xl font-bold text-white">Medium</h4>
+                                      <h4 className="font-bold text-white">Medium</h4>
                                       <p className="text-xs text-slate-500">Import via official Medium tool</p>
                                   </div>
                               </div>
