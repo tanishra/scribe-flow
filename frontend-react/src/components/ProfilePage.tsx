@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth, getApiUrl } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
-import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen, HelpCircle, ExternalLink } from 'lucide-react';
+import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen, HelpCircle, ExternalLink, Code } from 'lucide-react';
 import axios from 'axios';
 
 export function ProfilePage({ onBack }: { onBack: () => void }) {
@@ -137,19 +137,29 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                     </div>
 
                     {showHashnodeGuide && (
-                      <div className="mb-6 p-4 rounded-xl bg-blue-500/5 border border-blue-500/10 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <div>
-                          <p className="text-[10px] font-black text-blue-400 uppercase mb-1">1. Personal Access Token</p>
-                          <p className="text-xs text-slate-400 leading-relaxed">Go to <span className="text-slate-200">Hashnode Settings &gt; Developer</span>. Click "Generate New Token", name it "ScribeFlow", and copy the key.</p>
+                      <div className="mb-6 p-5 rounded-2xl bg-blue-500/5 border border-blue-500/10 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="pb-3 border-b border-white/5">
+                          <p className="text-[10px] font-black text-blue-400 uppercase mb-1 flex items-center gap-2"><Key className="w-3 h-3" /> 1. Personal Access Token</p>
+                          <p className="text-xs text-slate-400 leading-relaxed">Go to <a href="https://hashnode.com/settings/developer" target="_blank" className="text-slate-200 underline">Settings &gt; Developer</a>. Click "Generate New Token" and copy the key.</p>
                         </div>
+                        
                         <div>
-                          <p className="text-[10px] font-black text-blue-400 uppercase mb-1">2. Publication ID</p>
-                          <p className="text-xs text-slate-400 leading-relaxed">Go to your <span className="text-slate-200">Blog Dashboard</span>. Look at the URL in your browser: <code className="bg-black/40 px-1 py-0.5 rounded text-[10px] text-blue-300">hashnode.com/<b>[THIS-IS-YOUR-ID]</b>/dashboard</code></p>
+                          <p className="text-[10px] font-black text-blue-400 uppercase mb-1 flex items-center gap-2"><BookOpen className="w-3 h-3" /> 2. Publication ID (Standard)</p>
+                          <p className="text-xs text-slate-400 leading-relaxed">Go to your <span className="text-slate-200">Blog Dashboard</span>. The ID is in your URL: <code className="bg-black/40 px-1 py-0.5 rounded text-[10px] text-blue-300">hashnode.com/<b>[ID-HERE]</b>/dashboard</code></p>
                         </div>
-                        <div className="pt-1 flex justify-end">
-                          <a href="https://hashnode.com/settings/developer" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[10px] font-bold text-slate-500 hover:text-white transition-colors">
-                            Open Settings <ExternalLink className="w-2.5 h-2.5" />
-                          </a>
+
+                        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                          <p className="text-[10px] font-black text-white uppercase mb-2 flex items-center gap-2"><Code className="w-3 h-3 text-orange-400" /> Advanced Method (If URL fails)</p>
+                          <ol className="text-[11px] text-slate-400 space-y-2 list-decimal ml-4">
+                            <li>Open <a href="https://gql.hashnode.com/" target="_blank" className="text-blue-400 underline">Hashnode Playground</a></li>
+                            <li>In <b>Headers</b>, add: <code className="text-[10px] text-slate-300">{"{"}"Authorization": "YOUR_TOKEN"{"}"}</code></li>
+                            <li>Run this query:
+                              <pre className="mt-1 bg-black/40 p-2 rounded text-[9px] text-blue-200 overflow-x-auto">
+                                {"query { me { publications(first: 5) { edges { node { id title } } } } }"}
+                              </pre>
+                            </li>
+                            <li>Copy the <code className="text-orange-300">id</code> from the result.</li>
+                          </ol>
                         </div>
                       </div>
                     )}
