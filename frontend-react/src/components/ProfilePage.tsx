@@ -41,6 +41,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [showHashnodeGuide, setShowHashnodeGuide] = useState(false);
   const [showLinkedinGuide, setShowLinkedinGuide] = useState(false);
+  const [showDevtoGuide, setShowDevtoGuide] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -261,8 +262,48 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                 <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3"><div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center font-bold text-white text-xs border border-white/10">DEV</div><div><h4 className="font-bold text-white">Dev.to</h4><p className="text-[10px] text-slate-500 uppercase font-black">Publish live to Dev.to</p></div></div>
-                        {user.devto_api_key ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
+                        <div className="flex items-center gap-4">
+                            <button 
+                              onClick={() => setShowDevtoGuide(!showDevtoGuide)}
+                              className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
+                            >
+                              <HelpCircle className="w-3 h-3" />
+                              {showDevtoGuide ? "Hide Tutorial" : "How to find?"}
+                            </button>
+                            {user.devto_api_key ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
+                        </div>
                     </div>
+
+                    {showDevtoGuide && (
+                      <div className="mb-6 p-5 rounded-2xl bg-blue-500/5 border border-blue-500/10 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300 overflow-hidden text-left">
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">1</div>
+                            <div>
+                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Access Settings</p>
+                              <p className="text-xs text-slate-400 leading-relaxed">Go to <a href="https://dev.to/settings/extensions" target="_blank" className="text-blue-400 underline inline-flex items-center gap-1">Dev.to Settings <ExternalLink className="w-3 h-3" /></a>.</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">2</div>
+                            <div>
+                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Generate API Key</p>
+                              <p className="text-xs text-slate-400 leading-relaxed">Scroll down to <span className="text-white font-bold">"DEV Community API Keys"</span>. Provide a name (e.g. "ScribeFlow") and click <b>Generate API Key</b>.</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">3</div>
+                            <div>
+                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Save Below</p>
+                              <p className="text-xs text-slate-400 leading-relaxed">Copy the long string and paste it into the input field below.</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" name="devto_key" autoComplete="off" placeholder="Enter Dev.to API Key" value={data.devto_api_key} onChange={e => setData({...data, devto_api_key: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
                 </div>
 
