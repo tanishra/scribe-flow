@@ -11,6 +11,19 @@ import { GlassCard } from './GlassCard';
 import { getApiUrl } from '../contexts/AuthContext';
 import { MarkdownRenderer } from './MarkdownRenderer';
 
+// Custom Brand Icons
+const HashnodeIcon = ({ size = "w-4 h-4" }: { size?: string }) => (
+  <svg viewBox="0 0 24 24" className={`${size} fill-current`} xmlns="http://www.w3.org/2000/svg">
+    <path d="M22.351 8.019l-6.37-6.37a5.63 5.63 0 00-7.962 0l-6.37 6.37a5.63 5.63 0 000 7.962l6.37 6.37a5.63 5.63 0 007.962 0l6.37-6.37a5.63 5.63 0 000-7.962zM12 15.953a3.953 3.953 0 110-7.906 3.953 3.953 0 010 7.906z" />
+  </svg>
+);
+
+const MediumIcon = ({ size = "w-4 h-4" }: { size?: string }) => (
+  <svg viewBox="0 0 24 24" className={`${size} fill-current`} xmlns="http://www.w3.org/2000/svg">
+    <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.41-3.38 6.41s-3.38-2.87-3.38-6.41 1.51-6.41 3.38-6.41 3.38 2.87 3.38 6.41zM24 12c0 3.17-.53 5.75-1.19 5.75s-1.19-2.58-1.19-5.75.53-5.75 1.19-5.75S24 8.83 24 12z" />
+  </svg>
+);
+
 interface UserData {
   id: number;
   email: string;
@@ -249,10 +262,10 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                                 </div>
                                             </td>
                                             <td className="p-4">
-                                                <div className="flex gap-2">
-                                                    {u.devto_api_key && <span className="w-6 h-6 bg-black rounded flex items-center justify-center text-[8px] font-black text-white border border-white/10" title="Dev.to Connected">DEV</span>}
-                                                    {u.hashnode_api_key && <span className="w-6 h-6 bg-[#2942FF] rounded flex items-center justify-center text-[8px] font-black text-white border border-white/10" title="Hashnode Connected">H</span>}
-                                                    {u.medium_token && <span className="w-6 h-6 bg-[#00ab6c] rounded flex items-center justify-center text-[8px] font-black text-white border border-white/10" title="Medium Connected">M</span>}
+                                                <div className="flex gap-2 text-white">
+                                                    {u.devto_api_key && <span className="w-6 h-6 bg-black rounded flex items-center justify-center text-[8px] font-black border border-white/10" title="Dev.to Connected">DEV</span>}
+                                                    {u.hashnode_api_key && <span className="w-6 h-6 bg-[#2942FF] rounded flex items-center justify-center border border-white/10" title="Hashnode Connected"><HashnodeIcon size="w-3 h-3" /></span>}
+                                                    {u.medium_token && <span className="w-6 h-6 bg-black rounded flex items-center justify-center border border-white/10" title="Medium Token holder"><MediumIcon size="w-3 h-3" /></span>}
                                                     {!u.devto_api_key && !u.hashnode_api_key && !u.medium_token && <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">None</span>}
                                                 </div>
                                             </td>
@@ -310,10 +323,10 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                             <p className="text-[9px] text-slate-600 font-mono uppercase tracking-tight">{b.user_email}</p>
                                         </td>
                                         <td className="p-4">
-                                            <div className="flex gap-2">
-                                                {b.devto_url ? <a href={b.devto_url} target="_blank" className="w-6 h-6 bg-black rounded flex items-center justify-center text-[8px] font-black text-white hover:bg-blue-600 transition-colors" title="View on Dev.to">DEV</a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
-                                                {b.hashnode_url ? <a href={b.hashnode_url} target="_blank" className="w-6 h-6 bg-[#2942FF] rounded flex items-center justify-center text-[8px] font-black text-white hover:bg-blue-600 transition-colors" title="View on Hashnode">H</a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
-                                                {b.medium_url ? <a href={b.medium_url} target="_blank" className="w-6 h-6 bg-[#00ab6c] rounded flex items-center justify-center text-[8px] font-black text-white hover:bg-blue-600 transition-colors" title="View on Medium">M</a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
+                                            <div className="flex gap-2 text-white">
+                                                {b.devto_url ? <a href={b.devto_url} target="_blank" className="w-6 h-6 bg-black rounded flex items-center justify-center text-[8px] font-black hover:bg-blue-600 transition-colors" title="View on Dev.to">DEV</a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
+                                                {b.hashnode_url ? <a href={b.hashnode_url} target="_blank" className="w-6 h-6 bg-[#2942FF] rounded flex items-center justify-center hover:bg-blue-600 transition-colors" title="View on Hashnode"><HashnodeIcon size="w-3 h-3" /></a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
+                                                {b.medium_url ? <a href={b.medium_url} target="_blank" className="w-6 h-6 bg-black rounded flex items-center justify-center hover:bg-blue-600 transition-colors" title="View on Medium"><MediumIcon size="w-3 h-3" /></a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
                                             </div>
                                         </td>
                                         <td className="p-4 text-center">
@@ -456,10 +469,10 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                 <MarkdownRenderer content={selectedBlog.content} />
                             </div>
                         </div>
-                        <div className="p-4 border-t border-white/5 bg-white/[0.02] flex justify-end gap-4 flex-shrink-0">
-                            {selectedBlog.blog.devto_url && <a href={selectedBlog.blog.devto_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-black rounded-xl text-xs font-bold text-white hover:bg-slate-900 border border-white/10">View on Dev.to <ExternalLink className="w-3 h-3" /></a>}
-                            {selectedBlog.blog.hashnode_url && <a href={selectedBlog.blog.hashnode_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-[#2942FF] rounded-xl text-xs font-bold text-white hover:bg-blue-700 border border-white/10">View on Hashnode <ExternalLink className="w-3 h-3" /></a>}
-                            {selectedBlog.blog.medium_url && <a href={selectedBlog.blog.medium_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-[#00ab6c] rounded-xl text-xs font-bold text-white hover:bg-[#008f56] border border-white/10">View on Medium <ExternalLink className="w-3 h-3" /></a>}
+                        <div className="p-4 border-t border-white/5 bg-white/[0.02] flex justify-end gap-4 flex-shrink-0 text-white">
+                            {selectedBlog.blog.devto_url && <a href={selectedBlog.blog.devto_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-black rounded-xl text-xs font-bold hover:bg-slate-900 border border-white/10">View on Dev.to <ExternalLink className="w-3 h-3" /></a>}
+                            {selectedBlog.blog.hashnode_url && <a href={selectedBlog.blog.hashnode_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-[#2942FF] rounded-xl text-xs font-bold hover:bg-blue-700 border border-white/10">View on Hashnode <HashnodeIcon size="w-3 h-3" /></a>}
+                            {selectedBlog.blog.medium_url && <a href={selectedBlog.blog.medium_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-black rounded-xl text-xs font-bold hover:bg-slate-900 border border-white/10">View on Medium <MediumIcon size="w-3 h-3" /></a>}
                             <button onClick={() => setSelectedBlog(null)} className="px-6 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl border border-white/10 transition-all">Close Viewer</button>
                         </div>
                     </GlassCard>

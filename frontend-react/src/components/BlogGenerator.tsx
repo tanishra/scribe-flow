@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
     Send, Download, CheckCircle, AlertCircle, 
     RefreshCw, Archive, Edit3, Save, Share2, 
-    ChevronDown, Sparkles, Search as SearchIcon, Globe, X, Loader2, Rocket, ExternalLink
+    ChevronDown, Sparkles, Search as SearchIcon, Globe, X, Loader2, Rocket, ExternalLink,
+    Copy, Check
 } from "lucide-react";
 import { GlassCard } from "./GlassCard";
 import { LoadingScreen } from "./LoadingScreen";
@@ -28,6 +29,19 @@ interface JobStatus {
 const TONES = [
     "Professional", "Conversational", "Witty", "Technical", "Storytelling", "Academic"
 ];
+
+// Custom Brand Icons
+const HashnodeIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current" xmlns="http://www.w3.org/2000/svg">
+    <path d="M22.351 8.019l-6.37-6.37a5.63 5.63 0 00-7.962 0l-6.37 6.37a5.63 5.63 0 000 7.962l6.37 6.37a5.63 5.63 0 007.962 0l6.37-6.37a5.63 5.63 0 000-7.962zM12 15.953a3.953 3.953 0 110-7.906 3.953 3.953 0 010 7.906z" />
+  </svg>
+);
+
+const MediumIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current" xmlns="http://www.w3.org/2000/svg">
+    <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.41-3.38 6.41s-3.38-2.87-3.38-6.41 1.51-6.41 3.38-6.41 3.38 2.87 3.38 6.41zM24 12c0 3.17-.53 5.75-1.19 5.75s-1.19-2.58-1.19-5.75.53-5.75 1.19-5.75S24 8.83 24 12z" />
+  </svg>
+);
 
 function safe_slug(title: string): string {
   const s = title.trim().toLowerCase();
@@ -52,10 +66,9 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   // Publishing State
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishingHN, setIsPublishingHN] = useState(false);
-  const [isPublishingM, setIsPublishingM] = useState(false);
   const [publishUrl, setPublishUrl] = useState<string | null>(null);
   const [publishUrlHN, setPublishUrlHN] = useState<string | null>(null);
-  const [publishUrlM, setPublishUrlM] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const { user, refreshUser } = useAuth();
   const apiUrl = getApiUrl();
@@ -154,25 +167,12 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     }
   };
 
-  const handlePublishMedium = async () => {
-    if (!jobId) return;
-    setIsPublishingM(true);
-    setPublishUrlM(null);
-    try {
-        const res = await axios.post(`${apiUrl}/api/v1/publish/medium/${jobId}`);
-        setPublishUrlM(res.data.url);
-        alert(res.data.message);
-    } catch (e: any) {
-        alert(e.response?.data?.detail || "Failed to publish to Medium");
-    } finally {
-        setIsPublishingM(false);
-    }
-  };
-
   const handleShare = () => {
     if (!jobId) return;
     const shareUrl = `${window.location.origin}/share/${jobId}`;
     navigator.clipboard.writeText(shareUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
     alert("Public share link copied to clipboard!");
   };
 
@@ -205,8 +205,12 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   };
 
   const reset = () => {
-    setTopic(""); setJobId(null); setStatus(null); setError(null); setIsEditing(false); setPublishUrl(null); setPublishUrlHN(null); setPublishUrlM(null);
+    setTopic(""); setJobId(null); setStatus(null); setError(null); setIsEditing(false); setPublishUrl(null); setPublishUrlHN(null);
     if (onReset) onReset();
+  };
+
+  const getPublicShareUrl = () => {
+    return `${window.location.origin}/share/${jobId}`;
   };
 
   if (!jobId) {
@@ -287,7 +291,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                                       <p className="text-xs text-slate-500">Fastest-growing community for developers</p>
                                   </div>
                               </div>
-                              {user?.devto_api_key ? <span className="text-[10px] bg-green-500/20 text-green-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Connected</span> : <span className="text-[10px] bg-red-500/10 text-red-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Key Missing</span>}
+                              {user?.devto_api_key ? <span className="text-[10px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Connected</span> : <span className="text-[10px] bg-red-500/10 text-red-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Key Missing</span>}
                           </div>
                           {!user?.devto_api_key ? <p className="text-sm text-slate-400 bg-black/20 p-4 rounded-2xl border border-white/5 italic text-center">Update your Dev.to key in <span className="text-blue-400 font-bold">Profile</span> to publish.</p> : (
                               <div className="flex flex-col gap-4">
@@ -301,7 +305,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                       <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all group">
                           <div className="flex items-center justify-between mb-6">
                               <div className="flex items-center gap-4">
-                                  <div className="w-12 h-12 bg-[#2942FF] rounded-xl flex items-center justify-center font-bold text-white border border-white/10 text-lg">H</div>
+                                  <div className="w-12 h-12 bg-[#2942FF] rounded-xl flex items-center justify-center text-white border border-white/10"><HashnodeIcon /></div>
                                   <div>
                                       <h4 className="text-xl font-bold text-white">Hashnode</h4>
                                       <p className="text-xs text-slate-500">The home for developer blogs</p>
@@ -317,24 +321,50 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                           )}
                       </div>
 
-                      {/* Medium */}
+                      {/* Medium Import */}
                       <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-[#00ab6c]/30 transition-all group">
                           <div className="flex items-center justify-between mb-6">
                               <div className="flex items-center gap-4">
-                                  <div className="w-12 h-12 bg-[#00ab6c] rounded-xl flex items-center justify-center font-bold text-white border border-white/10 text-lg">M</div>
+                                  <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center text-white border border-white/10"><MediumIcon /></div>
                                   <div>
                                       <h4 className="text-xl font-bold text-white">Medium</h4>
-                                      <p className="text-xs text-slate-500">The world's largest blogging platform</p>
+                                      <p className="text-xs text-slate-500">Import via official Medium tool</p>
                                   </div>
                               </div>
-                              {user?.medium_token ? <span className="text-[10px] bg-green-500/20 text-green-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Connected</span> : <span className="text-[10px] bg-red-500/10 text-red-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Token Missing</span>}
+                              <span className="text-[10px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">URL Import Flow</span>
                           </div>
-                          {!user?.medium_token ? <p className="text-sm text-slate-400 bg-black/20 p-4 rounded-2xl border border-white/5 italic text-center">Enter Medium Token in <span className="text-blue-400 font-bold">Profile</span> to publish.</p> : (
-                              <div className="flex flex-col gap-4">
-                                  <button onClick={handlePublishMedium} disabled={isPublishingM} className="w-full py-4 rounded-2xl bg-[#00ab6c] hover:bg-[#008f56] text-white font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50">{isPublishingM ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />} PUBLISH LIVE TO MEDIUM</button>
-                                  {publishUrlM && <a href={publishUrlM} target="_blank" className="flex items-center justify-center gap-2 text-[#00ab6c] text-sm font-bold hover:underline">View Post on Medium <ExternalLink className="w-4 h-4" /></a>}
+                          
+                          <div className="bg-black/40 border border-white/5 p-6 rounded-2xl space-y-4">
+                              <p className="text-xs text-slate-400 leading-relaxed italic">
+                                Note: Medium has restricted new API integrations. We've optimized the official import flow for you.
+                              </p>
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between gap-4 p-3 bg-white/5 rounded-xl border border-white/10">
+                                    <code className="text-[10px] text-blue-300 truncate">{getPublicShareUrl()}</code>
+                                    <button onClick={handleShare} className="flex-shrink-0 p-2 hover:bg-blue-500/20 rounded-lg transition-all text-blue-400">
+                                        {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Quick Steps:</p>
+                                    <ol className="text-xs text-slate-400 list-decimal ml-4 space-y-1">
+                                        <li>Copy the Public URL above.</li>
+                                        <li>Open <a href="https://medium.com/p/import" target="_blank" className="text-blue-400 underline font-bold">Medium Import Story</a>.</li>
+                                        <li>Paste the URL and click <b>Import</b>.</li>
+                                    </ol>
+                                </div>
+                                <a 
+                                    href="https://medium.com/p/import" 
+                                    target="_blank" 
+                                    className="w-full py-4 rounded-2xl bg-[#00ab6c] hover:bg-[#008f56] text-white font-bold transition-all flex items-center justify-center gap-3"
+                                >
+                                    <ExternalLink className="w-5 h-5" /> OPEN MEDIUM IMPORTER
+                                </a>
                               </div>
-                          )}
+                              <p className="text-[10px] text-slate-600 text-center italic mt-2">
+                                Sorry for this manual task, as Medium has blocked new API integrations, we are very sorry for that.
+                              </p>
+                          </div>
                       </div>
                   </div>
               </div>
