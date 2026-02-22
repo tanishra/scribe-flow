@@ -203,3 +203,70 @@ async def publish_to_hashnode(
         except Exception as e:
             logger.error(f"Failed to connect to Hashnode: {e}")
             raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/medium/{job_id}")
+async def publish_to_medium(
+    job_id: str,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    """Publishes the blog to Medium using an Integration Token."""
+    if not current_user.medium_token:
+        raise HTTPException(status_code=400, detail="Medium Integration Token not found in profile.")
+
+    db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+    if not db_blog or db_blog.status != "completed":
+        raise HTTPException(status_code=404, detail="Blog not found or not completed.")
+
+    content = ""
+    if db_blog.download_url:
+        relative_path = db_blog.download_url.lstrip("/").replace("static/", "")
+        file_path = Path("outputs") / relative_path
+        if file_path.exists():
+            content = file_path.read_text(encoding="utf-8")
+
+    scribe_flow_url = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
+    backend_url = "https://api.tanish.website"
+    content = content.replace("(/static/", f"({backend_url}/static/")
+
+    headers = {
+        "Authorization": f"Bearer {current_user.medium_token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            # Step 1: Get User ID
+            me_res = await client.get("https://api.medium.com/v1/me", headers=headers)
+            if me_res.status_code != 200:
+                raise HTTPException(status_code=me_res.status_code, detail=f"Medium Auth Error: {me_res.text}")
+            
+            user_id = me_res.json()["data"]["id"]
+
+            # Step 2: Publish Post
+            raw_tags = [t.strip() for t in (db_blog.keywords or "AI").split(",")]
+            clean_tags = [re.sub(r'[^a-zA-Z0-9 ]', '', t)[:25] for t in raw_tags if len(t) > 1]
+
+            payload = {
+                "title": db_blog.title,
+                "contentFormat": "markdown",
+                "content": content,
+                "canonicalUrl": scribe_flow_url,
+                "tags": clean_tags[:5],
+                "publishStatus": "public"
+            }
+
+            post_res = await client.post(f"https://api.medium.com/v1/users/{user_id}/posts", json=payload, headers=headers)
+            if post_res.status_code in [200, 201]:
+                data = post_res.json()
+                db_blog.medium_url = data["data"]["url"]
+                session.add(db_blog)
+                session.commit()
+                return {"status": "success", "message": "Blog published successfully to Medium!", "url": data["data"]["url"]}
+            else:
+                raise HTTPException(status_code=post_res.status_code, detail=f"Medium Error: {post_res.text}")
+
+        except Exception as e:
+            logger.error(f"Medium integration failure: {e}")
+            raise HTTPException(status_code=500, detail=str(e))

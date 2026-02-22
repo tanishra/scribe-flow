@@ -21,6 +21,7 @@ interface UserData {
   is_active: boolean;
   devto_api_key?: string;
   hashnode_api_key?: string;
+  medium_token?: string;
   created_at: string;
 }
 
@@ -41,6 +42,7 @@ interface BlogData {
     status: string;
     devto_url?: string;
     hashnode_url?: string;
+    medium_url?: string;
     user_id: number;
     user_name: string;
     user_email: string;
@@ -55,6 +57,7 @@ interface Stats {
   estimated_revenue: number;
   devto_published: number;
   hashnode_published: number;
+  medium_published: number;
 }
 
 export function AdminDashboard({ onBack }: { onBack: () => void }) {
@@ -157,7 +160,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
           { label: 'Total Users', value: stats?.total_users, icon: Users, color: 'text-blue-400' },
           { label: 'Total Blogs', value: stats?.total_blogs, icon: FileText, color: 'text-green-400' },
           { label: 'Revenue', value: `₹${stats?.estimated_revenue}`, icon: Coins, color: 'text-yellow-400' },
-          { label: 'Dev.to / Hashnode', value: `${stats?.devto_published} / ${stats?.hashnode_published}`, icon: Globe, color: 'text-purple-400' },
+          { label: 'Dev / Hash / Med', value: `${stats?.devto_published} / ${stats?.hashnode_published} / ${stats?.medium_published}`, icon: Globe, color: 'text-purple-400' },
         ].map((s, i) => (
           <GlassCard key={i} className="p-6">
             <div className="flex flex-col gap-4">
@@ -249,7 +252,8 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                                 <div className="flex gap-2">
                                                     {u.devto_api_key && <span className="w-6 h-6 bg-black rounded flex items-center justify-center text-[8px] font-black text-white border border-white/10" title="Dev.to Connected">DEV</span>}
                                                     {u.hashnode_api_key && <span className="w-6 h-6 bg-[#2942FF] rounded flex items-center justify-center text-[8px] font-black text-white border border-white/10" title="Hashnode Connected">H</span>}
-                                                    {!u.devto_api_key && !u.hashnode_api_key && <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">None</span>}
+                                                    {u.medium_token && <span className="w-6 h-6 bg-[#00ab6c] rounded flex items-center justify-center text-[8px] font-black text-white border border-white/10" title="Medium Connected">M</span>}
+                                                    {!u.devto_api_key && !u.hashnode_api_key && !u.medium_token && <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">None</span>}
                                                 </div>
                                             </td>
                                             <td className="p-4">
@@ -309,6 +313,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                             <div className="flex gap-2">
                                                 {b.devto_url ? <a href={b.devto_url} target="_blank" className="w-6 h-6 bg-black rounded flex items-center justify-center text-[8px] font-black text-white hover:bg-blue-600 transition-colors" title="View on Dev.to">DEV</a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
                                                 {b.hashnode_url ? <a href={b.hashnode_url} target="_blank" className="w-6 h-6 bg-[#2942FF] rounded flex items-center justify-center text-[8px] font-black text-white hover:bg-blue-600 transition-colors" title="View on Hashnode">H</a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
+                                                {b.medium_url ? <a href={b.medium_url} target="_blank" className="w-6 h-6 bg-[#00ab6c] rounded flex items-center justify-center text-[8px] font-black text-white hover:bg-blue-600 transition-colors" title="View on Medium">M</a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
                                             </div>
                                         </td>
                                         <td className="p-4 text-center">
@@ -454,6 +459,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                         <div className="p-4 border-t border-white/5 bg-white/[0.02] flex justify-end gap-4 flex-shrink-0">
                             {selectedBlog.blog.devto_url && <a href={selectedBlog.blog.devto_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-black rounded-xl text-xs font-bold text-white hover:bg-slate-900 border border-white/10">View on Dev.to <ExternalLink className="w-3 h-3" /></a>}
                             {selectedBlog.blog.hashnode_url && <a href={selectedBlog.blog.hashnode_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-[#2942FF] rounded-xl text-xs font-bold text-white hover:bg-blue-700 border border-white/10">View on Hashnode <ExternalLink className="w-3 h-3" /></a>}
+                            {selectedBlog.blog.medium_url && <a href={selectedBlog.blog.medium_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-[#00ab6c] rounded-xl text-xs font-bold text-white hover:bg-[#008f56] border border-white/10">View on Medium <ExternalLink className="w-3 h-3" /></a>}
                             <button onClick={() => setSelectedBlog(null)} className="px-6 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl border border-white/10 transition-all">Close Viewer</button>
                         </div>
                     </GlassCard>

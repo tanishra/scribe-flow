@@ -15,8 +15,9 @@ interface User {
   credits_left: number;
   is_premium: boolean;
   devto_api_key?: string;
-  hashnode_api_key?: string; // NEW
-  hashnode_publication_id?: string; // NEW
+  hashnode_api_key?: string;
+  hashnode_publication_id?: string;
+  medium_token?: string; // NEW
 }
 
 interface AuthContextType {

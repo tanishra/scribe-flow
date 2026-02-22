@@ -52,8 +52,10 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   // Publishing State
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishingHN, setIsPublishingHN] = useState(false);
+  const [isPublishingM, setIsPublishingM] = useState(false);
   const [publishUrl, setPublishUrl] = useState<string | null>(null);
   const [publishUrlHN, setPublishUrlHN] = useState<string | null>(null);
+  const [publishUrlM, setPublishUrlM] = useState<string | null>(null);
 
   const { user, refreshUser } = useAuth();
   const apiUrl = getApiUrl();
@@ -152,6 +154,21 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     }
   };
 
+  const handlePublishMedium = async () => {
+    if (!jobId) return;
+    setIsPublishingM(true);
+    setPublishUrlM(null);
+    try {
+        const res = await axios.post(`${apiUrl}/api/v1/publish/medium/${jobId}`);
+        setPublishUrlM(res.data.url);
+        alert(res.data.message);
+    } catch (e: any) {
+        alert(e.response?.data?.detail || "Failed to publish to Medium");
+    } finally {
+        setIsPublishingM(false);
+    }
+  };
+
   const handleShare = () => {
     if (!jobId) return;
     const shareUrl = `${window.location.origin}/share/${jobId}`;
@@ -188,7 +205,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   };
 
   const reset = () => {
-    setTopic(""); setJobId(null); setStatus(null); setError(null); setIsEditing(false); setPublishUrl(null); setPublishUrlHN(null);
+    setTopic(""); setJobId(null); setStatus(null); setError(null); setIsEditing(false); setPublishUrl(null); setPublishUrlHN(null); setPublishUrlM(null);
     if (onReset) onReset();
   };
 
@@ -259,9 +276,9 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                     <p className="text-slate-400 mt-2">Connect your favorite platforms and share your masterpiece with the world.</p>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-6">
+                  <div className="grid grid-cols-1 gap-6 text-left">
                       {/* Dev.to */}
-                      <div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-left hover:border-blue-500/30 transition-all group">
+                      <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all group">
                           <div className="flex items-center justify-between mb-6">
                               <div className="flex items-center gap-4">
                                   <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center font-bold text-white border border-white/10">DEV</div>
@@ -270,7 +287,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                                       <p className="text-xs text-slate-500">Fastest-growing community for developers</p>
                                   </div>
                               </div>
-                              {user?.devto_api_key ? <span className="text-[10px] bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Connected</span> : <span className="text-[10px] bg-red-500/10 text-red-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Key Missing</span>}
+                              {user?.devto_api_key ? <span className="text-[10px] bg-green-500/20 text-green-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Connected</span> : <span className="text-[10px] bg-red-500/10 text-red-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Key Missing</span>}
                           </div>
                           {!user?.devto_api_key ? <p className="text-sm text-slate-400 bg-black/20 p-4 rounded-2xl border border-white/5 italic text-center">Update your Dev.to key in <span className="text-blue-400 font-bold">Profile</span> to publish.</p> : (
                               <div className="flex flex-col gap-4">
@@ -281,7 +298,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                       </div>
 
                       {/* Hashnode */}
-                      <div className="p-8 rounded-3xl bg-white/5 border border-white/10 text-left hover:border-blue-500/30 transition-all group">
+                      <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-blue-500/30 transition-all group">
                           <div className="flex items-center justify-between mb-6">
                               <div className="flex items-center gap-4">
                                   <div className="w-12 h-12 bg-[#2942FF] rounded-xl flex items-center justify-center font-bold text-white border border-white/10 text-lg">H</div>
@@ -296,6 +313,26 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                               <div className="flex flex-col gap-4">
                                   <button onClick={handlePublishHashnode} disabled={isPublishingHN} className="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50">{isPublishingHN ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />} PUBLISH LIVE TO HASHNODE</button>
                                   {publishUrlHN && <a href={publishUrlHN} target="_blank" className="flex items-center justify-center gap-2 text-blue-400 text-sm font-bold hover:underline">View Post on Hashnode <ExternalLink className="w-4 h-4" /></a>}
+                              </div>
+                          )}
+                      </div>
+
+                      {/* Medium */}
+                      <div className="p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-[#00ab6c]/30 transition-all group">
+                          <div className="flex items-center justify-between mb-6">
+                              <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 bg-[#00ab6c] rounded-xl flex items-center justify-center font-bold text-white border border-white/10 text-lg">M</div>
+                                  <div>
+                                      <h4 className="text-xl font-bold text-white">Medium</h4>
+                                      <p className="text-xs text-slate-500">The world's largest blogging platform</p>
+                                  </div>
+                              </div>
+                              {user?.medium_token ? <span className="text-[10px] bg-green-500/20 text-green-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Connected</span> : <span className="text-[10px] bg-red-500/10 text-red-400 px-3 py-1 rounded-full font-black uppercase tracking-widest">Token Missing</span>}
+                          </div>
+                          {!user?.medium_token ? <p className="text-sm text-slate-400 bg-black/20 p-4 rounded-2xl border border-white/5 italic text-center">Enter Medium Token in <span className="text-blue-400 font-bold">Profile</span> to publish.</p> : (
+                              <div className="flex flex-col gap-4">
+                                  <button onClick={handlePublishMedium} disabled={isPublishingM} className="w-full py-4 rounded-2xl bg-[#00ab6c] hover:bg-[#008f56] text-white font-bold transition-all flex items-center justify-center gap-3 disabled:opacity-50">{isPublishingM ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />} PUBLISH LIVE TO MEDIUM</button>
+                                  {publishUrlM && <a href={publishUrlM} target="_blank" className="flex items-center justify-center gap-2 text-[#00ab6c] text-sm font-bold hover:underline">View Post on Medium <ExternalLink className="w-4 h-4" /></a>}
                               </div>
                           )}
                       </div>

@@ -18,12 +18,14 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
     devto_api_key: '',
     hashnode_api_key: '',
     hashnode_publication_id: '',
+    medium_token: '',
   });
   
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showHashnodeGuide, setShowHashnodeGuide] = useState(false);
+  const [showMediumGuide, setShowMediumGuide] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -36,6 +38,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
         devto_api_key: user.devto_api_key || '',
         hashnode_api_key: user.hashnode_api_key || '',
         hashnode_publication_id: user.hashnode_publication_id || '',
+        medium_token: user.medium_token || '',
       });
     }
   }, [user]);
@@ -168,6 +171,37 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                         <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" placeholder="Personal Access Token" value={data.hashnode_api_key} onChange={e => setData({...data, hashnode_api_key: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
                         <div className="relative"><BookOpen className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="text" placeholder="Publication ID" value={data.hashnode_publication_id} onChange={e => setData({...data, hashnode_publication_id: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
                     </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3"><div className="w-10 h-10 bg-[#00ab6c] rounded-lg flex items-center justify-center font-bold text-white text-xs border border-white/10">M</div><div><h4 className="font-bold text-white">Medium</h4><p className="text-[10px] text-slate-500 uppercase font-black">Publish live to Medium</p></div></div>
+                        <div className="flex items-center gap-3">
+                          {user.medium_token ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
+                          <button 
+                            onClick={() => setShowMediumGuide(!showMediumGuide)}
+                            className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
+                          >
+                            <HelpCircle className="w-3 h-3" />
+                            {showMediumGuide ? "Close Guide" : "How to find?"}
+                          </button>
+                        </div>
+                    </div>
+
+                    {showMediumGuide && (
+                      <div className="mb-6 p-5 rounded-2xl bg-blue-500/5 border border-blue-500/10 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div>
+                          <p className="text-[10px] font-black text-blue-400 uppercase mb-1 flex items-center gap-2"><Key className="w-3 h-3" /> Integration Token</p>
+                          <p className="text-xs text-slate-400 leading-relaxed">
+                            1. Go to <a href="https://medium.com/me/settings/security" target="_blank" className="text-slate-200 underline font-bold text-xs">Medium Settings</a>.<br/>
+                            2. Scroll down to <b>Integration Tokens</b>.<br/>
+                            3. Enter "ScribeFlow", click <b>Get Token</b>, and copy it below.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" placeholder="Enter Medium Integration Token" value={data.medium_token} onChange={e => setData({...data, medium_token: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
                 </div>
             </div>
 

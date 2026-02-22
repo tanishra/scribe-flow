@@ -24,6 +24,7 @@ async def get_stats(session: Session = Depends(get_session), _ = Depends(check_a
     # Integration Stats
     devto_published = session.exec(select(func.count(Blog.id)).where(Blog.devto_url != None)).one()
     hashnode_published = session.exec(select(func.count(Blog.id)).where(Blog.hashnode_url != None)).one()
+    medium_published = session.exec(select(func.count(Blog.id)).where(Blog.medium_url != None)).one()
     
     estimated_revenue = premium_users * 499 
 
@@ -34,7 +35,8 @@ async def get_stats(session: Session = Depends(get_session), _ = Depends(check_a
         "premium_users": premium_users,
         "estimated_revenue": estimated_revenue,
         "devto_published": devto_published,
-        "hashnode_published": hashnode_published
+        "hashnode_published": hashnode_published,
+        "medium_published": medium_published
     }
 
 @router.get("/analytics/growth")
