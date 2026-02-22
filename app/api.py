@@ -190,7 +190,7 @@ from fastapi.responses import HTMLResponse
 
 @api_router.get("/public/render/{job_id}", response_class=HTMLResponse)
 async def render_public_blog(job_id: str, session: Session = Depends(get_session)):
-    """A static HTML version of the blog for crawlers like Medium and SEO."""
+    """A static HTML version of the blog optimized for Medium's crawler."""
     db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
     
     if not db_blog or db_blog.status != "completed":
@@ -203,39 +203,60 @@ async def render_public_blog(job_id: str, session: Session = Depends(get_session
         if file_path.exists():
             content = file_path.read_text(encoding="utf-8")
 
-    # Simple Markdown to HTML conversion for the importer
+    # Convert Markdown to HTML
     import markdown
-    html_content = markdown.markdown(content)
+    html_body = markdown.markdown(content, extensions=['extra', 'codehilite', 'toc'])
     
-    # Base URL for static assets
+    # Fix image paths
     base_url = "https://api.tanish.website"
-    html_content = html_content.replace('src="/static/', f'src="{base_url}/static/')
+    html_body = html_body.replace('src="/static/', f'src="{base_url}/static/')
 
-    return f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{db_blog.title}</title>
-        <meta name="description" content="{db_blog.meta_description or ''}">
-        <meta property="og:title" content="{db_blog.title}">
-        <meta property="og:description" content="{db_blog.meta_description or ''}">
-        <meta property="og:type" content="article">
-        <link rel="canonical" href="https://scribe-flow-sable.vercel.app/share/{job_id}">
-        <style>
-            body {{ font-family: -apple-system, system-ui, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; color: #333; }}
-            img {{ max-width: 100%; height: auto; border-radius: 8px; }}
-            h1 {{ font-size: 2.5em; margin-bottom: 10px; }}
-        </style>
-    </head>
-    <body>
-        <article>
-            {html_content}
-        </article>
-    </body>
-    </html>
-    """
+    # SEO Metadata
+    title = db_blog.title or "ScribeFlow AI Blog"
+    description = (db_blog.meta_description or "")[:160]
+    canonical = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
+
+    # Build response with raw strings to avoid f-string conflicts with code curly braces
+    html_template = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    
+    <!-- Medium & SEO Meta Tags -->
+    <meta name="description" content="{description}">
+    <link rel="canonical" href="{canonical}">
+    <meta name="author" content="ScribeFlow AI">
+    
+    <meta property="og:site_name" content="ScribeFlow">
+    <meta property="og:title" content="{title}">
+    <meta property="og:description" content="{description}">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{canonical}">
+    <meta property="article:published_time" content="{db_blog.created_at.isoformat()}">
+    
+    <style>
+        body {{ font-family: Georgia, Cambria, "Times New Roman", Times, serif; line-height: 1.8; max-width: 740px; margin: 50px auto; padding: 20px; color: #292929; -webkit-font-smoothing: antialiased; }}
+        h1, h2, h3 {{ font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Arial, sans-serif; font-weight: 700; margin-top: 1.5em; }}
+        h1 {{ font-size: 42px; line-height: 1.2; margin-bottom: 0.5em; }}
+        img {{ max-width: 100%; height: auto; border-radius: 4px; display: block; margin: 2em auto; }}
+        pre {{ background: #f4f4f4; padding: 20px; overflow-x: auto; border-radius: 5px; font-family: monospace; font-size: 14px; }}
+        blockquote {{ border-left: 3px solid #292929; padding-left: 20px; margin-left: 0; font-style: italic; color: #757575; }}
+    </style>
+</head>
+<body>
+    <article>
+        <header>
+            <h1>{title}</h1>
+        </header>
+        <section class="content">
+            {html_body}
+        </section>
+    </article>
+</body>
+</html>"""
+    return html_template
 
 @api_router.post("/generate", response_model=Dict[str, str], status_code=202)
 @limiter.limit("5/minute")
