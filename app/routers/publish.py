@@ -149,7 +149,7 @@ async def publish_to_hashnode(
                 "description": (db_blog.meta_description or "")[:150],
                 "title": db_blog.title[:70]
             },
-            "canonicalUrl": scribe_flow_url,
+            "originalArticleURL": scribe_flow_url,
         }
     }
 
