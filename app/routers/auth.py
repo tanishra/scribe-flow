@@ -14,6 +14,7 @@ from ..schemas.auth_models import (
     UserProfileUpdate
 )
 from ..schemas.db_models import User, OTP
+from ..services.logging_service import logger
 from ..services.auth_service import (
     generate_otp_code,
     send_email_otp,
