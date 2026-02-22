@@ -18,6 +18,8 @@ interface User {
   hashnode_api_key?: string;
   hashnode_publication_id?: string;
   medium_token?: string; // NEW
+  linkedin_access_token?: string;
+  linkedin_urn?: string;
 }
 
 interface AuthContextType {
