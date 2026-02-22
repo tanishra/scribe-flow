@@ -9,3 +9,6 @@ outputs/
 backend.py
 bwa_basics.ipynb
 main.py
+scripts
+appspec.yml
+app/logs/*.log 
