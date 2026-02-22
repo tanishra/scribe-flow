@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select, func, delete
 from typing import List, Optional, Dict
 from datetime import datetime, timedelta
+from pathlib import Path
 from ..database import get_session
 from ..schemas.db_models import User, Blog, Feedback
 from ..dependencies import get_current_user
@@ -20,6 +21,10 @@ async def get_stats(session: Session = Depends(get_session), _ = Depends(check_a
     total_feedback = session.exec(select(func.count(Feedback.id))).one()
     premium_users = session.exec(select(func.count(User.id)).where(User.is_premium == True)).one()
     
+    # Integration Stats
+    devto_published = session.exec(select(func.count(Blog.id)).where(Blog.devto_url != None)).one()
+    hashnode_published = session.exec(select(func.count(Blog.id)).where(Blog.hashnode_url != None)).one()
+    
     estimated_revenue = premium_users * 499 
 
     return {
@@ -27,7 +32,9 @@ async def get_stats(session: Session = Depends(get_session), _ = Depends(check_a
         "total_blogs": total_blogs,
         "total_feedback": total_feedback,
         "premium_users": premium_users,
-        "estimated_revenue": estimated_revenue
+        "estimated_revenue": estimated_revenue,
+        "devto_published": devto_published,
+        "hashnode_published": hashnode_published
     }
 
 @router.get("/analytics/growth")
@@ -88,6 +95,25 @@ async def list_all_blogs(session: Session = Depends(get_session), _ = Depends(ch
         blogs_with_users.append(blog_dict)
         
     return blogs_with_users
+
+@router.get("/blogs/{job_id}")
+async def get_blog_detail(job_id: str, session: Session = Depends(get_session), _ = Depends(check_admin)):
+    """Fetch full blog content and details for admin review."""
+    db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+    if not db_blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    
+    content = ""
+    if db_blog.download_url:
+        relative_path = db_blog.download_url.lstrip("/").replace("static/", "")
+        file_path = Path("outputs") / relative_path
+        if file_path.exists():
+            content = file_path.read_text(encoding="utf-8")
+            
+    return {
+        "blog": db_blog,
+        "content": content
+    }
 
 @router.get("/feedback", response_model=List[Feedback])
 async def list_feedback(session: Session = Depends(get_session), _ = Depends(check_admin)):

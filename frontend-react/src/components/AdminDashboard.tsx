@@ -4,10 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Users, FileText, MessageSquare, ShieldCheck, Zap, 
     Mail, Calendar, Search, ArrowLeft, Trash2, 
-    TrendingUp, Coins, BarChart3, MoreVertical, UserX, UserCheck, ChevronRight
+    TrendingUp, Coins, BarChart3, MoreVertical, UserX, UserCheck, ChevronRight,
+    ExternalLink, Eye, X, Globe, Key, BookOpen
 } from 'lucide-react';
 import { GlassCard } from './GlassCard';
 import { getApiUrl } from '../contexts/AuthContext';
+import { MarkdownRenderer } from './MarkdownRenderer';
 
 interface UserData {
   id: number;
@@ -17,6 +19,8 @@ interface UserData {
   credits_left: number;
   is_premium: boolean;
   is_active: boolean;
+  devto_api_key?: string;
+  hashnode_api_key?: string;
   created_at: string;
 }
 
@@ -31,12 +35,15 @@ interface FeedbackData {
 
 interface BlogData {
     id: number;
+    job_id: string;
     title: string;
     topic: string;
     status: string;
+    devto_url?: string;
+    hashnode_url?: string;
     user_id: number;
-    user_name: string; // JOINED DATA
-    user_email: string; // JOINED DATA
+    user_name: string;
+    user_email: string;
     created_at: string;
 }
 
@@ -46,6 +53,8 @@ interface Stats {
   total_feedback: number;
   premium_users: number;
   estimated_revenue: number;
+  devto_published: number;
+  hashnode_published: number;
 }
 
 export function AdminDashboard({ onBack }: { onBack: () => void }) {
@@ -57,6 +66,10 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'users' | 'blogs' | 'feedback' | 'analytics'>('users');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Blog Detail Modal
+  const [selectedBlog, setSelectedBlog] = useState<{blog: BlogData, content: string} | null>(null);
+  const [loadingBlog, setLoadingBlog] = useState(false);
 
   const apiUrl = getApiUrl();
 
@@ -82,6 +95,18 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
       console.error("Failed to fetch admin data", e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBlogDetail = async (jobId: string) => {
+    setLoadingBlog(true);
+    try {
+        const res = await axios.get(`${apiUrl}/api/v1/admin/blogs/${jobId}`);
+        setSelectedBlog(res.data);
+    } catch (e) {
+        alert("Failed to load blog content");
+    } finally {
+        setLoadingBlog(false);
     }
   };
 
@@ -132,7 +157,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
           { label: 'Total Users', value: stats?.total_users, icon: Users, color: 'text-blue-400' },
           { label: 'Total Blogs', value: stats?.total_blogs, icon: FileText, color: 'text-green-400' },
           { label: 'Revenue', value: `₹${stats?.estimated_revenue}`, icon: Coins, color: 'text-yellow-400' },
-          { label: 'Support', value: stats?.total_feedback, icon: MessageSquare, color: 'text-orange-400' },
+          { label: 'Dev.to / Hashnode', value: `${stats?.devto_published} / ${stats?.hashnode_published}`, icon: Globe, color: 'text-purple-400' },
         ].map((s, i) => (
           <GlassCard key={i} className="p-6">
             <div className="flex flex-col gap-4">
@@ -197,6 +222,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                 <thead>
                                     <tr className="text-slate-500 text-[10px] uppercase tracking-[0.2em] bg-white/5">
                                         <th className="p-4 font-bold">Creator</th>
+                                        <th className="p-4 font-bold">Integrations</th>
                                         <th className="p-4 font-bold">Credits</th>
                                         <th className="p-4 font-bold">Joined</th>
                                         <th className="p-4 font-bold text-center">Security</th>
@@ -217,6 +243,13 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                                         </p>
                                                         <p className="text-[10px] text-slate-500">{u.email}</p>
                                                     </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex gap-2">
+                                                    {u.devto_api_key && <span className="w-6 h-6 bg-black rounded flex items-center justify-center text-[8px] font-black text-white border border-white/10" title="Dev.to Connected">DEV</span>}
+                                                    {u.hashnode_api_key && <span className="w-6 h-6 bg-[#2942FF] rounded flex items-center justify-center text-[8px] font-black text-white border border-white/10" title="Hashnode Connected">H</span>}
+                                                    {!u.devto_api_key && !u.hashnode_api_key && <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">None</span>}
                                                 </div>
                                             </td>
                                             <td className="p-4">
@@ -255,8 +288,9 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                 <tr className="text-slate-500 text-[10px] uppercase tracking-[0.2em] bg-white/5">
                                     <th className="p-4 font-bold">Article Title</th>
                                     <th className="p-4 font-bold">Author</th>
+                                    <th className="p-4 font-bold">Live Status</th>
                                     <th className="p-4 font-bold text-center">Status</th>
-                                    <th className="p-4 font-bold text-right pr-8">Date</th>
+                                    <th className="p-4 font-bold text-right pr-8">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
@@ -270,6 +304,12 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                             <p className="text-xs font-bold text-blue-400">{b.user_name}</p>
                                             <p className="text-[9px] text-slate-600 font-mono uppercase tracking-tight">{b.user_email}</p>
                                         </td>
+                                        <td className="p-4">
+                                            <div className="flex gap-2">
+                                                {b.devto_url ? <a href={b.devto_url} target="_blank" className="w-6 h-6 bg-black rounded flex items-center justify-center text-[8px] font-black text-white hover:bg-blue-600 transition-colors" title="View on Dev.to">DEV</a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
+                                                {b.hashnode_url ? <a href={b.hashnode_url} target="_blank" className="w-6 h-6 bg-[#2942FF] rounded flex items-center justify-center text-[8px] font-black text-white hover:bg-blue-600 transition-colors" title="View on Hashnode">H</a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
+                                            </div>
+                                        </td>
                                         <td className="p-4 text-center">
                                             <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase border ${
                                                 b.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
@@ -279,8 +319,14 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                                 {b.status}
                                             </span>
                                         </td>
-                                        <td className="p-4 text-[10px] text-slate-500 font-mono text-right pr-8">
-                                            {new Date(b.created_at + "Z").toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                                        <td className="p-4 text-right pr-8">
+                                            <button 
+                                                onClick={() => fetchBlogDetail(b.job_id)}
+                                                className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                                                title="View Full Content"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -370,6 +416,42 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                 )}
             </GlassCard>
         </motion.div>
+      </AnimatePresence>
+
+      {/* Blog Content Modal */}
+      <AnimatePresence>
+        {selectedBlog && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="w-full max-w-5xl max-h-[90vh] overflow-hidden"
+                >
+                    <GlassCard className="relative h-full flex flex-col p-0 border-blue-500/20 shadow-2xl">
+                        <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                            <div>
+                                <h3 className="text-xl font-bold text-white line-clamp-1">{selectedBlog.blog.title}</h3>
+                                <p className="text-xs text-slate-500 mt-1 uppercase font-black tracking-widest">By {selectedBlog.blog.user_name} • {selectedBlog.blog.user_email}</p>
+                            </div>
+                            <button onClick={() => setSelectedBlog(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-400 hover:text-white">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                            <div className="max-w-3xl mx-auto">
+                                <MarkdownRenderer content={selectedBlog.content} />
+                            </div>
+                        </div>
+                        <div className="p-4 border-t border-white/5 bg-white/[0.02] flex justify-end gap-4">
+                            {selectedBlog.blog.devto_url && <a href={selectedBlog.blog.devto_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-black rounded-xl text-xs font-bold text-white hover:bg-slate-900 border border-white/10">View on Dev.to <ExternalLink className="w-3 h-3" /></a>}
+                            {selectedBlog.blog.hashnode_url && <a href={selectedBlog.blog.hashnode_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-[#2942FF] rounded-xl text-xs font-bold text-white hover:bg-blue-700 border border-white/10">View on Hashnode <ExternalLink className="w-3 h-3" /></a>}
+                            <button onClick={() => setSelectedBlog(null)} className="px-6 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl border border-white/10 transition-all">Close Viewer</button>
+                        </div>
+                    </GlassCard>
+                </motion.div>
+            </div>
+        )}
       </AnimatePresence>
     </div>
   );
