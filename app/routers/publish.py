@@ -122,20 +122,29 @@ async def publish_to_hashnode(
     }
     """
     
-    # Format tags for Hashnode (they need a specific format, but we'll try simple ones)
-    # Hashnode requires tags to exist. We'll use a few standard ones.
+    # Hashnode requires a specific tag format (slug and name)
+    raw_tags = [t.strip() for t in (db_blog.keywords or "ai, automation").split(",")]
+    hashnode_tags = []
+    for t in raw_tags:
+        clean = "".join(c for c in t.lower() if c.isalnum())
+        if clean and len(clean) >= 2:
+            # Hashnode v3 tags require slug and name
+            hashnode_tags.append({"slug": clean[:20], "name": t[:50]})
+    
+    if not hashnode_tags:
+        hashnode_tags = [{"slug": "ai", "name": "AI"}]
     
     variables = {
         "input": {
             "title": db_blog.title,
             "contentMarkdown": content,
             "publicationId": current_user.hashnode_publication_id,
+            "tags": hashnode_tags[:5], # Hashnode allows up to 5 tags
             "metaTags": {
                 "description": db_blog.meta_description or "",
                 "title": db_blog.title
             },
             "canonicalUrl": scribe_flow_url,
-            # For simplicity, we skip complex tag objects which require IDs on Hashnode
         }
     }
 
