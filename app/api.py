@@ -2,6 +2,7 @@ import uuid
 import json
 import os
 import markdown
+import asyncio
 from typing import Dict, Optional, List, Any
 from fastapi import FastAPI, BackgroundTasks, HTTPException, APIRouter, Depends, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,6 +28,10 @@ from .utils.slug import slugify
 
 # --- Security & Rate Limiting ---
 limiter = Limiter(key_func=get_remote_address)
+# Option A: Safety Valve (Semaphore)
+# This limits the number of concurrent agentic workflows running in a single worker process.
+# With 4 workers, a limit of 2 here means a total of 8 concurrent generations across the server.
+generation_semaphore = asyncio.Semaphore(2)
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -98,74 +103,75 @@ class JobStatusResponse(BaseModel):
 # --- Background Task ---
 
 async def generate_blog_task(job_id: str, topic: str, tone: str):
-    """Background worker to run the LangGraph workflow."""
-    logger.info(f"Background task started for Job ID: {job_id}")
-    try:
-        with next(get_session()) as session:
-            db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
-            if db_blog:
-                db_blog.status = "processing"
-                session.add(db_blog)
-                session.commit()
+    """Background worker to run the LangGraph workflow with concurrency control."""
+    async with generation_semaphore:
+        logger.info(f"Background task started for Job ID: {job_id}")
+        try:
+            with next(get_session()) as session:
+                db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+                if db_blog:
+                    db_blog.status = "processing"
+                    session.add(db_blog)
+                    session.commit()
 
-        # Run the main generation logic with TONE
-        result = await run(topic, tone=tone)
-        
-        # Extract results
-        plan = result.get("plan")
-        evidence = result.get("evidence", [])
-        image_specs = result.get("image_specs", [])
-        seo_data = result.get("seo", {}) 
-        
-        # Construct Safe URLs
-        raw_title = plan.blog_title if plan else "Unknown Title"
-        safe_name = slugify(raw_title)
-        download_url = f"/static/blogs/{safe_name}.md"
-        image_urls = [f"/static/images/{spec['filename']}" for spec in image_specs]
+            # Run the main generation logic with TONE
+            result = await run(topic, tone=tone)
+            
+            # Extract results
+            plan = result.get("plan")
+            evidence = result.get("evidence", [])
+            image_specs = result.get("image_specs", [])
+            seo_data = result.get("seo", {}) 
+            
+            # Construct Safe URLs
+            raw_title = plan.blog_title if plan else "Unknown Title"
+            safe_name = slugify(raw_title)
+            download_url = f"/static/blogs/{safe_name}.md"
+            image_urls = [f"/static/images/{spec['filename']}" for spec in image_specs]
 
-        # Serialization
-        plan_dict = plan.model_dump() if hasattr(plan, "model_dump") else plan
-        # Ensure evidence objects are properly converted to dicts
-        evidence_list = []
-        for e in evidence:
-            if hasattr(e, "model_dump"):
-                evidence_list.append(e.model_dump())
-            elif isinstance(e, dict):
-                evidence_list.append(e)
-            else:
-                # Fallback for unexpected types
-                evidence_list.append(str(e))
+            # Serialization
+            plan_dict = plan.model_dump() if hasattr(plan, "model_dump") else plan
+            # Ensure evidence objects are properly converted to dicts
+            evidence_list = []
+            for e in evidence:
+                if hasattr(e, "model_dump"):
+                    evidence_list.append(e.model_dump())
+                elif isinstance(e, dict):
+                    evidence_list.append(e)
+                else:
+                    # Fallback for unexpected types
+                    evidence_list.append(str(e))
 
-        # Update SQL Database
-        with next(get_session()) as session:
-            db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
-            if db_blog:
-                db_blog.status = "completed"
-                db_blog.title = raw_title
-                db_blog.download_url = download_url
-                db_blog.plan_json = json.dumps(plan_dict)
-                db_blog.evidence_json = json.dumps(evidence_list)
-                db_blog.images_json = json.dumps(image_urls)
-                
-                # Save SEO Data
-                db_blog.meta_description = seo_data.get("meta_description")
-                db_blog.keywords = seo_data.get("keywords")
-                
-                db_blog.updated_at = datetime.utcnow()
-                session.add(db_blog)
-                session.commit()
-        
-        logger.info(f"Job {job_id} completed successfully.")
-        
-    except Exception as e:
-        logger.error(f"Error in background job {job_id}: {str(e)}", exc_info=True)
-        with next(get_session()) as session:
-            db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
-            if db_blog:
-                db_blog.status = "failed"
-                db_blog.error = str(e)
-                session.add(db_blog)
-                session.commit()
+            # Update SQL Database
+            with next(get_session()) as session:
+                db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+                if db_blog:
+                    db_blog.status = "completed"
+                    db_blog.title = raw_title
+                    db_blog.download_url = download_url
+                    db_blog.plan_json = json.dumps(plan_dict)
+                    db_blog.evidence_json = json.dumps(evidence_list)
+                    db_blog.images_json = json.dumps(image_urls)
+                    
+                    # Save SEO Data
+                    db_blog.meta_description = seo_data.get("meta_description")
+                    db_blog.keywords = seo_data.get("keywords")
+                    
+                    db_blog.updated_at = datetime.utcnow()
+                    session.add(db_blog)
+                    session.commit()
+            
+            logger.info(f"Job {job_id} completed successfully.")
+            
+        except Exception as e:
+            logger.error(f"Error in background job {job_id}: {str(e)}", exc_info=True)
+            with next(get_session()) as session:
+                db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+                if db_blog:
+                    db_blog.status = "failed"
+                    db_blog.error = str(e)
+                    session.add(db_blog)
+                    session.commit()
 
 # --- API Router Setup ---
 
