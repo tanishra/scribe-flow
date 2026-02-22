@@ -183,7 +183,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <div className="bg-black/40 p-5 rounded-2xl border border-white/10 space-y-4">
                             <div className="flex items-center gap-3 border-b border-white/5 pb-2">
                                 <div className="w-6 h-6 rounded-full bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs font-black flex-shrink-0">2</div>
-                                <p className="text-[11px] font-black text-white uppercase tracking-wider">How to get your "Person ID" (Simplest Way)</p>
+                                <p className="text-[11px] font-black text-white uppercase tracking-wider">How to find your "Person ID" (Simplest Way)</p>
                             </div>
                             <div className="space-y-3">
                                 <p className="text-xs text-slate-400">On the <b>same</b> Token Generator page, scroll down to <span className="text-white font-bold">Step 2: Use your token</span>.</p>
@@ -220,7 +220,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
                           <input 
                             type="password" 
-                            name="li_token_v3" 
+                            name="li_token_unique" 
                             autoComplete="new-password" 
                             placeholder="Paste Access Token here" 
                             value={data.linkedin_access_token} 
@@ -232,7 +232,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <User className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
                           <input 
                             type="text" 
-                            name="li_urn_v3" 
+                            name="li_urn_unique" 
                             autoComplete="new-password" 
                             placeholder="Paste Person ID here" 
                             value={data.linkedin_urn} 

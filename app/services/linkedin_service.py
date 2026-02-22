@@ -53,7 +53,7 @@ class LinkedInService:
         BLOG CONTENT (Markdown):
         {blog_content[:4000]} # Truncate to save context
         
-        CONSTRAINTS & STYLE:
+        CONSTRAINTS & STYLE (STRICT):
         1. HOOK: Start with a powerful first line that stops the scroll (curiosity, controversial take, or a massive benefit).
         2. FORMAT: Use short paragraphs (1-2 sentences max). 
         3. LISTS: Use bullet points or emojis for readability.
@@ -61,15 +61,18 @@ class LinkedInService:
         5. CALL TO ACTION: Tell them to read the full story at the link below.
         6. NO HASHTAG OVERLOAD: Use exactly 3-5 relevant technical/professional hashtags at the end.
         7. EMOJIS: Use them strategically to guide the eye, but keep it professional.
-        8. NO BOLD/ITALIC: LinkedIn API does not support markdown formatting (no ** or __). Use CAPS for emphasis if needed.
+        8. CRITICAL - NO MARKDOWN: LinkedIn API does not support bold or italic markdown. 
+           - NEVER use asterisks (**) or underscores (__). 
+           - NEVER use symbols like # for headers inside the post.
+           - Use ALL CAPS for emphasis if absolutely necessary (e.g., HUGE WIN instead of **huge win**).
         
         The teaser must be enticing enough that people feel they HAVE to click the link to see the full implementation.
         
-        OUTPUT ONLY THE POST TEXT.
+        OUTPUT ONLY THE PLAIN TEXT CONTENT.
         """
         
         messages = [
-            SystemMessage(content="You are a LinkedIn Growth Expert. You write viral technical posts."),
+            SystemMessage(content="You are a LinkedIn Growth Expert. You write viral technical posts in PLAIN TEXT ONLY."),
             HumanMessage(content=prompt)
         ]
         
