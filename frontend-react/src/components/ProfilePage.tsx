@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth, getApiUrl } from '../contexts/AuthContext';
 import { GlassCard } from './GlassCard';
-import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen, HelpCircle, ExternalLink, Code, AlertCircle, Linkedin } from 'lucide-react';
+import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Key, BookOpen, HelpCircle, ExternalLink, Code, AlertCircle, Linkedin, PlusCircle, CheckCircle2 } from 'lucide-react';
 import axios from 'axios';
 
 // Custom Brand Icons
@@ -150,28 +150,88 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                               className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
                             >
                               <HelpCircle className="w-3 h-3" />
-                              {showLinkedinGuide ? "Close Guide" : "Get Token?"}
+                              {showLinkedinGuide ? "Hide Guide" : "How to get keys?"}
                             </button>
                             {user.linkedin_access_token ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
                         </div>
                     </div>
 
                     {showLinkedinGuide && (
-                      <div className="mb-6 p-5 rounded-2xl bg-blue-500/5 border border-blue-500/10 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <div className="pb-3 border-b border-white/5">
-                          <p className="text-[10px] font-black text-blue-400 uppercase mb-1 flex items-center gap-2"><Key className="w-3 h-3" /> 1. Access Token</p>
-                          <p className="text-xs text-slate-400 leading-relaxed">Go to <a href="https://www.linkedin.com/developers/tools/oauth/token-generator" target="_blank" className="text-slate-200 underline">LinkedIn Token Generator</a>. Select your App, and add the <code className="text-blue-300">w_member_social</code> permission.</p>
+                      <div className="mb-6 p-6 rounded-3xl bg-blue-500/5 border border-blue-500/10 space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">1</div>
+                            <div>
+                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Create a Developer App</p>
+                              <p className="text-xs text-slate-400 leading-relaxed">
+                                Go to <a href="https://www.linkedin.com/developers/createmobile" target="_blank" className="text-blue-400 underline inline-flex items-center gap-1">LinkedIn Developers <ExternalLink className="w-3 h-3" /></a> and create an app. You will need to associate it with a LinkedIn Page (Company Page).
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">2</div>
+                            <div>
+                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Add "Share on LinkedIn" Product</p>
+                              <p className="text-xs text-slate-400 leading-relaxed">
+                                Under your App's <b>Products</b> tab, click "Request access" for <b>Share on LinkedIn</b> and <b>Sign In with LinkedIn</b>.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">3</div>
+                            <div>
+                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Generate Your Access Token</p>
+                              <p className="text-xs text-slate-400 leading-relaxed">
+                                Open the <a href="https://www.linkedin.com/developers/tools/oauth/token-generator" target="_blank" className="text-blue-400 underline inline-flex items-center gap-1">Token Generator Tool <ExternalLink className="w-3 h-3" /></a>. Select your App, and check the <code className="text-blue-300">w_member_social</code> scope. Click "Request Token".
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5">4</div>
+                            <div>
+                              <p className="text-[11px] font-black text-white uppercase tracking-wider mb-1">Find your Person ID</p>
+                              <p className="text-xs text-slate-400 leading-relaxed">
+                                In the same Token Generator page, scroll down to <b>Step 2</b>. Run the provided request to the <code className="text-blue-300">/me</code> endpoint. Your <b>Person ID</b> is the <code className="text-orange-300">id</code> field in the response (e.g., <code className="text-orange-300">ABC123XYZ</code>).
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-[10px] font-black text-blue-400 uppercase mb-1 flex items-center gap-2"><User className="w-3 h-3" /> 2. Person URN</p>
-                          <p className="text-xs text-slate-400 leading-relaxed">After generating the token, use the <code className="text-blue-300">/me</code> endpoint in the same tool to find your ID (e.g., <code className="text-blue-300">urn:li:person:ABC123XYZ</code>).</p>
+                        
+                        <div className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-3 text-[10px] text-slate-500 italic">
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                          Once you have both, paste them into the fields below and click "Save All Changes".
                         </div>
                       </div>
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" name="linkedin_token" autoComplete="off" placeholder="LinkedIn Access Token" value={data.linkedin_access_token} onChange={e => setData({...data, linkedin_access_token: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
-                        <div className="relative"><BookOpen className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="text" name="linkedin_urn" autoComplete="off" placeholder="Person ID (e.g. ABC123XYZ)" value={data.linkedin_urn} onChange={e => setData({...data, linkedin_urn: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+                        <div className="relative">
+                          <Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
+                          <input 
+                            type="password" 
+                            name="linkedin_token_field" 
+                            autoComplete="new-password" 
+                            placeholder="Enter LinkedIn Access Token" 
+                            value={data.linkedin_access_token} 
+                            onChange={e => setData({...data, linkedin_access_token: e.target.value})} 
+                            className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" 
+                          />
+                        </div>
+                        <div className="relative">
+                          <User className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
+                          <input 
+                            type="text" 
+                            name="linkedin_urn_field" 
+                            autoComplete="new-password" 
+                            placeholder="Enter Person ID (e.g. ABC123XYZ)" 
+                            value={data.linkedin_urn} 
+                            onChange={e => setData({...data, linkedin_urn: e.target.value})} 
+                            className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" 
+                          />
+                        </div>
                     </div>
                 </div>
 
