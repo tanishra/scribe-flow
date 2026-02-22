@@ -5,14 +5,14 @@ import { User, Mail, Camera, Save, ArrowLeft, ShieldCheck, Zap, Coins, Globe, Ke
 import axios from 'axios';
 
 // Custom Brand Icons
-const HashnodeIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
+const HashnodeIcon = ({ size = "w-5 h-5" }: { size?: string }) => (
+  <svg viewBox="0 0 24 24" className={`${size} fill-current`} xmlns="http://www.w3.org/2000/svg">
     <path d="M22.351 8.019l-6.37-6.37a5.63 5.63 0 00-7.962 0l-6.37 6.37a5.63 5.63 0 000 7.962l6.37 6.37a5.63 5.63 0 007.962 0l6.37-6.37a5.63 5.63 0 000-7.962zM12 15.953a3.953 3.953 0 110-7.906 3.953 3.953 0 010 7.906z" />
   </svg>
 );
 
-const MediumIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
+const MediumIcon = ({ size = "w-5 h-5" }: { size?: string }) => (
+  <svg viewBox="0 0 24 24" className={`${size} fill-current`} xmlns="http://www.w3.org/2000/svg">
     <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.41-3.38 6.41s-3.38-2.87-3.38-6.41 1.51-6.41 3.38-6.41 3.38 2.87 3.38 6.41zM24 12c0 3.17-.53 5.75-1.19 5.75s-1.19-2.58-1.19-5.75.53-5.75 1.19-5.75S24 8.83 24 12z" />
   </svg>
 );
@@ -36,6 +36,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [showHashnodeGuide, setShowHashnodeGuide] = useState(false);
 
   useEffect(() => {
@@ -55,13 +56,14 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
 
   const handleUpdate = async () => {
     setLoading(true);
+    setError(null);
     try {
       await axios.patch(`${apiUrl}/api/v1/auth/profile`, data);
       await refreshUser();
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (e) {
-      alert("Failed to update profile");
+      setError("Failed to update profile. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -71,6 +73,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    setError(null);
     const formData = new FormData();
     formData.append('file', file);
     try {
@@ -79,7 +82,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
       });
       await refreshUser();
     } catch (e) {
-      alert("Failed to upload image");
+      setError("Failed to upload image.");
     } finally {
       setUploading(false);
     }
@@ -199,7 +202,10 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
             </div>
 
             <div className="flex items-center justify-between pt-8 mt-8 border-t border-white/5">
-                <div className="text-slate-500 text-sm">{success && <span className="text-green-400 flex items-center gap-1"><ShieldCheck className="w-4 h-4" /> Vault updated!</span>}</div>
+                <div className="text-slate-500 text-sm">
+                    {success && <span className="text-green-400 flex items-center gap-1"><ShieldCheck className="w-4 h-4" /> Vault updated!</span>}
+                    {error && <span className="text-red-400 flex items-center gap-1"><AlertCircle className="w-4 h-4" /> {error}</span>}
+                </div>
                 <button onClick={handleUpdate} disabled={loading} className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-600/20 active:scale-95 disabled:opacity-50">
                   {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-5 h-5" />}
                   Save All Changes

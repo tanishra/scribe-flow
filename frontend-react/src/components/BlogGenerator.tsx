@@ -69,6 +69,8 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   const [publishUrl, setPublishUrl] = useState<string | null>(null);
   const [publishUrlHN, setPublishUrlHN] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedShare, setCopiedShare] = useState(false);
+  const [publishMessage, setPublishMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
   const { user, refreshUser } = useAuth();
   const apiUrl = getApiUrl();
@@ -124,14 +126,20 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     } catch (e) { }
   };
 
+  const showPublishMessage = (type: 'success' | 'error', text: string) => {
+    setPublishMessage({ type, text });
+    setTimeout(() => setPublishMessage(null), 4000);
+  };
+
   const handleSaveEdit = async () => {
     if (!jobId) return;
     setIsSaving(true);
     try {
         await axios.patch(`${apiUrl}/api/v1/blogs/${jobId}`, { content: editedContent });
         setIsEditing(false);
+        showPublishMessage('success', "Changes saved successfully!");
     } catch (e) {
-        alert("Failed to save changes.");
+        showPublishMessage('error', "Failed to save changes.");
     } finally {
         setIsSaving(false);
     }
@@ -144,9 +152,9 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     try {
         const res = await axios.post(`${apiUrl}/api/v1/publish/devto/${jobId}`);
         setPublishUrl(res.data.url);
-        alert(res.data.message);
+        showPublishMessage('success', res.data.message);
     } catch (e: any) {
-        alert(e.response?.data?.detail || "Failed to publish to Dev.to");
+        showPublishMessage('error', e.response?.data?.detail || "Failed to publish to Dev.to");
     } finally {
         setIsPublishing(false);
     }
@@ -159,21 +167,25 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     try {
         const res = await axios.post(`${apiUrl}/api/v1/publish/hashnode/${jobId}`);
         setPublishUrlHN(res.data.url);
-        alert(res.data.message);
+        showPublishMessage('success', res.data.message);
     } catch (e: any) {
-        alert(e.response?.data?.detail || "Failed to publish to Hashnode");
+        showPublishMessage('error', e.response?.data?.detail || "Failed to publish to Hashnode");
     } finally {
         setIsPublishingHN(false);
     }
   };
 
-  const handleShare = () => {
+  const handleShare = (urlToCopy?: string) => {
     if (!jobId) return;
-    const shareUrl = `${window.location.origin}/share/${jobId}`;
+    const shareUrl = urlToCopy || `${window.location.origin}/share/${jobId}`;
     navigator.clipboard.writeText(shareUrl);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
-    alert("Public share link copied to clipboard!");
+    if (urlToCopy) {
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 2000);
+    } else {
+        setCopiedShare(true);
+        setTimeout(() => setCopiedShare(false), 2000);
+    }
   };
 
   const downloadBundle = async () => {
@@ -198,7 +210,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
       a.download = `${slug}_bundle.zip`;
       a.click();
     } catch (e) {
-      alert("Failed to create ZIP bundle.");
+        showPublishMessage('error', "Failed to create ZIP bundle.");
     } finally {
       setIsBundling(false);
     }
@@ -248,7 +260,9 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
         <div className="flex flex-wrap gap-4 items-center justify-between bg-black/20 p-4 rounded-3xl border border-white/5">
           <div className="flex gap-2">
             <button onClick={reset} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-white/5 px-4 py-2 rounded-xl text-xs font-bold border border-white/5"><RefreshCw className="w-3 h-3" /> New</button>
-            <button onClick={handleShare} className="flex items-center gap-2 text-blue-400 hover:text-white transition-colors bg-blue-500/10 px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/10"><Share2 className="w-3 h-3" /> Share</button>
+            <button onClick={() => handleShare()} className="flex items-center gap-2 text-blue-400 hover:text-white transition-colors bg-blue-500/10 px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/10">
+                {copiedShare ? <Check className="w-3 h-3" /> : <Share2 className="w-3 h-3" />} {copiedShare ? "Copied" : "Share"}
+            </button>
           </div>
           <div className="flex gap-1 bg-black/40 p-1 rounded-xl">
             {["preview", "plan", "evidence", "images", "seo", "publish"].map((tab) => (
@@ -260,6 +274,15 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
             <button onClick={downloadBundle} disabled={isBundling} className="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 disabled:opacity-50"><Archive className="w-3 h-3" /> ZIP</button>
           </div>
         </div>
+
+        {/* Local Notification */}
+        <AnimatePresence>
+            {publishMessage && (
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className={`p-4 rounded-2xl border text-sm font-bold text-center ${publishMessage.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                    {publishMessage.text}
+                </motion.div>
+            )}
+        </AnimatePresence>
 
         <GlassCard className="min-h-[60vh] p-8">
           {activeTab === "preview" && (
@@ -341,7 +364,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
                               <div className="space-y-3">
                                 <div className="flex items-center justify-between gap-4 p-3 bg-white/5 rounded-xl border border-white/10">
                                     <code className="text-[10px] text-blue-300 truncate">{getPublicShareUrl()}</code>
-                                    <button onClick={handleShare} className="flex-shrink-0 p-2 hover:bg-blue-500/20 rounded-lg transition-all text-blue-400">
+                                    <button onClick={() => handleShare(getPublicShareUrl())} className="flex-shrink-0 p-2 hover:bg-blue-500/20 rounded-lg transition-all text-blue-400">
                                         {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                                     </button>
                                 </div>

@@ -9,7 +9,7 @@ import { AdminDashboard } from "./components/AdminDashboard";
 import { PublicBlogViewer } from "./components/PublicBlogViewer";
 import { AuthProvider, useAuth, getApiUrl } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck, X, Check } from "lucide-react";
+import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck, X, Check, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./components/GlassCard";
@@ -24,8 +24,14 @@ function MainLayout() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
+  const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
 
   const apiUrl = getApiUrl();
+
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 4000);
+  };
 
   const handleUpgrade = async (plan: 'basic' | 'pro') => {
     try {
@@ -41,7 +47,7 @@ function MainLayout() {
             });
             await refreshUser();
             setIsPricingOpen(false);
-            alert("Credits Added Successfully!");
+            showNotification('success', "Credits Added Successfully!");
             return;
         }
 
@@ -62,9 +68,9 @@ function MainLayout() {
                     });
                     await refreshUser();
                     setIsPricingOpen(false);
-                    alert("Payment Successful! Credits added.");
+                    showNotification('success', "Payment Successful! Credits added.");
                 } catch (err) {
-                    alert("Verification failed. Please contact support.");
+                    showNotification('error', "Verification failed. Please contact support.");
                 }
             },
             prefill: {
@@ -78,7 +84,7 @@ function MainLayout() {
         rzp.open();
 
     } catch (e) {
-        alert("Could not initiate payment.");
+        showNotification('error', "Could not initiate payment.");
     }
   };
 
@@ -92,6 +98,27 @@ function MainLayout() {
 
   return (
     <>
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {notification && (
+            <motion.div 
+                initial={{ opacity: 0, y: -20, x: '-50%' }}
+                animate={{ opacity: 1, y: 0, x: '-50%' }}
+                exit={{ opacity: 0, y: -20, x: '-50%' }}
+                className="fixed top-20 left-1/2 z-[300] w-fit min-w-[300px]"
+            >
+                <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl border shadow-2xl backdrop-blur-xl ${
+                    notification.type === 'success' 
+                    ? 'bg-green-500/10 border-green-500/20 text-green-400' 
+                    : 'bg-red-500/10 border-red-500/20 text-red-400'
+                }`}>
+                    {notification.type === 'success' ? <Check className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+                    <span className="text-sm font-bold">{notification.message}</span>
+                </div>
+            </motion.div>
+        )}
+      </AnimatePresence>
+
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/20 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <div className="flex items-center gap-8">
