@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 from pathlib import Path
 import httpx
 import json
+import re
 from ..database import get_session
 from ..schemas.db_models import User, Blog
 from ..dependencies import get_current_user
@@ -110,7 +111,20 @@ async def publish_to_hashnode(
 
     scribe_flow_url = f"https://scribe-flow-sable.vercel.app/share/{job_id}"
     backend_url = "http://13.61.4.241:8000"
+    
+    # Replace all static paths with absolute URLs
     content = content.replace("(/static/", f"({backend_url}/static/")
+
+    # Find first image for the cover image
+    cover_image_url = None
+    img_match = re.search(r"!\[.*?\]\((http[s]?://.*?/static/images/.*?)\)", content)
+    if img_match:
+        cover_image_url = img_match.group(1)
+    elif "/static/images/" in content:
+        # Fallback if first replace didn't catch it for some reason
+        img_match = re.search(r"!\[.*?\]\((/static/images/.*?)\)", content)
+        if img_match:
+            cover_image_url = f"{backend_url}{img_match.group(1)}"
 
     # Hashnode GraphQL Mutation
     query = """
@@ -152,6 +166,9 @@ async def publish_to_hashnode(
             "originalArticleURL": scribe_flow_url,
         }
     }
+
+    if cover_image_url:
+        variables["input"]["coverImageURL"] = cover_image_url
 
     headers = {
         "Authorization": current_user.hashnode_api_key,
