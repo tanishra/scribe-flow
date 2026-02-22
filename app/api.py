@@ -1,6 +1,7 @@
 import uuid
 import json
 import os
+import markdown
 from typing import Dict, Optional, List, Any
 from fastapi import FastAPI, BackgroundTasks, HTTPException, APIRouter, Depends, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,6 +13,7 @@ from datetime import datetime
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from fastapi.responses import HTMLResponse
 
 # Internal package imports
 from .main import run
