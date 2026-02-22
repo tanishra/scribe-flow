@@ -63,6 +63,16 @@ class Blog(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+class Transaction(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="user.id", index=True)
+    plan: str
+    amount: int  # in paise
+    credits_added: int
+    razorpay_order_id: str
+    razorpay_payment_id: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
 class Feedback(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str

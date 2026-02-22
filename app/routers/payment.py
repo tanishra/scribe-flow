@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlmodel import Session, select
 from pydantic import BaseModel
 from ..database import get_session
-from ..schemas.db_models import User
+from ..schemas.db_models import User, Transaction
 from ..dependencies import get_current_user
 
 # Razorpay Keys from .env
@@ -17,7 +17,7 @@ client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 router = APIRouter(prefix="/payment", tags=["Payment"])
 
 class OrderRequest(BaseModel):
-    plan: str # "basic" or "pro"
+    plan: str # "test", "basic" or "pro"
 
 class VerifyPaymentRequest(BaseModel):
     razorpay_order_id: str
@@ -80,11 +80,27 @@ async def verify_payment(
         "basic": 20, # ₹499 -> 20
         "pro": 50    # ₹999 -> 50
     }
+    amounts_map = {
+        "test": 10000,
+        "basic": 49900,
+        "pro": 99900
+    }
     reward = credits_map.get(req.plan, 20)
+    amount = amounts_map.get(req.plan, 49900)
 
     if "mock" in req.razorpay_order_id:
-        current_user.is_premium = True
         current_user.credits_left += reward
+        
+        # RECORD TRANSACTION
+        txn = Transaction(
+            user_id=current_user.id,
+            plan=req.plan,
+            amount=amount,
+            credits_added=reward,
+            razorpay_order_id=req.razorpay_order_id,
+            razorpay_payment_id=req.razorpay_payment_id
+        )
+        session.add(txn)
         session.add(current_user)
         session.commit()
         return {"status": "success", "message": f"Mock upgrade: {reward} credits added."}
@@ -98,8 +114,18 @@ async def verify_payment(
         client.utility.verify_payment_signature(params_dict)
         
         # SUCCESS: Grant credits
-        current_user.is_premium = True
         current_user.credits_left += reward 
+        
+        # RECORD TRANSACTION
+        txn = Transaction(
+            user_id=current_user.id,
+            plan=req.plan,
+            amount=amount,
+            credits_added=reward,
+            razorpay_order_id=req.razorpay_order_id,
+            razorpay_payment_id=req.razorpay_payment_id
+        )
+        session.add(txn)
         session.add(current_user)
         session.commit()
         

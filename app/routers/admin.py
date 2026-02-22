@@ -4,7 +4,7 @@ from typing import List, Optional, Dict
 from datetime import datetime, timedelta
 from pathlib import Path
 from ..database import get_session
-from ..schemas.db_models import User, Blog, Feedback
+from ..schemas.db_models import User, Blog, Feedback, Transaction
 from ..dependencies import get_current_user
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -26,6 +26,11 @@ async def get_stats(session: Session = Depends(get_session), _ = Depends(check_a
     medium_published = session.exec(select(func.count(Blog.id)).where(Blog.medium_url != None)).one()
     linkedin_published = session.exec(select(func.count(Blog.id)).where(Blog.linkedin_url != None)).one()
     
+    # Revenue Stats (from transactions table)
+    # amount is in paise
+    total_revenue_paise = session.exec(select(func.sum(Transaction.amount))).one() or 0
+    total_revenue = total_revenue_paise / 100
+
     return {
         "total_users": total_users,
         "total_blogs": total_blogs,
@@ -33,8 +38,23 @@ async def get_stats(session: Session = Depends(get_session), _ = Depends(check_a
         "devto_published": devto_published,
         "hashnode_published": hashnode_published,
         "medium_published": medium_published,
-        "linkedin_published": linkedin_published
+        "linkedin_published": linkedin_published,
+        "total_revenue": total_revenue
     }
+
+@router.get("/transactions")
+async def list_transactions(session: Session = Depends(get_session), _ = Depends(check_admin)):
+    """Fetch all successful credit purchases with user details."""
+    statement = select(Transaction, User.full_name, User.email).join(User, Transaction.user_id == User.id).order_by(Transaction.created_at.desc())
+    results = session.exec(statement).all()
+    
+    txns = []
+    for txn, name, email in results:
+        d = txn.model_dump()
+        d["user_name"] = name or "Anonymous"
+        d["user_email"] = email
+        txns.append(d)
+    return txns
 
 @router.get("/analytics/growth")
 async def get_growth_data(session: Session = Depends(get_session), _ = Depends(check_admin)):

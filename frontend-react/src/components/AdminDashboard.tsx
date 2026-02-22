@@ -5,7 +5,7 @@ import {
     Users, FileText, MessageSquare, ShieldCheck, Zap, 
     Mail, Calendar, Search, ArrowLeft, Trash2, 
     TrendingUp, Coins, BarChart3, MoreVertical, UserX, UserCheck, ChevronRight,
-    ExternalLink, Eye, X, Globe, Key, BookOpen, Linkedin
+    ExternalLink, Eye, X, Globe, Key, BookOpen, Linkedin, Receipt
 } from 'lucide-react';
 import { GlassCard } from './GlassCard';
 import { getApiUrl } from '../contexts/AuthContext';
@@ -14,7 +14,7 @@ import { MarkdownRenderer } from './MarkdownRenderer';
 // Custom Brand Icons
 const HashnodeIcon = ({ size = "w-4 h-4" }: { size?: string }) => (
   <svg viewBox="0 0 24 24" className={`${size} fill-current`} xmlns="http://www.w3.org/2000/svg">
-    <path d="M22.351 8.019l-6.37-6.37a5.63 5.63 0 00-7.962 0l-6.37 6.37a5.63 5.63 0 000 7.962l6.37 6.37a5.63 5.63 0 007.962 0l6.37-6.37a5.63 5.63 0 000-7.962zM12 15.953a3.953 3.953 0 110-7.906 3.953 3.953 0 010 7.906z" />
+    <path d="M22.351 8.019l-6.37a5.63 5.63 0 00-7.962 0l-6.37 6.37a5.63 5.63 0 000 7.962l6.37 6.37a5.63 5.63 0 007.962 0l6.37-6.37a5.63 5.63 0 000-7.962zM12 15.953a3.953 3.953 0 110-7.906 3.953 3.953 0 010 7.906z" />
   </svg>
 );
 
@@ -64,12 +64,23 @@ interface BlogData {
     created_at: string;
 }
 
+interface TransactionData {
+    id: number;
+    user_name: string;
+    user_email: string;
+    plan: string;
+    amount: number;
+    credits_added: number;
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    created_at: string;
+}
+
 interface Stats {
   total_users: number;
   total_blogs: number;
   total_feedback: number;
-  premium_users: number;
-  estimated_revenue: number;
+  total_revenue: number;
   devto_published: number;
   hashnode_published: number;
   medium_published: number;
@@ -80,10 +91,11 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<UserData[]>([]);
   const [blogs, setBlogs] = useState<BlogData[]>([]);
+  const [transactions, setTransactions] = useState<TransactionData[]>([]);
   const [feedback, setFeedback] = useState<FeedbackData[]>([]);
   const [growthData, setGrowthData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'users' | 'blogs' | 'feedback' | 'analytics'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'blogs' | 'transactions' | 'feedback' | 'analytics'>('users');
   const [searchTerm, setSearchTerm] = useState('');
   
   // Blog Detail Modal
@@ -98,18 +110,20 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
 
   const fetchData = async () => {
     try {
-      const [sRes, uRes, fRes, bRes, gRes] = await Promise.all([
+      const [sRes, uRes, fRes, bRes, gRes, tRes] = await Promise.all([
         axios.get(`${apiUrl}/api/v1/admin/stats`),
         axios.get(`${apiUrl}/api/v1/admin/users`),
         axios.get(`${apiUrl}/api/v1/admin/feedback`),
         axios.get(`${apiUrl}/api/v1/admin/blogs`),
-        axios.get(`${apiUrl}/api/v1/admin/analytics/growth`)
+        axios.get(`${apiUrl}/api/v1/admin/analytics/growth`),
+        axios.get(`${apiUrl}/api/v1/admin/transactions`)
       ]);
       setStats(sRes.data);
       setUsers(uRes.data);
       setFeedback(fRes.data);
       setBlogs(bRes.data);
       setGrowthData(gRes.data);
+      setTransactions(tRes.data);
     } catch (e) {
       console.error("Failed to fetch admin data", e);
     } finally {
@@ -171,11 +185,12 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Active Creators', value: stats?.total_users, icon: Users, color: 'text-blue-400' },
-          { label: 'Total Intelligence Jobs', value: stats?.total_blogs, icon: FileText, color: 'text-green-400' },
-          { label: 'Platform Publications (DEV / HN / MED / LI)', value: `${stats?.devto_published} / ${stats?.hashnode_published} / ${stats?.medium_published} / ${stats?.linkedin_published}`, icon: Globe, color: 'text-purple-400' },
+          { label: 'Total Creators', value: stats?.total_users, icon: Users, color: 'text-blue-400' },
+          { label: 'Intel Jobs', value: stats?.total_blogs, icon: FileText, color: 'text-green-400' },
+          { label: 'Revenue', value: `₹${stats?.total_revenue}`, icon: Coins, color: 'text-yellow-400' },
+          { label: 'DEV / HN / MED / LI', value: `${stats?.devto_published} / ${stats?.hashnode_published} / ${stats?.medium_published} / ${stats?.linkedin_published}`, icon: Globe, color: 'text-purple-400' },
         ].map((s, i) => (
           <GlassCard key={i} className="p-6">
             <div className="flex flex-col gap-4">
@@ -196,6 +211,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
         {[
             { id: 'users', label: 'Users', icon: Users },
             { id: 'blogs', label: 'Global Feed', icon: FileText },
+            { id: 'transactions', label: 'Revenue', icon: Receipt },
             { id: 'feedback', label: 'Support', icon: MessageSquare },
             { id: 'analytics', label: 'Growth', icon: BarChart3 },
         ].map((tab) => (
@@ -267,7 +283,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                                 <div className="flex gap-2 text-white">
                                                     {u.devto_api_key && <span className="w-6 h-6 bg-black rounded flex items-center justify-center text-[8px] font-black border border-white/10" title="Dev.to Connected">DEV</span>}
                                                     {u.hashnode_api_key && <span className="w-6 h-6 bg-[#2942FF] rounded flex items-center justify-center border border-white/10" title="Hashnode Connected"><HashnodeIcon size="w-3 h-3" /></span>}
-                                                    {u.linkedin_access_token && <span className="w-6 h-6 bg-[#0077B5] rounded flex items-center justify-center border border-white/10" title="LinkedIn Connected"><Linkedin className="w-3 h-3" /></span>}
+                                                    {u.linkedin_access_token && <span className="w-6 h-6 bg-[#0077B5] rounded flex items-center justify-center border border-white/10" title="LinkedIn Connected"><Linkedin size="w-3 h-3" /></span>}
                                                     {!u.devto_api_key && !u.hashnode_api_key && !u.linkedin_access_token && <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">None</span>}
                                                 </div>
                                             </td>
@@ -329,7 +345,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                                 {b.devto_url ? <a href={b.devto_url} target="_blank" className="w-6 h-6 bg-black rounded flex items-center justify-center text-[8px] font-black hover:bg-blue-600 transition-colors" title="View on Dev.to">DEV</a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
                                                 {b.hashnode_url ? <a href={b.hashnode_url} target="_blank" className="w-6 h-6 bg-[#2942FF] rounded flex items-center justify-center hover:bg-blue-600 transition-colors" title="View on Hashnode"><HashnodeIcon size="w-3 h-3" /></a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
                                                 {b.medium_url ? <a href={b.medium_url} target="_blank" className="w-6 h-6 bg-black rounded flex items-center justify-center hover:bg-blue-600 transition-colors" title="View on Medium"><MediumIcon size="w-3 h-3" /></a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
-                                                {b.linkedin_url ? <a href={b.linkedin_url} target="_blank" className="w-6 h-6 bg-[#0077B5] rounded flex items-center justify-center hover:bg-blue-600 transition-colors" title="View on LinkedIn"><Linkedin className="w-3 h-3" /></a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
+                                                {b.linkedin_url ? <a href={b.linkedin_url} target="_blank" className="w-6 h-6 bg-[#0077B5] rounded flex items-center justify-center hover:bg-blue-600 transition-colors" title="View on LinkedIn"><Linkedin size="w-3 h-3" /></a> : <span className="w-6 h-6 rounded border border-white/5 opacity-20"></span>}
                                             </div>
                                         </td>
                                         <td className="p-4 text-center">
@@ -359,6 +375,62 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                         </td>
                                     </tr>
                                 ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {activeTab === 'transactions' && (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="text-slate-500 text-[10px] uppercase tracking-[0.2em] bg-white/5">
+                                    <th className="p-4 font-bold">Creator</th>
+                                    <th className="p-4 font-bold">Plan</th>
+                                    <th className="p-4 font-bold text-center">Amount</th>
+                                    <th className="p-4 font-bold text-center">Credits</th>
+                                    <th className="p-4 font-bold">Reference (Order/Pay ID)</th>
+                                    <th className="p-4 font-bold text-right pr-8 whitespace-nowrap">Time (IST)</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {transactions.map((t) => (
+                                    <tr key={t.id} className="hover:bg-white/[0.02] transition-colors">
+                                        <td className="p-4">
+                                            <p className="text-sm font-bold text-white">{t.user_name}</p>
+                                            <p className="text-[10px] text-slate-500">{t.user_email}</p>
+                                        </td>
+                                        <td className="p-4">
+                                            <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase border ${
+                                                t.plan === 'pro' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
+                                                t.plan === 'basic' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                                'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                                            }`}>
+                                                {t.plan}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-center">
+                                            <p className="text-sm font-bold text-green-400">₹{t.amount / 100}</p>
+                                        </td>
+                                        <td className="p-4 text-center">
+                                            <p className="text-sm font-black text-white">+{t.credits_added}</p>
+                                        </td>
+                                        <td className="p-4">
+                                            <p className="text-[9px] text-slate-500 font-mono">ORD: {t.razorpay_order_id}</p>
+                                            <p className="text-[9px] text-slate-500 font-mono">PAY: {t.razorpay_payment_id}</p>
+                                        </td>
+                                        <td className="p-4 text-[10px] text-slate-500 font-mono text-right pr-8 whitespace-nowrap">
+                                            {new Date(t.created_at + "Z").toLocaleString('en-IN', { 
+                                                timeZone: 'Asia/Kolkata',
+                                                dateStyle: 'medium', 
+                                                timeStyle: 'short' 
+                                            })}
+                                        </td>
+                                    </tr>
+                                ))}
+                                {transactions.length === 0 && (
+                                    <tr><td colSpan={6} className="p-20 text-center text-slate-500 italic">No revenue transactions recorded yet.</td></tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -476,7 +548,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                             {selectedBlog.blog.devto_url && <a href={selectedBlog.blog.devto_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-black rounded-xl text-xs font-bold hover:bg-slate-900 border border-white/10">View on Dev.to <ExternalLink className="w-3 h-3" /></a>}
                             {selectedBlog.blog.hashnode_url && <a href={selectedBlog.blog.hashnode_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-[#2942FF] rounded-xl text-xs font-bold hover:bg-blue-700 border border-white/10">View on Hashnode <HashnodeIcon size="w-3 h-3" /></a>}
                             {selectedBlog.blog.medium_url && <a href={selectedBlog.blog.medium_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-black rounded-xl text-xs font-bold hover:bg-slate-900 border border-white/10">View on Medium <MediumIcon size="w-3 h-3" /></a>}
-                            {selectedBlog.blog.linkedin_url && <a href={selectedBlog.blog.linkedin_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-[#0077B5] rounded-xl text-xs font-bold hover:bg-blue-700 border border-white/10">View on LinkedIn <Linkedin className="w-3 h-3" /></a>}
+                            {selectedBlog.blog.linkedin_url && <a href={selectedBlog.blog.linkedin_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-[#0077B5] rounded-xl text-xs font-bold hover:bg-blue-700 border border-white/10">View on LinkedIn <Linkedin size="w-3 h-3" /></a>}
                             <button onClick={() => setSelectedBlog(null)} className="px-6 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl border border-white/10 transition-all">Close Viewer</button>
                         </div>
                     </GlassCard>
