@@ -184,6 +184,57 @@ api_router.include_router(support.router)
 api_router.include_router(admin.router)
 api_router.include_router(publish.router)
 
+from fastapi.responses import HTMLResponse
+
+@api_router.get("/public/render/{job_id}", response_class=HTMLResponse)
+async def render_public_blog(job_id: str, session: Session = Depends(get_session)):
+    """A static HTML version of the blog for crawlers like Medium and SEO."""
+    db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+    
+    if not db_blog or db_blog.status != "completed":
+        raise HTTPException(status_code=404, detail="Blog not found")
+    
+    content = ""
+    if db_blog.download_url:
+        relative_path = db_blog.download_url.lstrip("/").replace("static/", "")
+        file_path = Path("outputs") / relative_path
+        if file_path.exists():
+            content = file_path.read_text(encoding="utf-8")
+
+    # Simple Markdown to HTML conversion for the importer
+    import markdown
+    html_content = markdown.markdown(content)
+    
+    # Base URL for static assets
+    base_url = "https://api.tanish.website"
+    html_content = html_content.replace('src="/static/', f'src="{base_url}/static/')
+
+    return f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{db_blog.title}</title>
+        <meta name="description" content="{db_blog.meta_description or ''}">
+        <meta property="og:title" content="{db_blog.title}">
+        <meta property="og:description" content="{db_blog.meta_description or ''}">
+        <meta property="og:type" content="article">
+        <link rel="canonical" href="https://scribe-flow-sable.vercel.app/share/{job_id}">
+        <style>
+            body {{ font-family: -apple-system, system-ui, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 20px; color: #333; }}
+            img {{ max-width: 100%; height: auto; border-radius: 8px; }}
+            h1 {{ font-size: 2.5em; margin-bottom: 10px; }}
+        </style>
+    </head>
+    <body>
+        <article>
+            {html_content}
+        </article>
+    </body>
+    </html>
+    """
+
 @api_router.post("/generate", response_model=Dict[str, str], status_code=202)
 @limiter.limit("5/minute")
 async def create_blog_job(

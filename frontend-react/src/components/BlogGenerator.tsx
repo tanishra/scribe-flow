@@ -210,7 +210,7 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   };
 
   const getPublicShareUrl = () => {
-    return `${window.location.origin}/share/${jobId}`;
+    return `${apiUrl}/api/v1/public/render/${jobId}`;
   };
 
   if (!jobId) {
