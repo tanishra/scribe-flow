@@ -290,6 +290,7 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                     <th className="p-4 font-bold">Author</th>
                                     <th className="p-4 font-bold">Live Status</th>
                                     <th className="p-4 font-bold text-center">Status</th>
+                                    <th className="p-4 font-bold text-right pr-8 whitespace-nowrap">Generated At (IST)</th>
                                     <th className="p-4 font-bold text-right pr-8">Actions</th>
                                 </tr>
                             </thead>
@@ -318,6 +319,13 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                             }`}>
                                                 {b.status}
                                             </span>
+                                        </td>
+                                        <td className="p-4 text-[10px] text-slate-500 font-mono text-right pr-8 whitespace-nowrap">
+                                            {new Date(b.created_at + "Z").toLocaleString('en-IN', { 
+                                                timeZone: 'Asia/Kolkata',
+                                                dateStyle: 'medium', 
+                                                timeStyle: 'short' 
+                                            })}
                                         </td>
                                         <td className="p-4 text-right pr-8">
                                             <button 
@@ -421,15 +429,15 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
       {/* Blog Content Modal */}
       <AnimatePresence>
         {selectedBlog && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-hidden">
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="w-full max-w-5xl max-h-[90vh] overflow-hidden"
+                    className="w-full max-w-5xl h-full max-h-[90vh] flex flex-col"
                 >
-                    <GlassCard className="relative h-full flex flex-col p-0 border-blue-500/20 shadow-2xl">
-                        <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                    <GlassCard className="relative flex flex-col p-0 border-blue-500/20 shadow-2xl h-full overflow-hidden">
+                        <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02] flex-shrink-0">
                             <div>
                                 <h3 className="text-xl font-bold text-white line-clamp-1">{selectedBlog.blog.title}</h3>
                                 <p className="text-xs text-slate-500 mt-1 uppercase font-black tracking-widest">By {selectedBlog.blog.user_name} • {selectedBlog.blog.user_email}</p>
@@ -439,11 +447,11 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                             </button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                            <div className="max-w-3xl mx-auto">
+                            <div className="max-w-3xl mx-auto pb-12">
                                 <MarkdownRenderer content={selectedBlog.content} />
                             </div>
                         </div>
-                        <div className="p-4 border-t border-white/5 bg-white/[0.02] flex justify-end gap-4">
+                        <div className="p-4 border-t border-white/5 bg-white/[0.02] flex justify-end gap-4 flex-shrink-0">
                             {selectedBlog.blog.devto_url && <a href={selectedBlog.blog.devto_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-black rounded-xl text-xs font-bold text-white hover:bg-slate-900 border border-white/10">View on Dev.to <ExternalLink className="w-3 h-3" /></a>}
                             {selectedBlog.blog.hashnode_url && <a href={selectedBlog.blog.hashnode_url} target="_blank" className="flex items-center gap-2 px-4 py-2 bg-[#2942FF] rounded-xl text-xs font-bold text-white hover:bg-blue-700 border border-white/10">View on Hashnode <ExternalLink className="w-3 h-3" /></a>}
                             <button onClick={() => setSelectedBlog(null)} className="px-6 py-2 bg-white/5 hover:bg-white/10 text-white text-xs font-bold rounded-xl border border-white/10 transition-all">Close Viewer</button>
