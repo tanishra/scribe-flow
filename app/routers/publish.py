@@ -7,6 +7,7 @@ from ..database import get_session
 from ..schemas.db_models import User, Blog
 from ..dependencies import get_current_user
 from ..services.logging_service import logger
+from ..utils.slug import slugify
 
 router = APIRouter(prefix="/publish", tags=["Publishing"])
 
@@ -128,21 +129,24 @@ async def publish_to_hashnode(
     for t in raw_tags:
         clean = "".join(c for c in t.lower() if c.isalnum())
         if clean and len(clean) >= 2:
-            # Hashnode v3 tags require slug and name
             hashnode_tags.append({"slug": clean[:20], "name": t[:50]})
     
     if not hashnode_tags:
         hashnode_tags = [{"slug": "ai", "name": "AI"}]
     
+    # Generate a unique slug
+    blog_slug = slugify(db_blog.title)
+    
     variables = {
         "input": {
             "title": db_blog.title,
+            "slug": blog_slug,
             "contentMarkdown": content,
             "publicationId": current_user.hashnode_publication_id,
-            "tags": hashnode_tags[:5], # Hashnode allows up to 5 tags
+            "tags": hashnode_tags[:5],
             "metaTags": {
-                "description": db_blog.meta_description or "",
-                "title": db_blog.title
+                "description": (db_blog.meta_description or "")[:150],
+                "title": db_blog.title[:70]
             },
             "canonicalUrl": scribe_flow_url,
         }
