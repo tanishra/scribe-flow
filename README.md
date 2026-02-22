@@ -5,15 +5,16 @@ A production-grade, multi-agent content engine designed to transform a single to
 ---
 
 ## Core Capabilities
-Writing a high-quality technical blog typically takes hours. ScribeFlow reduces this to **under 2 minutes** while maintaining:
+Writing a high-quality technical blog typically takes hours. ScribeFlow reduces this to **under 5 minutes** while maintaining:
 *   **Agentic Orchestration:** Built on LangGraph for stateful, multi-agent collaboration between researchers, planners, and writers.
 *   **Near-Zero Hallucination:** Strict grounding in real-time web data via **Tavily Search**.
-*   **Multi-Platform Distribution:** Direct, live publishing to **Dev.to**, **Hashnode (v3 API)**, and an optimized crawler-friendly flow for **Medium**.
+*   **Multi-Platform Distribution:** Direct, live publishing to **Dev.to**, **Hashnode (v3 API)**, **LinkedIn**, and an optimized crawler-friendly flow for **Medium**.
+*   **Viral LinkedIn Teasers:** AI-driven social teaser generation with a built-in editor for manual refinement before posting.
 *   **Static HTML Rendering:** A dedicated backend renderer for Medium's importer to ensure perfect formatting and image resolution.
 *   **Secure Authentication:** Native support for Google OAuth and Passwordless Email OTP verification.
-*   **Integrated Payments:** Built-in **Razorpay** support with a unified credit-based system.
-*   **Admin Dashboard:** Full system oversight including user tracking, credit management, and a global feed of generated content.
-*   **Visual Engagement:** Automated generation of custom diagrams and images using **Gemini 2.5 Flash**.
+*   **Integrated Payments:** Built-in **Razorpay** support with a credit-based system and automated transaction tracking.
+*   **Admin Dashboard:** Platform-wide oversight including **Revenue Tracking**, user lifecycle management (deactivation), and a global content feed.
+*   **Visual Engagement:** Context-aware generation of custom diagrams and images using Gemini's multi-modal capabilities.
 
 ---
 
@@ -28,17 +29,18 @@ graph TD
     Research --> Orchestrator[Strategic Planner]
     
     subgraph Parallel Content Workers
-    Orchestrator --> W1[Agent 1]
-    Orchestrator --> W2[Agent 2]
-    Orchestrator --> W3[Agent N]
+    Orchestrator --> W1[Agent Worker 1]
+    Orchestrator --> W2[Agent Worker 2]
+    Orchestrator --> W3[Agent Worker N]
     end
     
     W1 & W2 & W3 --> Reducer[Content Merger]
     Reducer --> ImgDecide[Visual Strategist]
     
     subgraph Parallel Image Workers
-    ImgDecide --> IW1[Gemini 2.5 Worker 1]
-    ImgDecide --> IW2[Gemini 2.5 Worker 2]
+    ImgDecide --> IW1[Agent 1]
+    ImgDecide --> IW2[Agent 2]
+    ImgDecide --> IW2[Agent N]
     end
     
     IW1 & IW2 --> Finalize[SQL Persistence & SEO]
@@ -48,6 +50,7 @@ graph TD
     Hub --> Dev[Dev.to API]
     Hub --> HN[Hashnode GraphQL v3]
     Hub --> Med[Medium Crawler Renderer]
+    Hub --> LI[LinkedIn UGC API + AI Teaser]
     end
 ```
 
@@ -56,7 +59,8 @@ graph TD
 ## Tech Stack
 *   **Backend:** FastAPI, LangGraph, SQLModel (SQLite/PostgreSQL), Gunicorn.
 *   **Frontend:** React 18 (TypeScript), Tailwind CSS, Framer Motion, Lucide Icons.
-*   **AI:** OpenAI (Text), Gemini 2.5 Flash (Vision), Tavily Search API.
+*   **AI:** OpenAI (Text), Gemini (Vision), Tavily Search API.
+*   **Payments:** Razorpay API with automated transaction logging.
 *   **Deployment:** AWS EC2 (Gunicorn/Uvicorn), Vercel (Frontend), Let's Encrypt SSL.
 
 ---
@@ -82,8 +86,8 @@ Create a `.env` file in the root directory:
 ```env
 # AI & Search
 OPENAI_API_KEY=your_openai_key
-TAVILY_API_KEY=your_tavily_key
 GOOGLE_API_KEY=your_gemini_key
+TAVILY_API_KEY=your_tavily_key
 
 # Authentication
 VITE_GOOGLE_CLIENT_ID=your_google_id.apps.googleusercontent.com
