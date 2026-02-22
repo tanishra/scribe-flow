@@ -12,3 +12,5 @@ main.py
 scripts
 appspec.yml
 app/logs/*.log 
+fix_sequences.py
+repair_account.py
