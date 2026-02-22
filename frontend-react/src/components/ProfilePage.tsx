@@ -144,13 +144,16 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <div className="w-10 h-10 bg-[#0077B5] rounded-lg flex items-center justify-center text-white border border-white/10"><Linkedin className="w-5 h-5" /></div>
                           <div><h4 className="font-bold text-white">LinkedIn</h4><p className="text-[10px] text-slate-500 uppercase font-black">Viral Social Teasers</p></div>
                         </div>
-                        <button 
-                          onClick={() => setShowLinkedinGuide(!showLinkedinGuide)}
-                          className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
-                        >
-                          <HelpCircle className="w-3 h-3" />
-                          {showLinkedinGuide ? "Close Guide" : "Get Token?"}
-                        </button>
+                        <div className="flex items-center gap-4">
+                            <button 
+                              onClick={() => setShowLinkedinGuide(!showLinkedinGuide)}
+                              className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
+                            >
+                              <HelpCircle className="w-3 h-3" />
+                              {showLinkedinGuide ? "Close Guide" : "Get Token?"}
+                            </button>
+                            {user.linkedin_access_token ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
+                        </div>
                     </div>
 
                     {showLinkedinGuide && (
@@ -167,8 +170,8 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" placeholder="LinkedIn Access Token" value={data.linkedin_access_token} onChange={e => setData({...data, linkedin_access_token: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
-                        <div className="relative"><BookOpen className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="text" placeholder="Person ID (e.g. ABC123XYZ)" value={data.linkedin_urn} onChange={e => setData({...data, linkedin_urn: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+                        <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" name="linkedin_token" autoComplete="off" placeholder="LinkedIn Access Token" value={data.linkedin_access_token} onChange={e => setData({...data, linkedin_access_token: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+                        <div className="relative"><BookOpen className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="text" name="linkedin_urn" autoComplete="off" placeholder="Person ID (e.g. ABC123XYZ)" value={data.linkedin_urn} onChange={e => setData({...data, linkedin_urn: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
                     </div>
                 </div>
 
@@ -177,7 +180,7 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                         <div className="flex items-center gap-3"><div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center font-bold text-white text-xs border border-white/10">DEV</div><div><h4 className="font-bold text-white">Dev.to</h4><p className="text-[10px] text-slate-500 uppercase font-black">Publish live to Dev.to</p></div></div>
                         {user.devto_api_key ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
                     </div>
-                    <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" placeholder="Enter Dev.to API Key" value={data.devto_api_key} onChange={e => setData({...data, devto_api_key: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+                    <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" name="devto_key" autoComplete="off" placeholder="Enter Dev.to API Key" value={data.devto_api_key} onChange={e => setData({...data, devto_api_key: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
                 </div>
 
                 <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
@@ -186,13 +189,16 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                           <div className="w-10 h-10 bg-[#2942FF] rounded-lg flex items-center justify-center text-white border border-white/10"><HashnodeIcon /></div>
                           <div><h4 className="font-bold text-white">Hashnode</h4><p className="text-[10px] text-slate-500 uppercase font-black">Publish live to Hashnode</p></div>
                         </div>
-                        <button 
-                          onClick={() => setShowHashnodeGuide(!showHashnodeGuide)}
-                          className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
-                        >
-                          <HelpCircle className="w-3 h-3" />
-                          {showHashnodeGuide ? "Close Guide" : "How to find?"}
-                        </button>
+                        <div className="flex items-center gap-4">
+                            <button 
+                              onClick={() => setShowHashnodeGuide(!showHashnodeGuide)}
+                              className="flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
+                            >
+                              <HelpCircle className="w-3 h-3" />
+                              {showHashnodeGuide ? "Close Guide" : "How to find?"}
+                            </button>
+                            {user.hashnode_api_key ? <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded font-black">CONNECTED</span> : <span className="text-[10px] bg-white/5 text-slate-500 px-2 py-1 rounded font-black">DISCONNECTED</span>}
+                        </div>
                     </div>
 
                     {showHashnodeGuide && (
@@ -224,8 +230,8 @@ export function ProfilePage({ onBack }: { onBack: () => void }) {
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" placeholder="Personal Access Token" value={data.hashnode_api_key} onChange={e => setData({...data, hashnode_api_key: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
-                        <div className="relative"><BookOpen className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="text" placeholder="Publication ID" value={data.hashnode_publication_id} onChange={e => setData({...data, hashnode_publication_id: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+                        <div className="relative"><Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="password" name="hashnode_token" autoComplete="off" placeholder="Personal Access Token" value={data.hashnode_api_key} onChange={e => setData({...data, hashnode_api_key: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+                        <div className="relative"><BookOpen className="absolute left-3 top-3 w-4 h-4 text-slate-600" /><input type="text" name="hashnode_pub" autoComplete="off" placeholder="Publication ID" value={data.hashnode_publication_id} onChange={e => setData({...data, hashnode_publication_id: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
                     </div>
                 </div>
 
