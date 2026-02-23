@@ -48,6 +48,8 @@ class Blog(SQLModel, table=True):
     plan_json: Optional[str] = Field(default=None)
     evidence_json: Optional[str] = Field(default=None)
     images_json: Optional[str] = Field(default=None)
+    thoughts_json: Optional[str] = Field(default="[]")
+    intermediate_content: Optional[str] = Field(default="")
     
     # SEO Fields
     meta_description: Optional[str] = Field(default=None)

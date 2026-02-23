@@ -283,6 +283,18 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     try {
         const res = await axios.get(`${apiUrl}/api/v1/status/${id}`);
         const currentStatus = res.data;
+        
+        // Sync thoughts from DB (Progress)
+        if (currentStatus.thoughts && currentStatus.thoughts.length > 0) {
+            setThoughts(currentStatus.thoughts);
+        }
+        
+        // Sync intermediate content from DB (Real-time Draft)
+        if (currentStatus.intermediate_content && !isEditing) {
+            setStreamingContent(currentStatus.intermediate_content);
+            setContent(currentStatus.intermediate_content);
+        }
+
         setStatus(currentStatus);
         
         if (currentStatus.status === "completed") {

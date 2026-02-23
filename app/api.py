@@ -157,7 +157,7 @@ class JobStatusResponse(BaseModel):
 # --- Background Task ---
 
 async def generate_blog_task_streaming(job_id: str, topic: str, tone: str):
-    """Background worker that pushes updates to the StreamManager."""
+    """Background worker that pushes updates to the StreamManager and persists progress to DB."""
     async with generation_semaphore:
         logger.info(f"Worker {os.getpid()} - Streaming task started for Job ID: {job_id}")
         
@@ -166,21 +166,31 @@ async def generate_blog_task_streaming(job_id: str, topic: str, tone: str):
             db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
             if db_blog:
                 db_blog.status = "processing"
+                db_blog.thoughts_json = "[]"
+                db_blog.intermediate_content = ""
                 session.add(db_blog)
                 session.commit()
 
         try:
             final_output = {}
+            current_thoughts = []
+            current_md = ""
             
             # 2. Run the Streaming Workflow
             async for event_type, event_data in stream_run(topic, tone=tone):
                 # CHECK FOR CANCELLATION (Database-driven for multi-worker support)
                 if event_type == "thought": # Check on every log/thought event
+                    # Persist thoughts to DB for polling fallback
+                    current_thoughts.append(event_data)
                     with next(get_session()) as session:
                         db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
-                        if db_blog and db_blog.status == "abandoned":
-                            logger.warning(f"Worker {os.getpid()} - Detected ABANDONED status for {job_id}. Terminating.")
-                            return
+                        if db_blog:
+                            if db_blog.status == "abandoned":
+                                logger.warning(f"Worker {os.getpid()} - Detected ABANDONED status for {job_id}. Terminating.")
+                                return
+                            db_blog.thoughts_json = json.dumps(current_thoughts)
+                            session.add(db_blog)
+                            session.commit()
 
                 # Push to SSE stream
                 await stream_manager.push(job_id, event_type, event_data)
@@ -188,6 +198,14 @@ async def generate_blog_task_streaming(job_id: str, topic: str, tone: str):
                 # Accumulate state data as it arrives
                 if event_type in ["plan", "evidence", "image_specs", "seo"]:
                     final_output[event_type] = event_data
+                elif event_type == "content":
+                    current_md = event_data
+                    with next(get_session()) as session:
+                        db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+                        if db_blog:
+                            db_blog.intermediate_content = current_md
+                            session.add(db_blog)
+                            session.commit()
                 elif event_type == "complete":
                     final_output.update(event_data)
                     # Once complete is yielded, we can stop the loop
@@ -232,6 +250,7 @@ async def generate_blog_task_streaming(job_id: str, topic: str, tone: str):
                         db_blog.images_json = json.dumps(image_urls) if image_urls else db_blog.images_json
                         db_blog.meta_description = seo_data.get("meta_description") if seo_data else db_blog.meta_description
                         db_blog.keywords = seo_data.get("keywords") if seo_data else db_blog.keywords
+                        db_blog.thoughts_json = json.dumps(current_thoughts)
                         db_blog.updated_at = datetime.utcnow()
                         session.add(db_blog)
                         session.commit()
@@ -372,7 +391,7 @@ async def create_blog_job(
     return {"job_id": job_id}
 
 # --- Standard Endpoints (Status, History, Public) ---
-@api_router.get("/status/{job_id}", response_model=JobStatusResponse)
+@api_router.get("/status/{job_id}")
 async def get_job_status(job_id: str, session: Session = Depends(get_session)):
     db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
     if not db_blog: raise HTTPException(status_code=404, detail="Job not found")
@@ -388,7 +407,9 @@ async def get_job_status(job_id: str, session: Session = Depends(get_session)):
         "error": db_blog.error,
         "meta_description": db_blog.meta_description,
         "keywords": db_blog.keywords,
-        "tone": db_blog.tone
+        "tone": db_blog.tone,
+        "thoughts": json.loads(db_blog.thoughts_json) if db_blog.thoughts_json else [],
+        "intermediate_content": db_blog.intermediate_content or ""
     }
 
 @api_router.patch("/blogs/{job_id}")
