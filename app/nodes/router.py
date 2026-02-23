@@ -29,6 +29,7 @@ class RouterNode:
             "needs_research": decision.needs_research,
             "mode": decision.mode,
             "queries": decision.queries,
+            "thought": decision.reasoning
         }
 
 def route_next(state: State) -> str:

@@ -48,4 +48,7 @@ class ResearcherNode:
                 dedup[e.url] = e
 
         logger.info(f"Synthesis complete. Deduplicated into {len(dedup)} evidence items.")
-        return {"evidence": list(dedup.values())}
+        return {
+            "evidence": list(dedup.values()),
+            "thought": pack.reasoning
+        }

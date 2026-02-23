@@ -35,7 +35,10 @@ class OrchestratorNode:
         # Ensure the plan object carries the requested tone forward
         plan.tone = requested_tone
         logger.info(f"Plan generated: '{plan.blog_title}' with {len(plan.tasks)} tasks.")
-        return {"plan": plan}
+        return {
+            "plan": plan,
+            "thought": plan.reasoning
+        }
 
 def fanout(state: State):
     tasks = state["plan"].tasks

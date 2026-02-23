@@ -16,6 +16,7 @@ class Task(BaseModel):
 
 class Plan(BaseModel):
     blog_title: str
+    reasoning: str = Field(..., description="Strategic reasoning for the blog architecture.")
     audience: str = Field(..., description="Who this blog is for.")
     tone: str = Field(..., description="Writing tone (e.g. practical, crisp).")
     blog_kind: Literal["explainer", "tutorial", "news_roundup", "comparison", "system_design"] = "explainer"
@@ -30,11 +31,13 @@ class EvidenceItem(BaseModel):
     source: Optional[str] = None
 
 class RouterDecision(BaseModel):
+    reasoning: str = Field(..., description="Decision reasoning for routing and search query generation.")
     needs_research: bool = False
     mode: Literal['open_book', 'closed_book', 'hybrid']
     queries: List[str] = Field(default_factory=list)
 
 class EvidencePack(BaseModel):
+    reasoning: str = Field(..., description="Synthesis reasoning for research findings.")
     evidence: List[EvidenceItem] = Field(default_factory=list)
 
 class ImageSpec(BaseModel):
@@ -85,3 +88,4 @@ class State(TypedDict):
     image_results: Annotated[List[tuple[str, str, bool, int]], operator.add]
     seo: Dict[str, str]
     final: str
+    thought: str

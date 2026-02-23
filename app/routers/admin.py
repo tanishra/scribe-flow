@@ -59,10 +59,28 @@ async def list_transactions(session: Session = Depends(get_session), _ = Depends
 @router.get("/analytics/growth")
 async def get_growth_data(session: Session = Depends(get_session), _ = Depends(check_admin)):
     growth = []
+    now = datetime.utcnow()
     for i in range(6, -1, -1):
-        date = (datetime.utcnow() - timedelta(days=i)).date()
-        count = session.exec(select(func.count(User.id)).where(func.date(User.created_at) <= date)).one()
-        growth.append({"date": date.strftime("%b %d"), "users": count})
+        target_date = (now - timedelta(days=i)).date()
+        # end_of_day is the start of the NEXT day
+        end_of_day = datetime.combine(target_date + timedelta(days=1), datetime.min.time())
+        
+        # Cumulative total up to this day
+        total_count = session.exec(
+            select(func.count(User.id)).where(User.created_at < end_of_day)
+        ).one()
+        
+        # New users strictly on this day
+        start_of_day = datetime.combine(target_date, datetime.min.time())
+        daily_new = session.exec(
+            select(func.count(User.id)).where(User.created_at >= start_of_day, User.created_at < end_of_day)
+        ).one()
+        
+        growth.append({
+            "date": target_date.strftime("%b %d"), 
+            "users": total_count,
+            "daily_new": daily_new
+        })
     return growth
 
 @router.get("/users", response_model=List[User])
@@ -133,6 +151,24 @@ async def get_blog_detail(job_id: str, session: Session = Depends(get_session), 
         "blog": db_blog,
         "content": content
     }
+
+@router.patch("/blogs/{job_id}/status")
+async def update_blog_status(
+    job_id: str,
+    status: str = Query(...),
+    session: Session = Depends(get_session),
+    _ = Depends(check_admin)
+):
+    """Admin only: Manually update a blog's generation status."""
+    db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+    if not db_blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    
+    db_blog.status = status
+    db_blog.updated_at = datetime.utcnow()
+    session.add(db_blog)
+    session.commit()
+    return {"status": "success", "message": f"Blog status updated to {status}"}
 
 @router.get("/feedback", response_model=List[Feedback])
 async def list_feedback(session: Session = Depends(get_session), _ = Depends(check_admin)):
