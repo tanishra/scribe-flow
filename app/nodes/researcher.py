@@ -30,11 +30,9 @@ class ResearcherNode:
 
         logger.info(f"Total raw results collected: {len(raw_results)}. Synthesizing...")
 
-        # Structured output synthesis can also be wrapped in thread if needed, 
-        # but let's focus on IO parallelism first.
+        # Structured output synthesis
         extractor = self.llm.with_structured_output(EvidencePack)
-        pack = await asyncio.to_thread(
-            extractor.invoke,
+        pack = await extractor.ainvoke(
             [
                 SystemMessage(content=RESEARCH_SYSTEM),
                 HumanMessage(content=f"Raw results: {raw_results}"),

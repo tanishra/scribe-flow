@@ -9,7 +9,7 @@ class OrchestratorNode:
     def __init__(self):
         self.llm = get_llm()
 
-    def __call__(self, state: State) -> dict:
+    async def __call__(self, state: State) -> dict:
         logger.info(f"--- ORCHESTRATOR NODE START ---")
         planner = self.llm.with_structured_output(Plan)
         evidence = state.get("evidence", [])
@@ -18,7 +18,7 @@ class OrchestratorNode:
 
         logger.info(f"Planning blog for topic with {len(evidence)} evidence items in {mode} mode. Tone: {requested_tone}")
 
-        plan = planner.invoke(
+        plan = await planner.ainvoke(
             [
                 SystemMessage(content=ORCHESTRATION_PROMPT),
                 HumanMessage(

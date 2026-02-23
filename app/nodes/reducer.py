@@ -71,8 +71,7 @@ class ReducerNode:
             from ..schemas.models import ImageDecisionList
             structured_llm = self.llm.with_structured_output(ImageDecisionList)
             
-            result = await asyncio.to_thread(
-                structured_llm.invoke,
+            result = await structured_llm.ainvoke(
                 [
                     SystemMessage(content=DECIDE_IMAGES_SYSTEM),
                     HumanMessage(content=f"Blog Plan:\n{json.dumps(tasks_summary, indent=2)}"),
@@ -125,8 +124,7 @@ class ReducerNode:
         logger.info("Generating SEO metadata...")
         try:
             seo_llm = self.llm.with_structured_output(SEOData)
-            seo_result = await asyncio.to_thread(
-                seo_llm.invoke,
+            seo_result = await seo_llm.ainvoke(
                 [
                     SystemMessage(content="You are an SEO expert. Generate a meta description (150-160 chars) and comma-separated keywords for the following blog post."),
                     HumanMessage(content=f"Title: {plan.blog_title}\n\nContent Preview: {body[:3000]}"),

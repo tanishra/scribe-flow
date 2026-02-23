@@ -8,13 +8,13 @@ class RouterNode:
     def __init__(self):
         self.llm = get_llm()
 
-    def __call__(self, state: State) -> dict:
+    async def __call__(self, state: State) -> dict:
         topic = state["topic"]
         logger.info(f"--- ROUTER NODE START ---")
         logger.info(f"Processing topic: {topic}")
         
         decider = self.llm.with_structured_output(RouterDecision)
-        decision = decider.invoke(
+        decision = await decider.ainvoke(
             [
                 SystemMessage(content=ROUTER_SYSTEM),
                 HumanMessage(content=f"Topic: {topic}"),

@@ -166,14 +166,28 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     // Set initial status to processing so UI shows
     setStatus({ job_id: id, status: "processing" });
 
+    // Polling Fallback Timer: If no events received for 10 seconds, start manual polling
+    const fallbackTimer = setTimeout(() => {
+        if (thoughts.length === 0) {
+            console.log("Stream appears stuck, initiating polling fallback...");
+            pollStatus(id);
+        }
+    }, 10000);
+
     eventSource.addEventListener("thought", (event) => {
+        clearTimeout(fallbackTimer);
         try {
             const data = JSON.parse(event.data);
             setThoughts(prev => [...prev, data]);
         } catch (e) {}
     });
 
+    eventSource.addEventListener("ping", () => {
+        clearTimeout(fallbackTimer);
+    });
+
     eventSource.addEventListener("plan", (event) => {
+        clearTimeout(fallbackTimer);
         try {
             const data = JSON.parse(event.data);
             setStatus(prev => prev ? ({ ...prev, plan: data, blog_title: data.blog_title, tone: data.tone }) : null);
@@ -257,13 +271,21 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
   const pollStatus = async (id: string) => {
     try {
         const res = await axios.get(`${apiUrl}/api/v1/status/${id}`);
-        setStatus(res.data);
-        if (res.data.status === "completed" || res.data.status === "failed") {
-            if (res.data.status === "completed") fetchMarkdownContent(res.data.download_url);
+        const currentStatus = res.data;
+        setStatus(currentStatus);
+        
+        if (currentStatus.status === "completed") {
+            fetchMarkdownContent(currentStatus.download_url);
             return;
         }
+
+        if (currentStatus.status === "failed") return;
+
+        // If still processing and we are in polling mode, check again in 3s
+        if (currentStatus.status === "processing" || currentStatus.status === "queued") {
+            setTimeout(() => pollStatus(id), 3000);
+        }
     } catch (e) {}
-    // Only continue polling if NOT streaming (simple fallback logic)
   };
 
   const fetchMarkdownContent = async (url?: string) => {

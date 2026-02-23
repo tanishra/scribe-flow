@@ -8,7 +8,7 @@ class WorkerNode:
     def __init__(self):
         self.llm = get_llm()
 
-    def __call__(self, payload: dict) -> dict:
+    async def __call__(self, payload: dict) -> dict:
         task = Task(**payload["task"])
         plan = Plan(**payload["plan"])
         evidence = [EvidenceItem(**e) for e in payload.get("evidence", [])]
@@ -28,7 +28,7 @@ class WorkerNode:
             )
 
         try:
-            section_md = self.llm.invoke(
+            res = await self.llm.ainvoke(
                 [
                     SystemMessage(content=WORKER_PROMPT),
                     HumanMessage(
@@ -52,7 +52,8 @@ class WorkerNode:
                         )
                     ),
                 ]
-            ).content.strip()
+            )
+            section_md = res.content.strip()
             logger.info(f"Successfully wrote section: '{task.title}' ({len(section_md)} chars)")
         except Exception as e:
             logger.error(f"Worker failed for section '{task.title}': {e}")

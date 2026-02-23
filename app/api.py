@@ -103,20 +103,30 @@ class StreamManager:
 
     async def generator(self, job_id: str):
         q = self.queues.get(job_id)
-        if not q: return
+        if not q:
+            logger.error(f"Worker {os.getpid()} - No queue found for job {job_id}. This request likely hit the wrong Gunicorn worker.")
+            yield f"event: error\ndata: {json.dumps({'message': 'Stream queue not found on this worker'})}\n\n"
+            return
+            
+        logger.info(f"Worker {os.getpid()} - Starting stream for job {job_id}")
         try:
             while True:
-                msg = await q.get()
-                if msg["event"] == "end":
-                    # Send specific end event
-                    yield f"event: end\ndata: {json.dumps(msg['data'])}\n\n"
-                    break
-                # Format as SSE
-                yield f"event: {msg['event']}\ndata: {json.dumps(msg['data'])}\n\n"
+                try:
+                    # Wait for message with a timeout to send heartbeats
+                    msg = await asyncio.wait_for(q.get(), timeout=15.0)
+                    
+                    if msg["event"] == "end":
+                        yield f"event: end\ndata: {json.dumps(msg['data'])}\n\n"
+                        break
+                        
+                    yield f"event: {msg['event']}\ndata: {json.dumps(msg['data'])}\n\n"
+                except asyncio.TimeoutError:
+                    # Send heartbeat to keep connection alive and bypass proxy buffering
+                    yield f"event: ping\ndata: {json.dumps({'time': datetime.utcnow().isoformat()})}\n\n"
+                    
         except asyncio.CancelledError:
-            logger.info(f"Client disconnected from stream {job_id}")
+            logger.info(f"Worker {os.getpid()} - Client disconnected from stream {job_id}")
         finally:
-            # Cleanup
             self.queues.pop(job_id, None)
 
 stream_manager = StreamManager()
@@ -266,10 +276,16 @@ api_router.include_router(publish.router)
 async def stream_job_events(job_id: str):
     """
     SSE Endpoint for real-time updates.
+    Includes headers to prevent Nginx/Reverse Proxy buffering.
     """
     return StreamingResponse(
         stream_manager.generator(job_id),
-        media_type="text/event-stream"
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Critical for Nginx
+        }
     )
 
 @api_router.post("/cancel/{job_id}")
