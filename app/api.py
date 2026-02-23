@@ -159,7 +159,7 @@ class JobStatusResponse(BaseModel):
 async def generate_blog_task_streaming(job_id: str, topic: str, tone: str):
     """Background worker that pushes updates to the StreamManager."""
     async with generation_semaphore:
-        logger.info(f"Streaming task started for Job ID: {job_id}")
+        logger.info(f"Worker {os.getpid()} - Streaming task started for Job ID: {job_id}")
         
         # 1. Update DB to Processing
         with next(get_session()) as session:
@@ -174,6 +174,14 @@ async def generate_blog_task_streaming(job_id: str, topic: str, tone: str):
             
             # 2. Run the Streaming Workflow
             async for event_type, event_data in stream_run(topic, tone=tone):
+                # CHECK FOR CANCELLATION (Database-driven for multi-worker support)
+                if event_type == "thought": # Check on every log/thought event
+                    with next(get_session()) as session:
+                        db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
+                        if db_blog and db_blog.status == "abandoned":
+                            logger.warning(f"Worker {os.getpid()} - Detected ABANDONED status for {job_id}. Terminating.")
+                            return
+
                 # Push to SSE stream
                 await stream_manager.push(job_id, event_type, event_data)
                 
@@ -182,6 +190,8 @@ async def generate_blog_task_streaming(job_id: str, topic: str, tone: str):
                     final_output[event_type] = event_data
                 elif event_type == "complete":
                     final_output.update(event_data)
+                    # Once complete is yielded, we can stop the loop
+                    break
 
             # 3. Process Result (Persistence)
             if final_output.get("plan") or final_output.get("final"):
@@ -209,6 +219,11 @@ async def generate_blog_task_streaming(job_id: str, topic: str, tone: str):
                 with next(get_session()) as session:
                     db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
                     if db_blog:
+                        # Final check: Don't mark as completed if it was abandoned while we were processing the results
+                        if db_blog.status == "abandoned":
+                            logger.warning(f"Job {job_id} was abandoned at the very end. Skipping completion.")
+                            return
+
                         db_blog.status = "completed"
                         db_blog.title = raw_title
                         db_blog.download_url = download_url
@@ -230,7 +245,7 @@ async def generate_blog_task_streaming(job_id: str, topic: str, tone: str):
                         return
                 raise Exception("Workflow finished but returned no output.")
         except asyncio.CancelledError:
-            logger.warning(f"Job {job_id} was CANCELLED mid-execution. Refunding credit.")
+            logger.warning(f"Worker {os.getpid()} - Job {job_id} was CANCELLED mid-execution. Refunding credit.")
             with next(get_session()) as session:
                 db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
                 if db_blog:
@@ -294,25 +309,28 @@ async def cancel_job(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
-    """Aborts a running asyncio task and triggers the refund in the worker's except block."""
+    """Aborts a running asyncio task and triggers the refund. Updates DB status to allow multi-worker cancellation."""
     db_blog = session.exec(select(Blog).where(Blog.job_id == job_id)).first()
     if not db_blog or db_blog.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    if job_id in running_tasks:
-        running_tasks[job_id].cancel()
-        return {"status": "cancelling", "message": "Task termination signal sent."}
-    
-    # If it wasn't running but was queued/processing in DB, handle it
+    # 1. Update Database IMMEDIATELY (This is the Global Stop Signal)
     if db_blog.status in ["queued", "processing"]:
         db_blog.status = "abandoned"
-        current_user.credits_left += 1 # Refund
+        db_user = session.get(User, current_user.id)
+        if db_user:
+            db_user.credits_left += 1 # Refund
+            session.add(db_user)
         session.add(db_blog)
-        session.add(current_user)
         session.commit()
-        return {"status": "cancelled", "message": "Job marked as abandoned and credit refunded."}
-        
-    return {"status": "error", "message": "Job is not in a cancellable state."}
+        logger.warning(f"Global cancellation signal (abandoned status) set for job {job_id}")
+
+    # 2. Local Task Cancellation (Immediate if on the same worker)
+    if job_id in running_tasks:
+        running_tasks[job_id].cancel()
+        return {"status": "cancelled", "message": "Task termination signal sent locally and status marked globally."}
+    
+    return {"status": "cancelled", "message": "Job marked as abandoned globally. Background worker will stop shortly."}
 
 @api_router.post("/generate", response_model=Dict[str, str], status_code=202)
 @limiter.limit("5/minute")

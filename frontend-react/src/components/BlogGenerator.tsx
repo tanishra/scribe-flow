@@ -159,20 +159,22 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
     }
   };
 
-  const startEventStream = (id: string) => {
+    const startEventStream = (id: string) => {
     const eventSource = new EventSource(`${apiUrl}/api/v1/stream/${id}`);
     eventSourceRef.current = eventSource;
     
     // Set initial status to processing so UI shows
     setStatus({ job_id: id, status: "processing" });
 
-    // Polling Fallback Timer: If no events received for 10 seconds, start manual polling
+    // Polling Fallback Timer: If no events received for 8 seconds, start manual polling
+    let fallbackTriggered = false;
     const fallbackTimer = setTimeout(() => {
-        if (thoughts.length === 0) {
-            console.log("Stream appears stuck, initiating polling fallback...");
+        if (thoughts.length === 0 && !fallbackTriggered) {
+            console.warn("Stream stuck or wrong worker hit. Falling back to polling...");
+            fallbackTriggered = true;
             pollStatus(id);
         }
-    }, 10000);
+    }, 8000);
 
     eventSource.addEventListener("thought", (event) => {
         clearTimeout(fallbackTimer);
@@ -184,6 +186,15 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
 
     eventSource.addEventListener("ping", () => {
         clearTimeout(fallbackTimer);
+    });
+
+    eventSource.addEventListener("error", (event) => {
+        console.error("SSE Stream Error:", event);
+        clearTimeout(fallbackTimer);
+        if (!fallbackTriggered) {
+            fallbackTriggered = true;
+            pollStatus(id);
+        }
     });
 
     eventSource.addEventListener("plan", (event) => {
