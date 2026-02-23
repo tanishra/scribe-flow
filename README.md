@@ -6,24 +6,30 @@ A production-grade, multi-agent content engine designed to transform a single to
 
 ## Core Capabilities
 Writing a high-quality technical blog typically takes hours. AuthoGraph reduces this to **under 5 minutes** while maintaining:
-*   **Agentic Orchestration:** Built on LangGraph for stateful, multi-agent collaboration between researchers, planners, and writers.
+*   **Agentic Orchestration:** Built on LangGraph for stateful, multi-agent collaboration with real-time **Agent Reasoning** surfaced in the UI.
+*   **Observability & Evals:** Integrated with **LangSmith** for full-trace observability and **LLM-as-a-Judge Evals** to ensure technical accuracy and grounding.
 *   **Near-Zero Hallucination:** Strict grounding in real-time web data via **Tavily Search**.
+*   **Production-Grade Reliability:** Database-driven cancellation logic to stop token waste instantly and **Persistent Progress Tracking** for seamless cross-worker synchronization on EC2.
 *   **Multi-Platform Distribution:** Direct, live publishing to **Dev.to**, **Hashnode (v3 API)**, **LinkedIn**, and an optimized crawler-friendly flow for **Medium**.
 *   **Viral LinkedIn Teasers:** AI-driven social teaser generation with a built-in editor for manual refinement before posting.
 *   **Static HTML Rendering:** A dedicated backend renderer for Medium's importer to ensure perfect formatting and image resolution.
 *   **Secure Authentication:** Native support for Google OAuth and Passwordless Email OTP verification.
 *   **Integrated Payments:** Built-in **Razorpay** support with a credit-based system and automated transaction tracking.
 *   **Admin Dashboard:** Platform-wide oversight including **Revenue Tracking**, user lifecycle management (deactivation), and a global content feed.
-*   **Visual Engagement:** Context-aware generation of custom diagrams and images using Gemini's multi-modal capabilities.
 
 ---
 
 ## Architecture
-The system utilizes a "Plan-Execute-Distribute" cycle powered by an asynchronous multi-agent graph.
+The system utilizes a "Plan-Execute-Distribute" cycle powered by an asynchronous multi-agent graph, featuring full observability and real-time frontend synchronization.
 
 ```mermaid
 graph TD
-    Start((START)) --> Router{Research Needed?}
+    UI[React Frontend] -- REST API --> Start((START))
+    
+    Start --> LS[LangSmith Tracing]
+    LS --> Router{Research Needed?}
+    
+    subgraph LangGraph Orchestration
     Router -- Yes --> Research[Tavily Search Agent]
     Router -- No --> Orchestrator
     Research --> Orchestrator[Strategic Planner]
@@ -35,15 +41,22 @@ graph TD
     end
     
     W1 & W2 & W3 --> Reducer[Content Merger]
+    end
+    
+    Reducer --> Stream[SSE Live Streaming]
+    Stream -- Real-time Reasoning --> UI
+    Stream --> State[(Supabase Global State)]
+    State -- Polling Sync --> UI
+    
     Reducer --> ImgDecide[Visual Strategist]
     
     subgraph Parallel Image Workers
     ImgDecide --> IW1[Agent 1]
     ImgDecide --> IW2[Agent 2]
-    ImgDecide --> IW2[Agent N]
+    ImgDecide --> IW3[Agent N]
     end
     
-    IW1 & IW2 --> Finalize[SQL Persistence & SEO]
+    IW1 & IW2 & IW3 --> Finalize[SEO & Final Persistence]
     Finalize --> Hub[Publishing Hub]
     
     subgraph Distribution
@@ -57,7 +70,7 @@ graph TD
 ---
 
 ## Tech Stack
-*   **Backend:** FastAPI, LangGraph, SQLModel (PostgreSQL/Supabase), Gunicorn.
+*   **Backend:** FastAPI, LangGraph, LangSmith, SQLModel (PostgreSQL/Supabase), Gunicorn.
 *   **Frontend:** React 18 (TypeScript), Tailwind CSS, Framer Motion, Lucide Icons.
 *   **AI:** OpenAI (Text), Gemini (Vision), Tavily Search API.
 *   **Payments:** Razorpay API with automated transaction logging.
@@ -89,7 +102,7 @@ OPENAI_API_KEY=your_openai_key
 GOOGLE_API_KEY=your_gemini_key
 TAVILY_API_KEY=your_tavily_key
 
-# LangSmith Observability (Optional)
+# LangSmith Observability & Evals
 LANGSMITH_TRACING=true
 LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
 LANGSMITH_API_KEY=your_langsmith_api_key
