@@ -26,6 +26,7 @@ from .dependencies import get_current_user
 from .schemas.db_models import User, Blog
 from .schemas.models import Plan, EvidenceItem
 from .utils.slug import slugify
+from .migrate import run_migrations
 
 # --- Security & Rate Limiting ---
 limiter = Limiter(key_func=get_remote_address)
@@ -153,6 +154,8 @@ class JobStatusResponse(BaseModel):
     meta_description: Optional[str] = None
     keywords: Optional[str] = None
     tone: Optional[str] = None
+    thoughts: List[str] = Field(default_factory=list)
+    intermediate_content: Optional[str] = ""
 
 # --- Background Task ---
 
@@ -298,6 +301,12 @@ def on_startup():
         try: os.chmod("database.db", 0o666)
         except: pass
     create_db_and_tables()
+    
+    # Run lightweight schema migrations to add missing columns like 'thoughts_json'
+    try:
+        run_migrations()
+    except Exception as e:
+        logger.error(f"Schema migration failed during startup: {e}")
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth.router)
