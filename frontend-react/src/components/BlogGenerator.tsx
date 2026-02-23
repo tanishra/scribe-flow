@@ -66,7 +66,7 @@ function safe_slug(title: string): string {
   return slug || "blog";
 }
 
-export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string | null, onReset?: () => void }) {
+export function BlogGenerator({ initialJobId, onReset, onNavigateToProfile }: { initialJobId?: string | null, onReset?: () => void, onNavigateToProfile?: () => void }) {
   const [topic, setTopic] = useState("");
   const [tone, setTone] = useState("Professional");
   const [jobId, setJobId] = useState<string | null>(initialJobId || null);
@@ -497,10 +497,13 @@ export function BlogGenerator({ initialJobId, onReset }: { initialJobId?: string
             className="w-full max-w-4xl"
         >
             <div className="text-center mb-8">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-500/5 border border-green-500/20 text-[10px] font-black text-green-500 uppercase tracking-[0.2em] mb-4">
                     <Rocket className="w-3 h-3" /> Seamless Ecosystem
                 </div>
                 <h2 className="text-2xl font-black text-white tracking-tight">Publish Everywhere Instantly</h2>
+                <p className="text-[10px] font-bold text-slate-500 mt-2 uppercase tracking-widest">
+                    Configure your keys in <button onClick={onNavigateToProfile} className="text-blue-400 hover:underline">Profile</button> to enable.
+                </p>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

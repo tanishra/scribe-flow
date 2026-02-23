@@ -201,7 +201,7 @@ function MainLayout() {
       </header>
 
       <div className="pt-24 pb-12">
-        {view === 'dashboard' && <BlogGenerator initialJobId={selectedJobId} onReset={() => setSelectedJobId(null)} />}
+        {view === 'dashboard' && <BlogGenerator onNavigateToProfile={() => setView('profile')} initialJobId={selectedJobId} onReset={() => setSelectedJobId(null)} />}
         {view === 'history' && <BlogHistory onSelect={handleViewHistoryItem} />}
         {view === 'profile' && <ProfilePage onBack={() => setView('dashboard')} />}
         {view === 'admin' && <AdminDashboard onBack={() => setView('dashboard')} />}
