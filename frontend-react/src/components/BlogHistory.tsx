@@ -7,7 +7,7 @@ import { getApiUrl } from '../contexts/AuthContext';
 
 interface BlogHistoryItem {
   job_id: string;
-  status: "queued" | "processing" | "completed" | "failed";
+  status: "queued" | "processing" | "completed" | "failed" | "abandoned";
   blog_title: string;
   download_url?: string;
   created_at?: string;
@@ -74,10 +74,12 @@ export function BlogHistory({ onSelect }: { onSelect: (job_id: string) => void }
                 <div className={`p-3 rounded-xl ${
                     blog.status === 'completed' ? 'bg-green-500/10 text-green-400' :
                     blog.status === 'failed' ? 'bg-red-500/10 text-red-400' :
+                    blog.status === 'abandoned' ? 'bg-slate-500/10 text-slate-400' :
                     'bg-blue-500/10 text-blue-400'
                 }`}>
                     {blog.status === 'completed' ? <CheckCircle className="w-6 h-6" /> :
                      blog.status === 'failed' ? <XCircle className="w-6 h-6" /> :
+                     blog.status === 'abandoned' ? <XCircle className="w-6 h-6 opacity-50" /> :
                      <Loader2 className="w-6 h-6 animate-spin" />}
                 </div>
                 
@@ -86,8 +88,8 @@ export function BlogHistory({ onSelect }: { onSelect: (job_id: string) => void }
                         {blog.blog_title}
                     </h4>
                     <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-                        <span className="flex items-center gap-1 uppercase tracking-wider font-bold">
-                            {blog.status}
+                        <span className="flex items-center gap-1 uppercase tracking-wider font-black">
+                            {blog.status === 'abandoned' ? 'Cancelled' : blog.status}
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
@@ -98,18 +100,21 @@ export function BlogHistory({ onSelect }: { onSelect: (job_id: string) => void }
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-[140px] justify-end">
                 {blog.status === 'completed' && (
                     <button 
                         onClick={() => onSelect(blog.job_id)}
-                        className="flex items-center gap-2 bg-blue-600/20 text-blue-400 px-4 py-2 rounded-lg border border-blue-600/30 hover:bg-blue-600 hover:text-white transition-all text-sm font-semibold"
+                        className="flex items-center gap-2 bg-blue-600/20 text-blue-400 px-4 py-2 rounded-lg border border-blue-600/30 hover:bg-blue-600 hover:text-white transition-all text-sm font-semibold whitespace-nowrap"
                     >
                         View Results
                         <ExternalLink className="w-4 h-4" />
                     </button>
                 )}
                 {blog.status === 'failed' && (
-                     <div className="text-xs text-red-500 italic pr-4">Generation Error</div>
+                     <div className="text-xs text-red-500 italic font-black uppercase tracking-widest pr-4">Generation Error</div>
+                )}
+                {blog.status === 'abandoned' && (
+                     <div className="text-xs text-slate-500 italic font-black uppercase tracking-widest pr-4">User Aborted</div>
                 )}
               </div>
             </GlassCard>

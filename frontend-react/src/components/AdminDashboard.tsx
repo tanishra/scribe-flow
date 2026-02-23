@@ -64,6 +64,8 @@ interface BlogData {
     created_at: string;
 }
 
+const BLOG_STATUSES = ["queued", "processing", "completed", "failed", "abandoned"];
+
 interface TransactionData {
     id: number;
     user_name: string;
@@ -159,6 +161,13 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
         await axios.delete(`${apiUrl}/api/v1/admin/users/${userId}`);
         fetchData();
     } catch (e) { alert("Failed to change user status"); }
+  };
+
+  const handleUpdateBlogStatus = async (jobId: string, newStatus: string) => {
+    try {
+        await axios.patch(`${apiUrl}/api/v1/admin/blogs/${jobId}/status?status=${newStatus}`);
+        fetchData();
+    } catch (e) { alert("Failed to update blog status"); }
   };
 
   const filteredUsers = users.filter(u => 
@@ -349,13 +358,20 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                                             </div>
                                         </td>
                                         <td className="p-4 text-center">
-                                            <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase border ${
-                                                b.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                                b.status === 'failed' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                                                'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                                            }`}>
-                                                {b.status}
-                                            </span>
+                                            <select 
+                                                value={b.status} 
+                                                onChange={(e) => handleUpdateBlogStatus(b.job_id, e.target.value)}
+                                                className={`px-2 py-1 rounded-md text-[9px] font-black uppercase border bg-black/40 focus:outline-none focus:ring-1 focus:ring-blue-500/50 cursor-pointer transition-all ${
+                                                    b.status === 'completed' ? 'text-green-400 border-green-500/20' :
+                                                    b.status === 'failed' ? 'text-red-400 border-red-500/20' :
+                                                    b.status === 'abandoned' ? 'text-slate-400 border-white/10' :
+                                                    'text-blue-400 border-blue-500/20'
+                                                }`}
+                                            >
+                                                {BLOG_STATUSES.map(status => (
+                                                    <option key={status} value={status} className="bg-slate-900">{status}</option>
+                                                ))}
+                                            </select>
                                         </td>
                                         <td className="p-4 text-[10px] text-slate-500 font-mono text-right pr-8 whitespace-nowrap">
                                             {new Date(b.created_at + "Z").toLocaleString('en-IN', { 
@@ -483,34 +499,50 @@ export function AdminDashboard({ onBack }: { onBack: () => void }) {
                             </div>
                             <div>
                                 <h3 className="text-2xl font-black text-white tracking-tighter">Growth Metrics</h3>
-                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Acquisition over the last 7 days</p>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">User acquisition over the last 7 days</p>
                             </div>
                         </div>
                         
-                        <div className="flex items-end gap-4 h-80 border-b border-l border-white/10 px-8 pb-8 relative">
+                        <div className="flex items-end gap-4 h-80 border-b border-l border-white/10 px-8 pb-8 relative mt-12">
                             {/* Grid Lines */}
                             <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-5 px-8 pb-8">
                                 {[1,2,3,4].map(i => <div key={i} className="w-full border-t border-white"></div>)}
                             </div>
 
-                            {growthData.map((d, i) => (
-                                <div key={i} className="flex-1 flex flex-col items-center gap-3 group z-10">
-                                    <div className="text-[10px] text-blue-400 font-black opacity-0 group-hover:opacity-100 transition-all transform group-hover:-translate-y-1">{d.users}</div>
-                                    <motion.div 
-                                        initial={{ height: 0 }}
-                                        animate={{ height: `${(d.users / (Math.max(...growthData.map(x=>x.users)) || 1)) * 100}%` }}
-                                        className="w-full max-w-[50px] bg-gradient-to-t from-blue-600 via-blue-500 to-cyan-400 rounded-t-xl relative shadow-lg shadow-blue-500/20"
-                                    >
-                                        <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-xl"></div>
-                                    </motion.div>
-                                    <div className="text-[9px] text-slate-500 font-black tracking-widest rotate-[-45deg] origin-top-left mt-2">{d.date}</div>
-                                </div>
-                            ))}
+                            {growthData.map((d, i) => {
+                                const maxVal = Math.max(...growthData.map(x => x.users)) || 1;
+                                const barHeight = (d.users / maxVal) * 100;
+                                
+                                return (
+                                    <div key={i} className="flex-1 flex flex-col items-center gap-3 group z-10">
+                                        <div className="text-[9px] font-black transition-all transform group-hover:-translate-y-1 text-center whitespace-nowrap mb-1">
+                                            {d.daily_new > 0 ? (
+                                                <span className="text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded-full">+{d.daily_new}</span>
+                                            ) : (
+                                                <span className="text-slate-600">--</span>
+                                            )}
+                                            <div className="text-blue-400 mt-1 text-[10px]">Total: {d.users}</div>
+                                        </div>
+                                        <motion.div 
+                                            initial={{ height: 0 }}
+                                            animate={{ height: `${Math.max(barHeight, d.users > 0 ? 10 : 0)}%` }}
+                                            className="w-full max-w-[50px] bg-gradient-to-t from-blue-600 via-blue-500 to-cyan-400 rounded-t-xl relative shadow-lg shadow-blue-500/20 group-hover:from-blue-500 group-hover:to-cyan-300 transition-colors"
+                                        >
+                                            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-xl"></div>
+                                        </motion.div>
+                                        <div className="text-[9px] text-slate-500 font-black tracking-widest rotate-[-45deg] origin-top-left mt-2">{d.date}</div>
+                                    </div>
+                                );
+                            })}
                         </div>
-                        <div className="mt-20 flex justify-center gap-8">
+                        <div className="mt-24 flex justify-center gap-8">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                                <span className="text-[10px] text-slate-400 font-bold uppercase">Total User Base</span>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Cumulative Growth</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-green-500/50 border border-green-500"></div>
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">New Signups</span>
                             </div>
                         </div>
                     </div>
