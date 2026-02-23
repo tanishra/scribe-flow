@@ -90,7 +90,7 @@ GOOGLE_API_KEY=your_gemini_key
 TAVILY_API_KEY=your_tavily_key
 
 # Database
-DATABASE_URL=postgresql://postgres:[pass]@db.xxxx.supabase.co:6543/postgres
+DATABASE_URL=your_postgresql_database_connection_uri
 
 # Authentication
 VITE_GOOGLE_CLIENT_ID=your_google_id.apps.googleusercontent.com
