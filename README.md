@@ -89,6 +89,12 @@ OPENAI_API_KEY=your_openai_key
 GOOGLE_API_KEY=your_gemini_key
 TAVILY_API_KEY=your_tavily_key
 
+# LangSmith Observability (Optional)
+LANGSMITH_TRACING=true
+LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
+LANGSMITH_API_KEY=your_langsmith_api_key
+LANGSMITH_PROJECT="AuthoGraph-AI"
+
 # Database
 DATABASE_URL=your_postgresql_database_connection_uri
 
