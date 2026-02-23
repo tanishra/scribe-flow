@@ -25,6 +25,8 @@ interface JobStatus {
   meta_description?: string;
   keywords?: string;
   tone?: string;
+  thoughts?: string[];
+  intermediate_content?: string;
 }
 
 const TONES = [
