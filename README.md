@@ -1,6 +1,31 @@
-# AuthoGraph AI
-
-A production-grade, multi-agent content engine designed to transform a single topic into a high-impact, research-backed, and visually rich blog post in minutes. AuthoGraph leverages **LangGraph** orchestration to perform deep web research, architect strategic outlines, and generate unique visual assets in parallel—featuring secure authentication, multi-platform publishing, and integrated payments.
+<div align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f172a,100:2563eb&height=180&section=header&text=AuthoGraph%20AI&fontSize=48&fontColor=ffffff&animation=fadeIn&fontAlignY=38" alt="AuthoGraph AI Banner" />
+  <p><strong>Production-grade, multi-agent content engine for high-impact blog posts.</strong></p>
+  <p>AuthoGraph transforms a single topic into a research-backed, visually rich blog post in minutes using LangGraph orchestration.</p>
+  <p>
+    <a href="https://fastapi.tiangolo.com/" target="_blank" rel="noreferrer">
+      <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+    </a>
+    <a href="https://reactjs.org/" target="_blank" rel="noreferrer">
+      <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+    </a>
+    <a href="https://www.typescriptlang.org/" target="_blank" rel="noreferrer">
+      <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    </a>
+    <a href="https://langchain-ai.github.io/langgraph/" target="_blank" rel="noreferrer">
+      <img src="https://img.shields.io/badge/LangGraph-000000?style=for-the-badge&logo=langchain&logoColor=white" alt="LangGraph" />
+    </a>
+    <a href="https://tailwindcss.com/" target="_blank" rel="noreferrer">
+      <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+    </a>
+    <a href="https://aws.amazon.com/" target="_blank" rel="noreferrer">
+      <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="AWS" />
+    </a>
+    <a href="https://supabase.com/" target="_blank" rel="noreferrer">
+      <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
+    </a>
+  </p>
+</div>
 
 ---
 
