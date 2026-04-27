@@ -1,5 +1,33 @@
-from typing import Optional, List
+from typing import Optional, List, Any
+import os
+from cryptography.fernet import Fernet
+from sqlalchemy import String, TypeDecorator
 from sqlmodel import Field, SQLModel, Column, JSON
+
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
+if ENCRYPTION_KEY:
+    fernet = Fernet(ENCRYPTION_KEY.encode())
+else:
+    fernet = None
+
+class EncryptedString(TypeDecorator):
+    impl = String
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            if not fernet:
+                raise ValueError("ENCRYPTION_KEY must be set in environment variables to encrypt data.")
+            return fernet.encrypt(value.encode()).decode()
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            if not fernet:
+                raise ValueError("ENCRYPTION_KEY must be set in environment variables to decrypt data.")
+            return fernet.decrypt(value.encode()).decode()
+        return value
+
 from datetime import datetime
 
 class User(SQLModel, table=True):
@@ -24,11 +52,11 @@ class User(SQLModel, table=True):
     is_premium: bool = Field(default=False)
     
     # Integrations
-    devto_api_key: Optional[str] = Field(default=None)
-    hashnode_api_key: Optional[str] = Field(default=None) # NEW
+    devto_api_key: Optional[str] = Field(default=None, sa_column=Column(EncryptedString))
+    hashnode_api_key: Optional[str] = Field(default=None, sa_column=Column(EncryptedString)) # NEW
     hashnode_publication_id: Optional[str] = Field(default=None) # NEW
-    medium_token: Optional[str] = Field(default=None) # NEW
-    linkedin_access_token: Optional[str] = Field(default=None)
+    medium_token: Optional[str] = Field(default=None, sa_column=Column(EncryptedString)) # NEW
+    linkedin_access_token: Optional[str] = Field(default=None, sa_column=Column(EncryptedString))
     linkedin_urn: Optional[str] = Field(default=None)
     
     created_at: datetime = Field(default_factory=datetime.utcnow)

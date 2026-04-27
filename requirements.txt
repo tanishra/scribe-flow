@@ -176,7 +176,6 @@ mygene==3.2.2
 mypy==1.19.1
 mypy_extensions==1.1.0
 # Editable install with no version control (nanobot-ai==0.1.3.post3)
--e /Users/tanishrajput/Desktop/Data Science/nanobot
 narwhals==2.14.0
 nest_asyncio @ file:///home/conda/feedstock_root/build_artifacts/nest-asyncio_1733325553580/work
 networkx==3.6.1
