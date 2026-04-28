@@ -14,7 +14,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 
 # Secure keys
-SECRET_KEY = os.getenv("SECRET_KEY", "SUPER_SECRET_KEY_PLEASE_CHANGE")
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 
 

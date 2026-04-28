@@ -54,10 +54,11 @@ async def log_requests(request: Request, call_next):
     # logger.info(f"Response status: {response.status_code}")
     return response
 
-# --- PERMISSIVE CORS (For Debugging) ---
+# --- STRICT CORS ---
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -295,11 +296,25 @@ async def generate_blog_task_streaming(job_id: str, topic: str, tone: str):
 
 # --- API Router Setup ---
 
+import sys
 @app.on_event("startup")
 def on_startup():
-    if os.path.exists("database.db"):
-        try: os.chmod("database.db", 0o666)
-        except: pass
+    # Phase 1: Security - Enforce required secrets
+    required_secrets = ["SECRET_KEY", "DATABASE_URL"]
+    missing = []
+    for secret in required_secrets:
+        if not os.getenv(secret):
+            missing.append(secret)
+
+    if os.getenv("SECRET_KEY") == "SUPER_SECRET_KEY_PLEASE_CHANGE":
+        logger.error("CRITICAL: Default SECRET_KEY is in use. Please change it.")
+        sys.exit(1)
+
+    if missing:
+        logger.error(f"CRITICAL: Missing required environment variables: {', '.join(missing)}")
+        sys.exit(1)
+
+    # Note: os.chmod removed for security
     create_db_and_tables()
     
     # Run lightweight schema migrations to add missing columns like 'thoughts_json'

@@ -7,7 +7,9 @@ load_dotenv()
 
 # 1. Configuration: Get DB URL from env, default to local SQLite
 # For Supabase, you will add DATABASE_URL to your .env
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///database.db")
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    DATABASE_URL = "sqlite:///database.db"
 
 # 2. Compatibility Fix: Postgres requires postgresql:// but many platforms provide postgres://
 if DATABASE_URL.startswith("postgres://"):

@@ -9,10 +9,12 @@ from ..schemas.db_models import User, Transaction
 from ..dependencies import get_current_user
 
 # Razorpay Keys from .env
-RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_mock_id")
-RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "mock_secret")
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
 
-client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+# Initialize client only if keys exist to prevent startup crash if not using payments
+client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)) if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET else None
+
 
 router = APIRouter(prefix="/payment", tags=["Payment"])
 
@@ -38,13 +40,8 @@ async def create_order(req: OrderRequest, current_user: User = Depends(get_curre
     
     amount = amounts.get(req.plan, 99900)
 
-    if "mock" in RAZORPAY_KEY_ID:
-        return {
-            "mock": True,
-            "order_id": "order_mock_" + os.urandom(4).hex(),
-            "amount": amount,
-            "key": RAZORPAY_KEY_ID
-        }
+    if not client:
+        raise HTTPException(status_code=500, detail="Payment gateway not configured")
 
     try:
         data = {
@@ -88,22 +85,8 @@ async def verify_payment(
     reward = credits_map.get(req.plan, 20)
     amount = amounts_map.get(req.plan, 99900)
 
-    if "mock" in req.razorpay_order_id:
-        current_user.credits_left += reward
-        
-        # RECORD TRANSACTION
-        txn = Transaction(
-            user_id=current_user.id,
-            plan=req.plan,
-            amount=amount,
-            credits_added=reward,
-            razorpay_order_id=req.razorpay_order_id,
-            razorpay_payment_id=req.razorpay_payment_id
-        )
-        session.add(txn)
-        session.add(current_user)
-        session.commit()
-        return {"status": "success", "message": f"Mock upgrade: {reward} credits added."}
+    if not client:
+        raise HTTPException(status_code=500, detail="Payment gateway not configured")
 
     try:
         params_dict = {
