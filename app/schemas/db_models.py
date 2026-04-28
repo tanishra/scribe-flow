@@ -1,6 +1,6 @@
 from typing import Optional, List, Any
 import os
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 from sqlalchemy import String, TypeDecorator
 from sqlmodel import Field, SQLModel, Column, JSON
 
@@ -25,7 +25,11 @@ class EncryptedString(TypeDecorator):
         if value is not None:
             if not fernet:
                 raise ValueError("ENCRYPTION_KEY must be set in environment variables to decrypt data.")
-            return fernet.decrypt(value.encode()).decode()
+            try:
+                return fernet.decrypt(value.encode()).decode()
+            except InvalidToken:
+                # Fallback for existing plaintext tokens before encryption was enabled
+                return value
         return value
 
 from datetime import datetime
