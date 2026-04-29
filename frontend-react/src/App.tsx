@@ -33,7 +33,7 @@ function MainLayout() {
     setTimeout(() => setNotification(null), 4000);
   };
 
-  const handleUpgrade = async (plan: 'test' | 'basic' | 'pro') => {
+  const handleUpgrade = async (plan: 'basic' | 'pro') => {
     try {
         const res = await axios.post(`${apiUrl}/api/v1/payment/create-order`, { plan });
         const order = res.data;
@@ -56,7 +56,7 @@ function MainLayout() {
             amount: order.amount,
             currency: "INR",
             name: "AuthoGraph AI",
-            description: plan === 'test' ? "5 Blog Credits" : plan === 'basic' ? "20 Blog Credits" : "50 Blog Credits",
+            description: plan === 'basic' ? "20 Blog Credits" : "50 Blog Credits",
             order_id: order.order_id,
             handler: async function (response: any) {
                 try {
@@ -220,11 +220,6 @@ function MainLayout() {
                   <p className="text-slate-400">Choose a high-capacity pack or get a custom quote for your agency.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 flex flex-col">
-                    <h3 className="text-lg font-bold text-white mb-2">Testing Pack</h3>
-                    <div className="text-3xl font-black text-white mb-8">₹100 <span className="text-slate-500 text-xs">/ 5 Credits</span></div>
-                    <button onClick={() => handleUpgrade('test')} className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-3 rounded-2xl text-sm transition-all mt-auto">Buy 5 Credits</button>
-                  </div>
                   <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 flex flex-col">
                     <h3 className="text-lg font-bold text-white mb-2">Creator Pack</h3>
                     <div className="text-3xl font-black text-white mb-8">₹999 <span className="text-slate-500 text-xs">/ 20 Credits</span></div>

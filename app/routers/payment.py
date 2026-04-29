@@ -19,7 +19,7 @@ client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)) if RAZORPA
 router = APIRouter(prefix="/payment", tags=["Payment"])
 
 class OrderRequest(BaseModel):
-    plan: str # "test", "basic" or "pro"
+    plan: str # "basic" or "pro"
 
 class VerifyPaymentRequest(BaseModel):
     razorpay_order_id: str
@@ -33,7 +33,6 @@ async def create_order(req: OrderRequest, current_user: User = Depends(get_curre
     
     # Logic for amounts
     amounts = {
-        "test": 10000,   # ₹100
         "basic": 99900,  # ₹999
         "pro": 199900    # ₹1999
     }
@@ -73,12 +72,10 @@ async def verify_payment(
     
     # Credit logic
     credits_map = {
-        "test": 5,   # ₹100 -> 5
         "basic": 20, # ₹999 -> 20
         "pro": 50    # ₹1999 -> 50
     }
     amounts_map = {
-        "test": 10000,
         "basic": 99900,
         "pro": 199900
     }
