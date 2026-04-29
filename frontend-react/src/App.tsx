@@ -219,7 +219,7 @@ function MainLayout() {
                   <h2 className="text-3xl font-black text-white mb-2">Power Your Intelligence</h2>
                   <p className="text-slate-400">Choose a high-capacity pack or get a custom quote for your agency.</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl p-8 flex flex-col">
                     <h3 className="text-lg font-bold text-white mb-2">Creator Pack</h3>
                     <div className="text-3xl font-black text-white mb-8">₹999 <span className="text-slate-500 text-xs">/ 20 Credits</span></div>
