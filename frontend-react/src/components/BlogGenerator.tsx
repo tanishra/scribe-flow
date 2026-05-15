@@ -66,7 +66,7 @@ function safe_slug(title: string): string {
   return slug || "blog";
 }
 
-export function BlogGenerator({ initialJobId, onReset, onNavigateToProfile }: { initialJobId?: string | null, onReset?: () => void, onNavigateToProfile?: () => void }) {
+export function BlogGenerator({ initialJobId, onReset, onNavigateToProfile, onRequireAuth }: { initialJobId?: string | null, onReset?: () => void, onNavigateToProfile?: () => void, onRequireAuth?: () => boolean }) {
   const [topic, setTopic] = useState("");
   const [tone, setTone] = useState("Professional");
   const [jobId, setJobId] = useState<string | null>(initialJobId || null);
@@ -142,6 +142,7 @@ export function BlogGenerator({ initialJobId, onReset, onNavigateToProfile }: { 
 
   const startGeneration = async () => {
     if (!topic.trim()) return;
+    if (onRequireAuth && !onRequireAuth()) return;
     setError(null);
     setStatus(null);
     setThoughts([]);
