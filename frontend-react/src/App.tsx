@@ -9,7 +9,7 @@ import { AdminDashboard } from "./components/AdminDashboard";
 import { PublicBlogViewer } from "./components/PublicBlogViewer";
 import { AuthProvider, useAuth, getApiUrl } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck, X, Check, AlertCircle, Building2 } from "lucide-react";
+import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck, X, Check, AlertCircle, AlertTriangle, Building2 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./components/GlassCard";
@@ -200,7 +200,21 @@ function MainLayout() {
         </div>
       </header>
 
-      <div className="pt-24 pb-12">
+      <div className="fixed top-16 left-0 right-0 z-40 border-b border-amber-300/10 bg-amber-500/10 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-start gap-3 px-4 py-3 text-amber-100 sm:items-center">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-300/20 bg-amber-400/10 text-amber-300 shadow-lg shadow-amber-500/10 sm:mt-0">
+            <AlertTriangle className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-bold tracking-tight text-white">We are experiencing technical issues.</p>
+            <p className="text-xs font-medium text-amber-100/80 sm:text-sm">
+              Some services may be temporarily unavailable. We are working on it and will be back soon.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-44 pb-12 sm:pt-40">
         {view === 'dashboard' && <BlogGenerator onNavigateToProfile={() => setView('profile')} initialJobId={selectedJobId} onReset={() => setSelectedJobId(null)} />}
         {view === 'history' && <BlogHistory onSelect={handleViewHistoryItem} />}
         {view === 'profile' && <ProfilePage onBack={() => setView('dashboard')} />}
