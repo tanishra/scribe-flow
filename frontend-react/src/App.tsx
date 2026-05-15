@@ -250,7 +250,7 @@ function MainLayout() {
       </header>
 
       <div className="fixed top-16 left-0 right-0 z-40 border-b border-amber-300/10 bg-amber-500/10 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-start gap-3 px-4 py-3 text-amber-100 sm:items-center">
+        <div className="mx-auto flex max-w-7xl items-start justify-center gap-3 px-4 py-3 text-center text-amber-100 sm:items-center">
           <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-amber-300/20 bg-amber-400/10 text-amber-300 shadow-lg shadow-amber-500/10 sm:mt-0">
             <AlertTriangle className="h-4 w-4" />
           </div>
