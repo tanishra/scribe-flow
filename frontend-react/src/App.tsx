@@ -10,7 +10,7 @@ import { PublicBlogViewer } from "./components/PublicBlogViewer";
 import { AuthProvider, useAuth, getApiUrl } from "./contexts/AuthContext";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { LogOut, Zap, User as UserIcon, Clock, LayoutDashboard, HelpCircle, ShieldCheck, X, Check, AlertCircle, AlertTriangle, Building2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { GlassCard } from "./components/GlassCard";
 import axios from "axios";
@@ -24,6 +24,8 @@ function MainLayout() {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(false);
+  const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
+  const [isOnboardingPromptOpen, setIsOnboardingPromptOpen] = useState(false);
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
 
   const apiUrl = getApiUrl();
@@ -93,8 +95,50 @@ function MainLayout() {
     setView('dashboard');
   };
 
-  if (!user) return <LoginPage />;
-  if (!user.onboarding_completed) return <OnboardingWizard />;
+  const requireProductAccess = () => {
+    if (!user) {
+      setIsLoginPromptOpen(true);
+      return false;
+    }
+
+    if (!user.onboarding_completed) {
+      setIsOnboardingPromptOpen(true);
+      return false;
+    }
+
+    return true;
+  };
+
+  const navigateToProtectedView = (nextView: 'profile' | 'history' | 'admin') => {
+    if (!user) {
+      setIsLoginPromptOpen(true);
+      return;
+    }
+
+    if (!user.onboarding_completed) {
+      setIsOnboardingPromptOpen(true);
+      return;
+    }
+
+    setView(nextView);
+  };
+
+  useEffect(() => {
+    if (user) {
+      if (isLoginPromptOpen) {
+        setIsLoginPromptOpen(false);
+      }
+
+      if (isLoginPromptOpen && !user.onboarding_completed) {
+        setIsOnboardingPromptOpen(true);
+      } else if (user.onboarding_completed) {
+        setIsOnboardingPromptOpen(false);
+      }
+    } else {
+      setIsOnboardingPromptOpen(false);
+      setView('dashboard');
+    }
+  }, [user, isLoginPromptOpen]);
 
   return (
     <>
@@ -141,15 +185,15 @@ function MainLayout() {
                     Dashboard
                 </button>
                 <button 
-                    onClick={() => setView('history')}
+                    onClick={() => navigateToProtectedView('history')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${view === 'history' ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white'}`}
                 >
                     <Clock className="w-4 h-4" />
                     History
                 </button>
-                {user.is_admin && (
+                {user?.is_admin && (
                     <button 
-                        onClick={() => setView('admin')}
+                        onClick={() => navigateToProtectedView('admin')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${view === 'admin' ? 'bg-blue-500/20 text-blue-400' : 'text-slate-400 hover:text-white'}`}
                     >
                         <ShieldCheck className="w-4 h-4" />
@@ -160,29 +204,34 @@ function MainLayout() {
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-4 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">
+            {user && <div className="hidden md:flex items-center gap-4 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">
                 <span>Credits: {user.credits_left}</span>
                 <button onClick={() => setIsPricingOpen(true)} className="text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 border-l border-white/10 pl-4">
                     <Zap className="w-3 h-3" /> Get Credits
                 </button>
-            </div>
+            </div>}
+            {!user && (
+                <button onClick={() => setIsLoginPromptOpen(true)} className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-sm font-bold text-white transition-colors">
+                    Login
+                </button>
+            )}
 
             <button onClick={() => setIsSupportOpen(true)} className="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors">
                 <HelpCircle className="w-5 h-5" />
             </button>
             
-            <div className="flex items-center gap-3 pl-4 border-l border-white/10">
-                <button onClick={() => setView('profile')} className="flex items-center gap-3 group text-left">
+            {user && <div className="flex items-center gap-3 pl-4 border-l border-white/10">
+                <button onClick={() => navigateToProtectedView('profile')} className="flex items-center gap-3 group text-left">
                     <div className="text-right hidden sm:block">
                         <p className="text-sm text-white font-medium group-hover:text-blue-400 transition-colors">
-                            {user.full_name || 'My Profile'}
+                            {user?.full_name || 'My Profile'}
                         </p>
                         <p className="text-[10px] text-slate-500 uppercase tracking-widest">
-                            {user.credits_left} Credits Left
+                            {user?.credits_left || 0} Credits Left
                         </p>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 overflow-hidden group-hover:border-blue-500/50 transition-all">
-                        {user.profile_image ? (
+                        {user?.profile_image ? (
                             <img src={`${apiUrl}${user.profile_image}?t=${Date.now()}`} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-600">
@@ -195,7 +244,7 @@ function MainLayout() {
                 <button onClick={logout} className="p-2 rounded-lg hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-colors">
                     <LogOut className="w-5 h-5" />
                 </button>
-            </div>
+            </div>}
           </div>
         </div>
       </header>
@@ -215,11 +264,24 @@ function MainLayout() {
       </div>
 
       <div className="pt-44 pb-12 sm:pt-40">
-        {view === 'dashboard' && <BlogGenerator onNavigateToProfile={() => setView('profile')} initialJobId={selectedJobId} onReset={() => setSelectedJobId(null)} />}
+        {view === 'dashboard' && <BlogGenerator onNavigateToProfile={() => navigateToProtectedView('profile')} onRequireAuth={requireProductAccess} initialJobId={selectedJobId} onReset={() => setSelectedJobId(null)} />}
         {view === 'history' && <BlogHistory onSelect={handleViewHistoryItem} />}
         {view === 'profile' && <ProfilePage onBack={() => setView('dashboard')} />}
         {view === 'admin' && <AdminDashboard onBack={() => setView('dashboard')} />}
       </div>
+
+      <AnimatePresence>
+        {isLoginPromptOpen && !user && (
+          <div className="fixed inset-0 z-[200] overflow-y-auto bg-black/80 backdrop-blur-md">
+            <button onClick={() => setIsLoginPromptOpen(false)} className="fixed right-4 top-4 z-[210] p-2 text-slate-400 hover:text-white rounded-lg">
+              <X className="w-6 h-6" />
+            </button>
+            <LoginPage />
+          </div>
+        )}
+      </AnimatePresence>
+
+      {isOnboardingPromptOpen && user && !user.onboarding_completed && <OnboardingWizard />}
 
       <AnimatePresence>
         {isPricingOpen && (
